@@ -5,7 +5,7 @@ from vyper.semantics.types.function import FunctionVisibility, StateMutability
 
 from vyro.cairo.stubs import BUILTINS_STUB, generate_storage_var_stub
 from vyro.cairo.utils import INDENT
-from vyro.exceptions import UnsupportedNodeException
+from vyro.exceptions import UnsupportedNodeException, TranspilerPanic
 
 
 class CairoWriter:
@@ -58,9 +58,9 @@ class CairoWriter:
             return None
 
         for a in node.args:
-            self.write(a)
+            pass
         for d in node.defaults:
-            self.write(d)
+            pass
 
     def write_keyword(self, node):
         self.write(node.arg)
@@ -161,8 +161,7 @@ class CairoWriter:
         pass
 
     def write_EventDef(self, node):
-        self.write(node.name)
-        self.write(node.body)
+        pass
 
     def write_Expr(self, node):
         self.write(node.value)
@@ -200,7 +199,7 @@ class CairoWriter:
         for n in node.body:
             stmt_str = self.write(n)
             if not stmt_str:
-                raise
+                raise TranspilerPanic("Unable to write statement in function body")
             ret.append(INDENT + stmt_str)
 
         return_val_str = ""
@@ -222,6 +221,9 @@ class CairoWriter:
     def write_GtE(self, node):
         pass
 
+    def write_Hex(self, node):
+        return str(node.value)
+
     def write_If(self, node):
         self.write(node.test)
         self.write(node.body)
@@ -231,8 +233,7 @@ class CairoWriter:
         self.write(node.name)
 
     def write_ImportFrom(self, node):
-        self.write(node.level)
-        self.write(node.module)
+        pass
 
     def write_In(self, node):
         pass
@@ -255,7 +256,7 @@ class CairoWriter:
             self.write(e)
 
     def write_Log(self, node):
-        self.write(node.value)
+        pass
 
     def write_Lt(self, node):
         pass
@@ -281,6 +282,9 @@ class CairoWriter:
 
     def write_Name(self, node):
         return str(node.id)
+
+    def write_NameConstant(self, node):
+        return str(node.value)
 
     def write_Not(self, node):
         pass

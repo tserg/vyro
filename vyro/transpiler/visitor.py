@@ -21,7 +21,7 @@ class BaseVisitor:
 
     def visit_arguments(self, node, ast, context):
         for a in node.args:
-            self.visit(a, ast, context)
+            pass
         for d in node.defaults:
             self.visit(d, ast, context)
 
@@ -119,8 +119,8 @@ class BaseVisitor:
         pass
 
     def visit_EventDef(self, node, ast, context):
-        self.visit(node.name, ast, context)
-        self.visit(node.body, ast, context)
+        for i in node.body:
+            self.visit(i, ast, context)
 
     def visit_Expr(self, node, ast, context):
         self.visit(node.value, ast, context)
@@ -145,6 +145,9 @@ class BaseVisitor:
     def visit_GtE(self, node, ast, context):
         pass
 
+    def visit_Hex(self, node, ast, context):
+        pass
+
     def visit_If(self, node, ast, context):
         self.visit(node.test, ast, context)
         self.visit(node.body, ast, context)
@@ -154,8 +157,7 @@ class BaseVisitor:
         self.visit(node.name, ast, context)
 
     def visit_ImportFrom(self, node, ast, context):
-        self.visit(node.level, ast, context)
-        self.visit(node.module, ast, context)
+        pass
 
     def visit_In(self, node, ast, context):
         pass
@@ -178,7 +180,7 @@ class BaseVisitor:
             self.visit(e, ast, context)
 
     def visit_Log(self, node, ast, context):
-        self.visit(node.value, ast, context)
+        pass
 
     def visit_Lt(self, node, ast, context):
         pass
@@ -197,6 +199,9 @@ class BaseVisitor:
         pass
 
     def visit_Name(self, node, ast, context):
+        pass
+
+    def visit_NameConstant(self, node, ast, context):
         pass
 
     def visit_Not(self, node, ast, context):
