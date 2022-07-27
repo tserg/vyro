@@ -77,15 +77,6 @@ class BaseVisitor:
     def visit_Break(self, node, ast, context):
         pass
 
-    def visit_CairoFunctionDef(self, node, ast, context):
-        self.visit(node.args, ast, context)
-
-        for i in node.body:
-            self.visit(i, ast, context)
-
-        if node.returns:
-            self.visit(node.returns, ast, context)
-
     def visit_CairoStorageRead(self, node, ast, context):
         pass
 

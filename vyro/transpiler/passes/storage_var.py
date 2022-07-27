@@ -5,7 +5,7 @@ from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.nodes import CairoStorageRead, CairoStorageWrite
 from vyro.cairo.types import vyper_type_to_cairo_type
 from vyro.transpiler.context import ASTContext
-from vyro.transpiler.utils import generate_name_node
+from vyro.transpiler.utils import generate_name_node, insert_statement_before
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -78,9 +78,6 @@ class StorageVarVisitor(BaseVisitor):
                 value=node.value,
             )
 
-            # Replace assign node with RHS
-            ast.replace_in_tree(node, rhs_assignment_node)
-
             # Add storage write node to body of function
 
             fn_node = node.get_ancestor(vy_ast.FunctionDef)
@@ -95,6 +92,8 @@ class StorageVarVisitor(BaseVisitor):
                 value=rhs_name_node,
             )
 
-            # Add storage write node after RHS node
-            node_idx = fn_node.body.index(rhs_assignment_node)
-            fn_node.body.insert(node_idx + 1, storage_write_node)
+            # Replace assign node with RHS
+            ast.replace_in_tree(node, storage_write_node)
+
+            # Add RHS node before storage write node
+            insert_statement_before(rhs_assignment_node, storage_write_node, fn_node.body)
