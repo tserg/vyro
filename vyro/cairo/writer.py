@@ -5,7 +5,7 @@ from vyper.semantics.types.function import FunctionVisibility, StateMutability
 
 from vyro.cairo.stubs import BUILTINS_STUB, generate_storage_var_stub
 from vyro.cairo.utils import INDENT
-from vyro.exceptions import UnsupportedNodeException, TranspilerPanic
+from vyro.exceptions import TranspilerPanic, UnsupportedNode
 
 
 class CairoWriter:
@@ -44,7 +44,7 @@ class CairoWriter:
         node_type = type(node).__name__
         write_fn = getattr(self, f"write_{node_type}", None)
         if write_fn is None:
-            raise UnsupportedNodeException(
+            raise UnsupportedNode(
                 f"{node_type} node is not yet supported in writer", node
             )
         return write_fn(node, *args)
@@ -139,6 +139,9 @@ class CairoWriter:
 
     def write_Continue(self, node):
         pass
+
+    def write_Decimal(self, node):
+        return str(node.value)
 
     def write_Dict(self, node):
         for k in node.keys:

@@ -1,4 +1,4 @@
-from vyro.exceptions import UnsupportedNodeException
+from vyro.exceptions import UnsupportedNode
 
 
 class BaseVisitor:
@@ -10,7 +10,7 @@ class BaseVisitor:
         node_type = type(node).__name__
         visitor_fn = getattr(self, f"visit_{node_type}", None)
         if visitor_fn is None:
-            raise UnsupportedNodeException(
+            raise UnsupportedNode(
                 f"{node_type} node is not yet supported in visitor", node
             )
         visitor_fn(node, ast, context, *args)
@@ -96,6 +96,9 @@ class BaseVisitor:
         self.visit(node.right, ast, context)
 
     def visit_Continue(self, node, ast, context):
+        pass
+
+    def visit_Decimal(self, node, ast, context):
         pass
 
     def visit_Dict(self, node, ast, context):

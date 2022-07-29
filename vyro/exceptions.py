@@ -38,8 +38,12 @@ class VyroException(Exception):
         return f"{self.message}\n{annotation_msg}"
 
 
-class UnsupportedNodeException(VyroException):
+class UnsupportedNode(VyroException):
     """Unsupported Vyper AST node"""
+
+
+class UnsupportedType(VyroException):
+    """Unsupported Vyper type"""
 
 
 class TranspilerPanic(VyroException):
