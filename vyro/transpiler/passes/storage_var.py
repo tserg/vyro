@@ -34,7 +34,11 @@ class StorageVarVisitor(BaseVisitor):
                 node_id=context.reserve_id(),
                 parent=ast,
                 targets=[temp_name_node],
-                value=f"{var_name}_STORAGE",
+                value=vy_ast.Name(
+                    node_id=context.reserve_id(),
+                    id=f"{var_name}_STORAGE",
+                    ast_type="Name",
+                ),
             )
 
             fn_node = vy_ast.FunctionDef(
@@ -86,7 +90,13 @@ class StorageVarVisitor(BaseVisitor):
             storage_write_node = CairoStorageWrite(
                 node_id=context.reserve_id(),
                 parent=fn_node,
-                targets=[f"{contract_var_attribute.attr}_STORAGE"],
+                targets=[
+                    vy_ast.Name(
+                        node_id=context.reserve_id(),
+                        id=f"{contract_var_attribute.attr}_STORAGE",
+                        ast_type="Name",
+                    ),
+                ],
                 value=rhs_name_node,
             )
 

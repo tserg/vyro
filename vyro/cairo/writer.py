@@ -119,11 +119,13 @@ class CairoWriter:
 
     def write_CairoStorageRead(self, node):
         target_str = self.write(node.target)
-        return f"let ({target_str}) = {node.value}.read()"
+        value_str = self.write(node.value)
+        return f"let ({target_str}) = {value_str}.read()"
 
     def write_CairoStorageWrite(self, node):
+        target_str = self.write(node.target)
         value_str = self.write(node.value)
-        return f"{node.target}.write({value_str})"
+        return f"{target_str}.write({value_str})"
 
     def write_Call(self, node):
         self.write(node.func)
