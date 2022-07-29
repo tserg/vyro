@@ -24,6 +24,10 @@ setup(
     url="https://github.com/tserg/vyro",
     keywords=["ethereum", "starknet", "vyper", "cairo", "transpiler"],
     python_requires=">=3.7,<3.11",
+    packages=find_packages(
+        where=".",
+        include=["vyro*"],
+    ),
     install_requires=[
         "vyper @ git+https://github.com/vyperlang/vyper@c3e43d7b8a2e2236e236b9f23c3a8f9a96de349c",
         "cairo-lang==0.9.0",
@@ -31,5 +35,5 @@ setup(
     extras_require=extras_require,
     entry_points={
         "console_scripts": ["vyro=vyro._cli.__main__:main"],
-    }
+    },
 )
