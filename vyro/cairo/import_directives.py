@@ -11,6 +11,8 @@ IMPORT_DIRECTIVES = {
     # Constants
     "TRUE": "starkware.cairo.common.bool",
     "FALSE": "starkware.cairo.common.bool",
+    # Uint256
+    "Uint256": "starkware.cairo.common.uint256",
 }
 
 

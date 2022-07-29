@@ -1,5 +1,4 @@
 from vyper import ast as vy_ast
-from vyper.ast.nodes import FunctionDef, VyperNode
 
 
 class CairoStorageWrite(vy_ast.Assign):

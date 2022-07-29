@@ -14,16 +14,16 @@ class FeltDefinition(CairoTypeDefinition):
     _max_value = 2**251 + 17 * 2**192 + 1
 
 
-class Uint256Definition(CairoTypeDefinition):
+class CairoUint256Definition(CairoTypeDefinition):
     _id = "Uint256"
-    _max_value = 2 ** 256 - 1
+    _max_value = 2**256 - 1
 
 
 def vyper_type_to_cairo_type(vy_typ: BaseTypeDefinition) -> CairoTypeDefinition:
     if isinstance(vy_typ, IntegerAbstractType):
 
         if vy_typ._bits > 251:
-            return Uint256Definition(
+            return CairoUint256Definition(
                 is_constant=vy_typ.is_constant,
                 is_public=vy_typ.is_public,
                 is_immutable=vy_typ.is_immutable,
