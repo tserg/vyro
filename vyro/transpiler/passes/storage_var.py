@@ -41,6 +41,13 @@ class StorageVarVisitor(BaseVisitor):
                 ),
             )
 
+            return_node = vy_ast.Name.from_node(
+                temp_name_node,
+                id=temp_name_node.id,
+                node_id=context.reserve_id(),
+            )
+            return_node._metadata["type"] = cairo_typ
+
             fn_node = vy_ast.FunctionDef(
                 node_id=context.reserve_id(),
                 name=var_name,
@@ -48,7 +55,7 @@ class StorageVarVisitor(BaseVisitor):
                 args=vy_ast.arguments(
                     node_id=context.reserve_id(), args=[], defaults=[]
                 ),
-                returns=temp_name_node,
+                returns=return_node,
                 decorator_list=None,
                 doc_string=None,
             )
@@ -87,6 +94,12 @@ class StorageVarVisitor(BaseVisitor):
             # Create storage write node
             contract_var_attribute = contract_var.pop().get_ancestor()
 
+            value_node = vy_ast.Name.from_node(
+                rhs_name_node,
+                id=rhs_name_node.id,
+                node_id=context.reserve_id(),
+            )
+
             storage_write_node = CairoStorageWrite(
                 node_id=context.reserve_id(),
                 parent=fn_node,
@@ -97,7 +110,7 @@ class StorageVarVisitor(BaseVisitor):
                         ast_type="Name",
                     ),
                 ],
-                value=rhs_name_node,
+                value=value_node,
             )
 
             # Replace assign node with RHS
