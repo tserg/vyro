@@ -102,8 +102,7 @@ class StorageVarVisitor(BaseVisitor):
 
             # Replace assign node with RHS
             ast.replace_in_tree(node, storage_write_node)
-
             # Add RHS node before storage write node
             insert_statement_before(
-                rhs_assignment_node, storage_write_node, fn_node.body
+                rhs_assignment_node, storage_write_node, fn_node
             )
