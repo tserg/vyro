@@ -13,6 +13,8 @@ IMPORT_DIRECTIVES = {
     "FALSE": "starkware.cairo.common.bool",
     # Uint256
     "Uint256": "starkware.cairo.common.uint256",
+    # Vyro lib
+    "felt_to_uint256": "vyrolib.utils",
 }
 
 

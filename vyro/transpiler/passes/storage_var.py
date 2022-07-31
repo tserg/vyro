@@ -8,7 +8,7 @@ from vyper.semantics.types.function import (
 from vyro.cairo.nodes import CairoStorageRead, CairoStorageWrite
 from vyro.cairo.types import vyper_type_to_cairo_type
 from vyro.transpiler.context import ASTContext
-from vyro.transpiler.utils import convert_node_type_definition, generate_name_node, insert_statement_before
+from vyro.transpiler.utils import convert_node_type_definition, generate_name_node, insert_statement_before, set_parent
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -96,11 +96,14 @@ class StorageVarVisitor(BaseVisitor):
         if contract_var:
             # Create new variable and assign RHS
             rhs_name_node = generate_name_node(context.reserve_id())
-            rhs_assignment_node = vy_ast.Assign.from_node(
-                node.value, targets=[rhs_name_node], value=node.value
+            rhs_assignment_node = vy_ast.Assign(
+                node_id=context.reserve_id(),
+                targets=[rhs_name_node],
+                value=node.value,
             )
             rhs_assignment_node._children.add(rhs_name_node)
             rhs_assignment_node._children.add(node.value)
+            set_parent(node.value, rhs_assignment_node)
 
             # Add storage write node to body of function
 

@@ -16,17 +16,13 @@ class BaseVisitor:
         visitor_fn(node, ast, context, *args)
 
     def visit_arg(self, node, ast, context):
-        self.visit(node.arg, ast, context)
-        self.visit(node.annotation, ast, context)
+        self.visit(node.value, ast, context)
 
     def visit_arguments(self, node, ast, context):
         for a in node.args:
             pass
-        for d in node.defaults:
-            self.visit(d, ast, context)
 
     def visit_keyword(self, node, ast, context):
-        self.visit(node.arg, ast, context)
         self.visit(node.value, ast, context)
 
     def visit_Add(self, node, ast, context):
@@ -85,8 +81,7 @@ class BaseVisitor:
 
     def visit_Call(self, node, ast, context):
         self.visit(node.func, ast, context)
-        for a in node.args:
-            self.visit(a, ast, context)
+        self.visit(node.args, ast, context)
         for k in node.keywords:
             self.visit(k, ast, context)
 

@@ -25,12 +25,13 @@ def main():
 
     if args["<contract>"]:
         path = args["<contract>"]
+        print_tree = args["--print-tree"]
 
         # Get Vyper AST
         vyper_ast = get_vyper_ast(path)
 
         # Transpile
-        transpile(vyper_ast)
+        transpile(vyper_ast, print_tree=print_tree)
 
         # Get transpiled Cairo in str format
         output = write(vyper_ast)
@@ -39,8 +40,6 @@ def main():
         output_file = args["--output"]
         if output_file:
             write_cairo(output, output_file)
-
-        print_tree = args["--print-tree"]
 
         # Print Cairo output to console
         print(output)

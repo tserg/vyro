@@ -50,21 +50,22 @@ class CairoWriter:
         return write_fn(node, *args)
 
     def write_arg(self, node):
-        self.write(node.arg)
-        self.write(node.annotation)
+        value_str = self.write(node.value)
+        return value_str
 
     def write_arguments(self, node):
         if len(node.args) == 0:
             return None
 
+        args = []
         for a in node.args:
-            pass
-        for d in node.defaults:
-            pass
+            args.append(self.write(a))
+
+        return ", ".join(args)
 
     def write_keyword(self, node):
-        self.write(node.arg)
-        self.write(node.value)
+        value_str = self.write(node.value)
+        return f"{node.arg}={value_str}"
 
     def write_Add(self, node):
         pass
@@ -128,11 +129,22 @@ class CairoWriter:
         return f"{target_str}.write({value_str})"
 
     def write_Call(self, node):
-        self.write(node.func)
-        for a in node.args:
-            self.write(a)
+        func_str = self.write(node.func)
+
+        args = []
+        for a in node.args.args:
+            arg_str = self.write(a)
+            args.append(arg_str)
+
+        kwargs = []
         for k in node.keywords:
-            self.write(k)
+            kwarg_str = self.write(k)
+            kwargs.append(kwarg_str)
+
+        args_str = ", ".join(args)
+        kwargs_str = ", ".join(kwargs)
+
+        return f"{func_str}({args_str}{kwargs_str})"
 
     def write_Compare(self, node):
         self.write(node.left)
