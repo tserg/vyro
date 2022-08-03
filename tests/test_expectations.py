@@ -4,6 +4,7 @@ import os
 from ape import Project
 
 from tests.expectations import EXPECTATIONS
+from tests.utils import transpile_to_cairo
 
 
 # Loop through expectations
@@ -37,11 +38,8 @@ def test_vyper_code(project, owner, user, code):
         else:
             assert fn_call(*call_args, sender=user) == expected
 
+
 # Transpile and output cairo to same folder
-
-# Perform tests in cairo
-
-
 @pytest.mark.parametrize("code", EXPECTATIONS)
 def test_transpile(code):
     """
@@ -50,6 +48,9 @@ def test_transpile(code):
     filename = code[0]
     file_path = f"examples/{filename}.vy"
     expected_cairo_file_path = f"examples/{filename}.cairo"
-    os.system(f"vyro transpile {file_path} --output {expected_cairo_file_path}")
+    transpile_to_cairo(file_path, expected_cairo_file_path)
 
     assert os.path.exists(expected_cairo_file_path) == True
+
+
+# Perform tests in cairo
