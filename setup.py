@@ -5,13 +5,21 @@ with open("README.md", "r") as fh:
 
 
 extras_require = {
+    "test": [
+        "pytest>=7.1.2",
+        "eth-ape==0.4.0",
+        "ape-vyper==0.4.0",
+        "ape-starknet @ git+https://github.com/ApeWorX/ape-starknet.git@00300b998799707c11da4377966f2424f3d900dd",
+    ],
     "lint": [
         "black==22.6.0",
         "flake8==4.0.1",
         "isort==5.10.1",
         "mypy==0.961",
-    ]
+    ],
 }
+
+extras_require["dev"] = extras_require["test"] + extras_require["lint"]
 
 setup(
     name="vyro",
@@ -29,7 +37,7 @@ setup(
         include=["vyro*"],
     ),
     install_requires=[
-        "vyper @ git+https://github.com/vyperlang/vyper@cb41608ddadd9bfb7c5054507a9d64b1f2e59726",
+        "vyper @ git+https://github.com/vyperlang/vyper@8b8cff233d766f2fda55d82cbf9a8d3160ab4e7a",
         "cairo-lang==0.9.1",
     ],
     extras_require=extras_require,

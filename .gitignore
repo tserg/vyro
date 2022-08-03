@@ -4,3 +4,8 @@ tmp/
 *.egg-info/
 build/
 dist/
+
+# pytest
+.pytest_cache
+tests/.build/
+.build/
