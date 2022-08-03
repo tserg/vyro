@@ -14,7 +14,8 @@ Arguments
 Options:
   --help -h             Display this message.
   --output <file>       Write the transpiled Cairo to a file.
-  --print-tree           Print the transpiled AST to console.
+  --print-output        Print the transpiled Cairo to console.
+  --print-tree          Print the transpiled AST to console.
 
 Transpiles the contract source file
 """
@@ -26,6 +27,7 @@ def main():
     if args["<contract>"]:
         path = args["<contract>"]
         print_tree = args["--print-tree"]
+        print_output = args["--print-output"]
 
         # Get Vyper AST
         vyper_ast = get_vyper_ast(path)
@@ -42,7 +44,8 @@ def main():
             write_cairo(output, output_file)
 
         # Print Cairo output to console
-        print(output)
+        if print_output:
+            print(output)
 
         if print_tree:
             ast_dict = vyper_ast.to_dict()
