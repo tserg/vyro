@@ -16,11 +16,11 @@ class BaseVisitor:
         visitor_fn(node, ast, context, *args)
 
     def visit_arg(self, node, ast, context):
-        self.visit(node.value, ast, context)
+        pass
 
     def visit_arguments(self, node, ast, context):
         for a in node.args:
-            pass
+            self.visit(a, ast, context)
 
     def visit_keyword(self, node, ast, context):
         self.visit(node.value, ast, context)

@@ -1,8 +1,10 @@
 from vyper import ast as vy_ast
 from vyper.semantics.types import Uint256Definition
+from vyper.semantics.types.bases import DataLocation
+from vyper.semantics.types.utils import get_type_from_annotation
 
 from vyro.cairo.import_directives import add_builtin_to_module
-from vyro.cairo.types import CairoUint256Definition
+from vyro.cairo.types import CairoUint256Definition, vyper_type_to_cairo_type
 from vyro.transpiler.visitor import BaseVisitor
 from vyro.transpiler.utils import generate_name_node, insert_statement_before
 
@@ -22,10 +24,12 @@ class Uint256HandlerVisitor(BaseVisitor):
                 func=vy_ast.Name(
                     node_id=context.reserve_id(),
                     id="Uint256",
+                    ast_type="Name",
                 ),
                 args=vy_ast.arguments(
                     node_id=context.reserve_id(),
                     args=[],
+                    ast_type="arguments",
                 ),
                 keywords=[
                     vy_ast.keyword(
@@ -34,7 +38,9 @@ class Uint256HandlerVisitor(BaseVisitor):
                         value=vy_ast.Int(
                             node_id=context.reserve_id(),
                             value=lo,
+                            ast_type="Int",
                         ),
+                        ast_type="keyword",
                     ),
                     vy_ast.keyword(
                         node_id=context.reserve_id(),
@@ -42,7 +48,9 @@ class Uint256HandlerVisitor(BaseVisitor):
                         value=vy_ast.Int(
                             node_id=context.reserve_id(),
                             value=hi,
+                            ast_type="Int",
                         ),
+                        ast_typ="keyword",
                     ),
                 ],
             )
@@ -57,28 +65,12 @@ class Uint256HandlerVisitor(BaseVisitor):
             # Add import
             add_builtin_to_module(ast, "Uint256")
 
-        else:
-            # Wrap value in a `felt_to_uint256` call
-            wrapped_convert = vy_ast.Call(
-                node_id=context.reserve_id(),
-                func=vy_ast.Name(
-                    node_id=context.reserve_id(),
-                    id="felt_to_uint256",
-                ),
-                args=vy_ast.arguments(
-                    node_id=context.reserve_id(),
-                    args=[],
-                    defaults=[],
-                ),
-                keywords=[],
-            )
-
-            ast.replace_in_tree(node.value, wrapped_convert)
-            wrapped_convert.args.args.append(value_node)
-
-            # Add import
-            add_builtin_to_module(ast, "felt_to_uint256")
-            add_builtin_to_module(ast, "Uint256")
+        elif isinstance(value_node, vy_ast.Name):
+            value_typ = value_node._metadata["type"]
+            if isinstance(value_typ, Uint256Definition):
+                # Set type
+                node.target._metadata["type"] = CairoUint256Definition()
+                node.value._metadata["type"] = CairoUint256Definition()
 
         return
 
@@ -92,3 +84,8 @@ class Uint256HandlerVisitor(BaseVisitor):
         type_ = node.value._metadata.get("type")
         if isinstance(type_, Uint256Definition):
             self._wrap_convert(node, ast, context)
+
+    def visit_arg(self, node, ast, context):
+        vyper_typ = get_type_from_annotation(node.annotation, DataLocation.UNSET)
+        cairo_typ = vyper_type_to_cairo_type(vyper_typ)
+        node._metadata["type"] = cairo_typ

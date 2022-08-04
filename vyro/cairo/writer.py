@@ -50,8 +50,8 @@ class CairoWriter:
         return write_fn(node, *args)
 
     def write_arg(self, node):
-        value_str = self.write(node.value)
-        return value_str
+        typ = node._metadata["type"]
+        return f"{node.arg} : {typ}"
 
     def write_arguments(self, node):
         if len(node.args) == 0:
