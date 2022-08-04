@@ -16,6 +16,7 @@ class Uint256HandlerVisitor(BaseVisitor):
             hi = value_node.value >> 128
 
             # Wrap value in a `felt_to_uint256` call
+            lhs_name_node =
             wrapped_convert = vy_ast.Call(
                 node_id=context.reserve_id(),
                 func=vy_ast.Name(

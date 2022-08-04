@@ -1,16 +1,11 @@
 import pytest
 import os
-from pathlib import Path
 
-from ape import Project, networks
+from ape import networks
 
 from tests.expectations import EXPECTATIONS
 from tests.utils import transpile_to_cairo
 
-
-# Loop through expectations
-
-# Fetch the file name
 
 # Perform tests in vyper
 @pytest.mark.parametrize("code", EXPECTATIONS)
@@ -50,7 +45,7 @@ def test_transpile(code):
     expected_cairo_file_path = f"examples/{filename}_transpiled.cairo"
     transpile_to_cairo(file_path, expected_cairo_file_path)
 
-    assert os.path.exists(expected_cairo_file_path) == True
+    assert os.path.exists(expected_cairo_file_path) is True
 
 
 # Perform tests in cairo
@@ -60,8 +55,6 @@ def test_cairo_code(project, starknet_user, code):
     Test Cairo code against expectations.
     """
     filename = f"{code[0]}_transpiled"
-    file_path = Path(f"examples/{filename}.cairo")
-
     contract_object = getattr(project, filename)
 
     # Obtain the `ContractInstance`

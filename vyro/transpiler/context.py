@@ -17,6 +17,7 @@ def _get_largest_node_id(d: dict):
                     for j in _get_largest_node_id(i):
                         yield j
 
+
 class ASTContext:
     def __init__(self):
         self.last_id = 0

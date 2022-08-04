@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from ape import accounts, networks
+from ape import accounts
 
 
 @pytest.fixture(scope="session")
