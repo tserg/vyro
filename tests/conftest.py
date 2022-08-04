@@ -36,4 +36,4 @@ def pytest_sessionfinish(session, exitstatus):
         if i.endswith(".cairo"):
             os.remove(f"examples/{i}")
 
-    print("\n\n=============== Deleted transpiled Cairo files ===============\n\n")
+    print("\n\n=============== Deleted transpiled Cairo files ===============")
