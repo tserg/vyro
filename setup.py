@@ -11,6 +11,7 @@ extras_require = {
         "eth-ape==0.4.0",
         "ape-vyper==0.4.0",
         "ape-starknet==0.4.0a0",
+        "ape-cairo==0.4.0a0",
     ],
     "lint": [
         "black==22.6.0",
