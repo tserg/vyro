@@ -19,12 +19,15 @@ def test_vyper_code(project, eth_owner, eth_user, code):
     # Obtain the `ContractInstance`
     contract = eth_owner.deploy(contract_object)
 
+    print(f"Testing Vyper contract: {filename}.vy")
+
     test_cases = code[1]
     for c in test_cases:
         function_name = c[0]
         call_args = c[1]
         expected = c[2]
 
+        print(f"Testing function: {function_name}")
         fn_call = getattr(contract, function_name)
 
         if expected is None:
@@ -45,6 +48,8 @@ def test_transpile(code):
     expected_cairo_file_path = f"examples/{filename}_transpiled.cairo"
     transpile_to_cairo(file_path, expected_cairo_file_path)
 
+    print(f"Transpiled Vyper contract: {filename}.vy")
+
     assert os.path.exists(expected_cairo_file_path) is True
 
 
@@ -61,16 +66,20 @@ def test_cairo_code(project, starknet_user, code):
     with networks.starknet.local.use_provider("starknet"):
         contract = contract_object.deploy()
 
+        print(f"Testing Cairo contract: {filename}.cairo")
+
         test_cases = code[1]
         for c in test_cases:
             function_name = c[0]
             call_args = c[1]
             expected = c[2]
 
+            print(f"Testing function: {function_name}")
             fn_call = getattr(contract, function_name)
 
             if expected is None:
                 fn_call(*call_args, sender=starknet_user)
 
             else:
+
                 assert fn_call(*call_args) == expected
