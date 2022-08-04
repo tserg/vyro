@@ -1,17 +1,32 @@
 import os
 import pytest
 
-from ape import accounts
+from ape import accounts, networks
 
 
 @pytest.fixture(scope="session")
-def owner(accounts):
-    return accounts[0]
+def eth_owner(accounts):
+    yield accounts[0]
 
 
 @pytest.fixture(scope="session")
-def user(accounts):
-    return accounts[1]
+def eth_user(accounts):
+    yield accounts[1]
+
+
+@pytest.fixture(scope="session")
+def starknet_devnet_accounts():
+    yield accounts.containers["starknet"].test_accounts
+
+
+@pytest.fixture(scope="session")
+def starknet_owner(starknet_devnet_accounts):
+    yield starknet_devnet_accounts[0]
+
+
+@pytest.fixture(scope="session")
+def starknet_user(starknet_devnet_accounts):
+    yield starknet_devnet_accounts[1]
 
 
 def pytest_sessionfinish(session, exitstatus):
