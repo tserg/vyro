@@ -130,8 +130,12 @@ class StorageVarVisitor(BaseVisitor):
                 ],
                 value=value_node,
             )
-            storage_write_node._metadata["type"] = cairo_typ
             storage_write_node._children.add(value_node)
+
+            # Update type
+            storage_write_node._metadata["type"] = cairo_typ
+            storage_write_node.value._metadata["type"] = cairo_typ
+            storage_write_node.target._metadata["type"] = cairo_typ
 
             # Replace assign node with RHS
             ast.replace_in_tree(node, storage_write_node)

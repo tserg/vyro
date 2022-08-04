@@ -2,6 +2,7 @@ from vyper import ast as vy_ast
 from vyper.semantics.types import Uint256Definition
 
 from vyro.cairo.import_directives import add_builtin_to_module
+from vyro.cairo.types import CairoUint256Definition
 from vyro.transpiler.visitor import BaseVisitor
 from vyro.transpiler.utils import generate_name_node, insert_statement_before
 
@@ -16,7 +17,6 @@ class Uint256HandlerVisitor(BaseVisitor):
             hi = value_node.value >> 128
 
             # Wrap value in a `felt_to_uint256` call
-            lhs_name_node =
             wrapped_convert = vy_ast.Call(
                 node_id=context.reserve_id(),
                 func=vy_ast.Name(
@@ -49,6 +49,10 @@ class Uint256HandlerVisitor(BaseVisitor):
 
             node.value = wrapped_convert
             node._children.add(wrapped_convert)
+
+            # Set type
+            node.target._metadata["type"] = CairoUint256Definition()
+            node.value._metadata["type"] = CairoUint256Definition()
 
             # Add import
             add_builtin_to_module(ast, "Uint256")

@@ -84,8 +84,9 @@ class CairoWriter:
 
     def write_Assign(self, node):
         target_str = self.write(node.target)
+        target_typ = node.target._metadata["type"]
         value_str = self.write(node.value)
-        ret = f"let {target_str} = {value_str}"
+        ret = f"let {target_str} : {target_typ} = {value_str}"
         return ret
 
     def write_Attribute(self, node):
@@ -120,8 +121,9 @@ class CairoWriter:
 
     def write_CairoStorageRead(self, node):
         target_str = self.write(node.target)
+        target_typ = node.target._metadata["type"]
         value_str = self.write(node.value)
-        return f"let ({target_str}) = {value_str}.read()"
+        return f"let ({target_str} : {target_typ}) = {value_str}.read()"
 
     def write_CairoStorageWrite(self, node):
         target_str = self.write(node.target)
