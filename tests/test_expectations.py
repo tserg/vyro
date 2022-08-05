@@ -48,6 +48,8 @@ def test_transpile(code):
     expected_cairo_file_path = f"examples/{filename}_transpiled.cairo"
     transpile_to_cairo(file_path, expected_cairo_file_path)
 
+    print(f"Transpiled Vyper contract: {filename}.vy")
+
     assert os.path.exists(expected_cairo_file_path) is True
 
 
