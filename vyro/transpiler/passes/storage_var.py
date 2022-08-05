@@ -6,9 +6,14 @@ from vyper.semantics.types.function import (
 )
 
 from vyro.cairo.nodes import CairoStorageRead, CairoStorageWrite
-from vyro.cairo.types import vyper_type_to_cairo_type
+from vyro.cairo.types import get_cairo_type
 from vyro.transpiler.context import ASTContext
-from vyro.transpiler.utils import convert_node_type_definition, generate_name_node, insert_statement_before, set_parent
+from vyro.transpiler.utils import (
+    convert_node_type_definition,
+    generate_name_node,
+    insert_statement_before,
+    set_parent,
+)
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -21,7 +26,7 @@ class StorageVarVisitor(BaseVisitor):
 
         # Update type
         vy_typ = node._metadata["type"]
-        cairo_typ = vyper_type_to_cairo_type(vy_typ)
+        cairo_typ = get_cairo_type(vy_typ)
         node._metadata["type"] = cairo_typ
 
         if node.is_public is True:
@@ -30,9 +35,7 @@ class StorageVarVisitor(BaseVisitor):
             temp_name_node._metadata["type"] = cairo_typ
 
             value_node = vy_ast.Name(
-                node_id=context.reserve_id(),
-                id=f"{var_name}_STORAGE",
-                ast_type="Name",
+                node_id=context.reserve_id(), id=f"{var_name}_STORAGE", ast_type="Name"
             )
 
             # Create storage read node
@@ -45,23 +48,32 @@ class StorageVarVisitor(BaseVisitor):
             storage_read_node._children.add(value_node)
             storage_read_node._children.add(temp_name_node)
 
-            return_node = vy_ast.Name(
-                node_id=context.reserve_id(),
-                id=temp_name_node.id,
-                ast_type="Name",
+            return_value_node = vy_ast.Name(
+                node_id=context.reserve_id(), id=temp_name_node.id, ast_type="Name"
             )
-            return_node._metadata["type"] = cairo_typ
+            return_value_node._metadata["type"] = cairo_typ
 
             fn_node_args = vy_ast.arguments(
                 node_id=context.reserve_id(), args=[], defaults=[], ast_type="arguments"
             )
 
+            # Create return node
+            return_node = vy_ast.Return(
+                node_id=context.reserve_id(), value=return_value_node, ast_type="Return"
+            )
+            return_node._children.add(return_value_node)
+
+            # Create return type node
+            return_type_node = vy_ast.Name(
+                node_id=context.reserve_id(), id=f"{cairo_typ}", ast_type="Name"
+            )
+
             fn_node = vy_ast.FunctionDef(
                 node_id=context.reserve_id(),
                 name=var_name,
-                body=[storage_read_node],
+                body=[storage_read_node, return_node],
                 args=fn_node_args,
-                returns=return_node,
+                returns=return_type_node,
                 decorator_list=None,
                 doc_string=None,
                 ast_type="FunctionDef",
@@ -101,7 +113,7 @@ class StorageVarVisitor(BaseVisitor):
                 node_id=context.reserve_id(),
                 targets=[rhs_name_node],
                 value=node.value,
-                ast_type="Assign"
+                ast_type="Assign",
             )
             rhs_assignment_node._children.add(rhs_name_node)
             rhs_assignment_node._children.add(node.value)
@@ -115,9 +127,7 @@ class StorageVarVisitor(BaseVisitor):
             contract_var_attribute = contract_var.pop().get_ancestor()
 
             value_node = vy_ast.Name(
-                node_id=context.reserve_id(),
-                id=rhs_name_node.id,
-                ast_type="Name",
+                node_id=context.reserve_id(), id=rhs_name_node.id, ast_type="Name"
             )
 
             storage_write_node = CairoStorageWrite(
@@ -128,7 +138,7 @@ class StorageVarVisitor(BaseVisitor):
                         node_id=context.reserve_id(),
                         id=f"{contract_var_attribute.attr}_STORAGE",
                         ast_type="Name",
-                    ),
+                    )
                 ],
                 value=value_node,
             )
@@ -142,6 +152,4 @@ class StorageVarVisitor(BaseVisitor):
             # Replace assign node with RHS
             ast.replace_in_tree(node, storage_write_node)
             # Add RHS node before storage write node
-            insert_statement_before(
-                rhs_assignment_node, storage_write_node, fn_node
-            )
+            insert_statement_before(rhs_assignment_node, storage_write_node, fn_node)

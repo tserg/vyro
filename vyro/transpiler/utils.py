@@ -3,7 +3,7 @@ from typing import List
 from vyper import ast as vy_ast
 from vyper.semantics.types.bases import BaseTypeDefinition
 
-from vyro.cairo.types import CairoTypeDefinition, vyper_type_to_cairo_type
+from vyro.cairo.types import CairoTypeDefinition, get_cairo_type
 
 
 def generate_name_node(node_id: int) -> vy_ast.Name:
@@ -52,6 +52,6 @@ def convert_node_type_definition(node: vy_ast.VyperNode) -> CairoTypeDefinition:
     """
     assert "type" in node._metadata
     vy_typ = node._metadata["type"]
-    cairo_typ = vyper_type_to_cairo_type(vy_typ)
+    cairo_typ = get_cairo_type(vy_typ)
     node._metadata["type"] = cairo_typ
     return cairo_typ

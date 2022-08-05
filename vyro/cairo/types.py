@@ -19,24 +19,27 @@ class CairoUint256Definition(CairoTypeDefinition):
     _max_value = 2**256 - 1
 
 
-def vyper_type_to_cairo_type(vy_typ: BaseTypeDefinition) -> CairoTypeDefinition:
-    if isinstance(vy_typ, IntegerAbstractType):
+def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
+    if isinstance(typ, CairoTypeDefinition):
+        return typ
 
-        if vy_typ._bits > 251:
+    if isinstance(typ, IntegerAbstractType):
+
+        if typ._bits > 251:
             return CairoUint256Definition(
-                is_constant=vy_typ.is_constant,
-                is_public=vy_typ.is_public,
-                is_immutable=vy_typ.is_immutable,
+                is_constant=typ.is_constant,
+                is_public=typ.is_public,
+                is_immutable=typ.is_immutable,
             )
 
         else:
             return FeltDefinition(
-                is_constant=vy_typ.is_constant,
-                is_public=vy_typ.is_public,
-                is_immutable=vy_typ.is_immutable,
+                is_constant=typ.is_constant,
+                is_public=typ.is_public,
+                is_immutable=typ.is_immutable,
             )
 
-    elif isinstance(vy_typ, FixedAbstractType):
-        raise UnsupportedType(f"{vy_typ} is not supported.")
+    elif isinstance(typ, FixedAbstractType):
+        raise UnsupportedType(f"{typ} is not supported.")
 
     return FeltDefinition(False, False, False)

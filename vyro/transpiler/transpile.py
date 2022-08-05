@@ -6,6 +6,7 @@ from vyro.transpiler.context import ASTContext
 from vyro.transpiler.passes import (
     CairoImporterVisitor,
     InitialisationVisitor,
+    ReturnValueHandler,
     StorageVarVisitor,
     TestVisitor,
     Uint256HandlerVisitor,
@@ -16,6 +17,7 @@ PASSES = {
     "U": TestVisitor,
     "I": InitialisationVisitor,
     "Fc": UnsupportedVisitor,
+    "Rv": ReturnValueHandler,
     "Sv": StorageVarVisitor,
     "Ui": Uint256HandlerVisitor,
     "CI": CairoImporterVisitor,

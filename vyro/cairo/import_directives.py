@@ -13,6 +13,10 @@ IMPORT_DIRECTIVES = {
     "FALSE": "starkware.cairo.common.bool",
     # Uint256
     "Uint256": "starkware.cairo.common.uint256",
+    "add256": "vyrolib.openzeppelin.add",
+    "mul256": "vyrolib.openzeppelin.mul",
+    "sub256": "vyrolib.openzeppelin.sub",
+    "div256": "vyrolib.openzeppelin.div",
     # Vyro lib
     "felt_to_uint256": "vyrolib.utils",
 }

@@ -99,9 +99,10 @@ class CairoWriter:
         self.write(node.value)
 
     def write_BinOp(self, node):
-        self.write(node.left)
-        self.write(node.op)
-        self.write(node.right)
+        left_str = self.write(node.left)
+        op_str = str(node.op._pretty)
+        right_str = self.write(node.right)
+        return f"{left_str} {op_str} {right_str}"
 
     def write_BitAnd(self, node):
         pass
@@ -193,11 +194,11 @@ class CairoWriter:
     def write_FunctionDef(self, node):
         ret = []
 
-        typ = node._metadata["type"]
+        fn_typ = node._metadata["type"]
 
         # Add view or external decorator
-        if typ.visibility == FunctionVisibility.EXTERNAL:
-            if typ.mutability == StateMutability.VIEW:
+        if fn_typ.visibility == FunctionVisibility.EXTERNAL:
+            if fn_typ.mutability == StateMutability.VIEW:
                 ret.append("@view")
             else:
                 ret.append("@external")
@@ -208,7 +209,7 @@ class CairoWriter:
         if node.returns:
             # TODO Set return types
             # return_values = self.write(node.returns)
-            return_typ = node.returns._metadata["type"]
+            return_typ = fn_typ.return_type
             return_decl_str = f" -> ({node.name}_ret : {return_typ})"
 
         fn_def_str = f"func {node.name}{BUILTINS_STUB}({args_str}){return_decl_str}:"
@@ -221,12 +222,10 @@ class CairoWriter:
                 raise TranspilerPanic("Unable to write statement in function body")
             ret.append(INDENT + stmt_str)
 
-        return_val_str = ""
-        if node.returns:
-            return_val_str = self.write(node.returns)
-
-        return_stmt_str = f"return ({return_val_str})"
-        ret.append(INDENT + return_stmt_str)
+        # Inject return if no return value
+        if not node.returns:
+            return_stmt_str = "return ()"
+            ret.append(INDENT + return_stmt_str)
 
         # Add closing block
         ret.append("end")
@@ -327,7 +326,8 @@ class CairoWriter:
         pass
 
     def write_Return(self, node):
-        self.write(node.value)
+        value_str = self.write(node.value)
+        return f"return ({value_str})"
 
     def write_StructDef(self, node):
         self.write(node.name)

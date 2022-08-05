@@ -3,7 +3,6 @@ from typing import Optional
 from vyper import ast as vy_ast
 
 
-
 class CairoStorageWrite(vy_ast.Assign):
     """Wrapper class for Cairo write to storage"""
 
