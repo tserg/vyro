@@ -29,6 +29,12 @@ def starknet_user(starknet_devnet_accounts):
     yield starknet_devnet_accounts[1]
 
 
+@pytest.fixture(scope="session")
+def starknet_devnet(networks):
+    with networks.starknet.local.use_provider("starknet"):
+        yield
+
+
 def pytest_sessionfinish(session, exitstatus):
     # Remove all transpiled .cairo files in examples directory
     examples_dir = os.listdir("examples")
