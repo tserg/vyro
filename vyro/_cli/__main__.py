@@ -1,5 +1,6 @@
 import importlib
 import sys
+import traceback
 from pathlib import Path
 
 from vyro._config import __version__
@@ -26,7 +27,7 @@ def main():
 
     if len(sys.argv) < 2 or sys.argv[1].startswith("-"):
         # this call triggers a SystemExit
-        docopt(__doc__, ["brownie", "-h"])
+        docopt(__doc__, ["vyro", "-h"])
 
     if "-i" in sys.argv:
         # a small kindness to ipython users
@@ -42,12 +43,11 @@ def main():
             sys.exit(f"Invalid command. Did you mean 'vyro {distances[0][0]}'?")
         sys.exit("Invalid command. Try 'vyro --help' for available commands.")
 
-    sys.tracebacklimit = 0
+    sys.tracebacklimit = 1000
 
     try:
         importlib.import_module(f"vyro._cli.{cmd}").main()
     except Exception as e:
-        if "-r" in sys.argv:
-            raise e
-        else:
-            sys.exit(e)
+        tb_item = sys.exc_info()[2]
+        traceback.print_tb(tb_item)
+        print(sys.exc_info()[1])
