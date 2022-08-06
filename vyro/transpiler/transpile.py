@@ -4,6 +4,7 @@ from vyper import ast as vy_ast
 
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.passes import (
+    BinOpConverterVisitor,
     CairoImporterVisitor,
     InitialisationVisitor,
     ReturnValueHandler,
@@ -18,6 +19,7 @@ PASSES = {
     "I": InitialisationVisitor,
     "Fc": UnsupportedVisitor,
     "Rv": ReturnValueHandler,
+    "Bc": BinOpConverterVisitor,
     "Sv": StorageVarVisitor,
     "Ui": Uint256HandlerVisitor,
     "CI": CairoImporterVisitor,

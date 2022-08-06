@@ -19,3 +19,8 @@ def mul_uint256(a: uint256, b: uint256) -> uint256:
 @view
 def div_uint256(a: uint256, b: uint256) -> uint256:
     return a / b
+
+@external
+@view
+def mod_uint256(a: uint256, b: uint256) -> uint256:
+    return a % b

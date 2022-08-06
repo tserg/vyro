@@ -50,4 +50,4 @@ def main():
     except Exception as e:
         tb_item = sys.exc_info()[2]
         traceback.print_tb(tb_item)
-        print(sys.exc_info()[1])
+        print(e)

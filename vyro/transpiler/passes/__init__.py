@@ -1,3 +1,4 @@
+from vyro.transpiler.passes.binop_converter import BinOpConverterVisitor
 from vyro.transpiler.passes.cairo_importer import CairoImporterVisitor
 from vyro.transpiler.passes.initialisation import InitialisationVisitor
 from vyro.transpiler.passes.return_value_handler import ReturnValueHandler
