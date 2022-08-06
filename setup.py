@@ -39,7 +39,7 @@ setup(
         include=["vyro*"],
     ),
     install_requires=[
-        "vyper @ git+https://github.com/vyperlang/vyper@8b8cff233d766f2fda55d82cbf9a8d3160ab4e7a",
+        "vyper==0.3.5",
         "cairo-lang==0.9.1",
     ],
     extras_require=extras_require,
