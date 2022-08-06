@@ -1,8 +1,11 @@
 from vyper import ast as vy_ast
 
-from vyro.cairo.types import get_cairo_type
+from vyro.transpiler.utils import (
+    generate_name_node,
+    get_cairo_type,
+    insert_statement_before,
+)
 from vyro.transpiler.visitor import BaseVisitor
-from vyro.transpiler.utils import generate_name_node, insert_statement_before
 
 
 class ReturnValueHandler(BaseVisitor):

@@ -6,11 +6,11 @@ from vyper.semantics.types.function import (
 )
 
 from vyro.cairo.nodes import CairoStorageRead, CairoStorageWrite
-from vyro.cairo.types import get_cairo_type
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     convert_node_type_definition,
     generate_name_node,
+    get_cairo_type,
     insert_statement_before,
     set_parent,
 )

@@ -1,8 +1,9 @@
 from vyper import ast as vy_ast
 
 from vyro.cairo.import_directives import add_builtin_to_module
-from vyro.cairo.types import CairoUint256Definition, get_cairo_type
+from vyro.cairo.types import CairoUint256Definition
 from vyro.exceptions import UnsupportedOperation
+from vyro.transpiler.utils import get_cairo_type
 from vyro.transpiler.visitor import BaseVisitor
 
 

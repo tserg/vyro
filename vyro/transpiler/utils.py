@@ -1,9 +1,11 @@
 from typing import List
 
 from vyper import ast as vy_ast
+from vyper.semantics.types.abstract import FixedAbstractType, IntegerAbstractType
 from vyper.semantics.types.bases import BaseTypeDefinition
 
-from vyro.cairo.types import CairoTypeDefinition, get_cairo_type
+from vyro.cairo.types import CairoTypeDefinition, CairoUint256Definition, FeltDefinition
+from vyro.exceptions import UnsupportedType
 
 
 def generate_name_node(node_id: int) -> vy_ast.Name:
@@ -55,3 +57,33 @@ def convert_node_type_definition(node: vy_ast.VyperNode) -> CairoTypeDefinition:
     cairo_typ = get_cairo_type(vy_typ)
     node._metadata["type"] = cairo_typ
     return cairo_typ
+
+
+def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
+    """
+    Convert a type definition to its Cairo type.
+    If the type definition is already a `CairoTypeDefinition`, return.
+    """
+    if isinstance(typ, CairoTypeDefinition):
+        return typ
+
+    if isinstance(typ, IntegerAbstractType):
+
+        if typ._bits > 251:
+            return CairoUint256Definition(
+                is_constant=typ.is_constant,
+                is_public=typ.is_public,
+                is_immutable=typ.is_immutable,
+            )
+
+        else:
+            return FeltDefinition(
+                is_constant=typ.is_constant,
+                is_public=typ.is_public,
+                is_immutable=typ.is_immutable,
+            )
+
+    elif isinstance(typ, FixedAbstractType):
+        raise UnsupportedType(f"{typ} is not supported.")
+
+    return FeltDefinition(False, False, False)

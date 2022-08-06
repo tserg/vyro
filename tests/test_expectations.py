@@ -1,7 +1,9 @@
-import pytest
 import os
 
-from tests.expectations import EXPECTATIONS, UNSUPPORTED
+import pytest
+
+from tests.expectations import EXPECTATIONS
+from tests.unsupported import UNSUPPORTED
 from tests.utils import transpile_to_cairo
 
 

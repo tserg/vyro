@@ -9,13 +9,11 @@ from vyro.transpiler.passes import (
     InitialisationVisitor,
     ReturnValueHandler,
     StorageVarVisitor,
-    TestVisitor,
     Uint256HandlerVisitor,
     UnsupportedVisitor,
 )
 
 PASSES = {
-    "U": TestVisitor,
     "I": InitialisationVisitor,
     "Fc": UnsupportedVisitor,
     "Rv": ReturnValueHandler,

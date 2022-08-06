@@ -4,7 +4,8 @@ from vyper.semantics.types.bases import DataLocation
 from vyper.semantics.types.utils import get_type_from_annotation
 
 from vyro.cairo.import_directives import add_builtin_to_module
-from vyro.cairo.types import CairoUint256Definition, get_cairo_type
+from vyro.cairo.types import CairoUint256Definition
+from vyro.transpiler.utils import get_cairo_type
 from vyro.transpiler.visitor import BaseVisitor
 
 
