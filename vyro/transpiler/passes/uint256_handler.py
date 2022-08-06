@@ -99,8 +99,6 @@ class Uint256HandlerVisitor(BaseVisitor):
             uint256_op = "sub256"
         elif isinstance(op, vy_ast.Mult):
             uint256_op = "mul256"
-        elif isinstance(op, vy_ast.Div):
-            uint256_op = "div256"
         else:
             return
 

@@ -20,6 +20,12 @@ class BinOpConverterVisitor(BaseVisitor):
                 if isinstance(cairo_typ, CairoUint256Definition)
                 else "vyro_mod"
             )
+        elif isinstance(op, vy_ast.Div):
+            vyro_op = (
+                "div256"
+                if isinstance(cairo_typ, CairoUint256Definition)
+                else "vyro_div"
+            )
         elif isinstance(op, vy_ast.Pow):
             if isinstance(cairo_typ, CairoUint256Definition):
                 raise UnsupportedOperation(
