@@ -43,3 +43,12 @@ def pytest_sessionfinish(session, exitstatus):
             os.remove(f"examples/{i}")
 
     print("\n\n=============== Deleted transpiled Cairo files ===============")
+
+
+@pytest.fixture
+def assert_transpile_failed():
+    def assert_transpile_failed(function_to_test, exception=Exception):
+        with pytest.raises(exception):
+            function_to_test()
+
+    return assert_transpile_failed

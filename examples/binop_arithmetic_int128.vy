@@ -24,3 +24,8 @@ def div_int128(a: int128, b: int128) -> int128:
 @view
 def mod_int128(a: int128, b: int128) -> int128:
     return a % b
+
+@external
+@view
+def pow_int128(a: int128) -> int128:
+    return a ** 7

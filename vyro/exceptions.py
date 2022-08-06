@@ -29,5 +29,9 @@ class UnsupportedType(VyroException):
     """Unsupported Vyper type"""
 
 
+class UnsupportedOperation(VyroException):
+    """Unsupported Vyper function"""
+
+
 class TranspilerPanic(VyroException):
     """Generic unexpected error during compilation"""

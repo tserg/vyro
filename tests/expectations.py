@@ -1,3 +1,6 @@
+from vyro.exceptions import UnsupportedOperation
+
+
 EXPECTATIONS = [
     # .vy filename, [
     #    (method_name, [vyper call_args], vyper expected)
@@ -21,6 +24,7 @@ EXPECTATIONS = [
             ("mul_int128", [2, 2], 4),
             ("div_int128", [4, 2], 2),
             ("mod_int128", [7, 3], 1),
+            ("pow_int128", [3], 2187),
         ],
     ),
     (
@@ -33,4 +37,10 @@ EXPECTATIONS = [
             ("mod_uint256", [7, 3], 1),
         ],
     ),
+]
+
+
+UNSUPPORTED = [
+    # .vy filename, expected exception
+    ("pow_uint256", UnsupportedOperation)
 ]

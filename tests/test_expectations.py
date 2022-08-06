@@ -1,7 +1,7 @@
 import pytest
 import os
 
-from tests.expectations import EXPECTATIONS
+from tests.expectations import EXPECTATIONS, UNSUPPORTED
 from tests.utils import transpile_to_cairo
 
 
@@ -82,3 +82,20 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
 
         else:
             assert fn_call(*call_args) == expected
+
+
+@pytest.mark.parametrize("code", UNSUPPORTED)
+def test_transpile_fail(code, assert_transpile_failed):
+    """
+    Test failed transpilations of Vyper contracts.
+    """
+    filename = code[0]
+    file_path = f"unsupported/{filename}.vy"
+    print(f"Transpiling unsupported Vyper contract: {filename}.vy")
+
+    expected = code[1]
+
+    expected_cairo_file_path = f"examples/{filename}_transpiled.cairo"
+    assert_transpile_failed(
+        lambda: transpile_to_cairo(file_path, expected_cairo_file_path), expected
+    )
