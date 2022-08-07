@@ -3,8 +3,8 @@ from typing import List
 from vyper import ast as vy_ast
 from vyper.semantics.types.function import FunctionVisibility, StateMutability
 
-from vyro.cairo.stubs import BUILTINS_STUB, generate_storage_var_stub
-from vyro.cairo.utils import INDENT
+from vyro.cairo.implicits import IMPLICITS
+from vyro.cairo.utils import INDENT, generate_storage_var_stub
 from vyro.exceptions import TranspilerPanic, UnsupportedNode
 
 
@@ -50,7 +50,7 @@ class CairoWriter:
         return write_fn(node, *args)
 
     def write_arg(self, node):
-        typ = node._metadata["type"]
+        typ = node._metadata.get("type")
         return f"{node.arg} : {typ}"
 
     def write_arguments(self, node):
@@ -84,7 +84,7 @@ class CairoWriter:
 
     def write_Assign(self, node):
         target_str = self.write(node.target)
-        target_typ = node.target._metadata["type"]
+        target_typ = node.target._metadata.get("type")
         value_str = self.write(node.value)
         ret = f"let {target_str} : {target_typ} = {value_str}"
         return ret
@@ -122,7 +122,7 @@ class CairoWriter:
 
     def write_CairoStorageRead(self, node):
         target_str = self.write(node.target)
-        target_typ = node.target._metadata["type"]
+        target_typ = node.target._metadata.get("type")
         value_str = self.write(node.value)
         return f"let ({target_str} : {target_typ}) = {value_str}.read()"
 
@@ -194,7 +194,7 @@ class CairoWriter:
     def write_FunctionDef(self, node):
         ret = []
 
-        fn_typ = node._metadata["type"]
+        fn_typ = node._metadata.get("type")
 
         # Add view or external decorator
         if fn_typ.visibility == FunctionVisibility.EXTERNAL:
@@ -205,6 +205,17 @@ class CairoWriter:
 
         args_str = self.write(node.args) or ""
 
+        implicits_stub = []
+        implicits = node._metadata.get("implicits")
+        for i in implicits:
+            i_type_str = IMPLICITS[i]
+            if i_type_str is None:
+                i_str = i
+            else:
+                i_str = f"{i}: {i_type_str}"
+            implicits_stub.append(i_str)
+        implicits_str = ", ".join(implicits_stub)
+
         return_decl_str = ""
         if node.returns:
             # TODO Set return types
@@ -212,7 +223,9 @@ class CairoWriter:
             return_typ = fn_typ.return_type
             return_decl_str = f" -> ({node.name}_ret : {return_typ})"
 
-        fn_def_str = f"func {node.name}{BUILTINS_STUB}({args_str}){return_decl_str}:"
+        fn_def_str = (
+            f"func {node.name}{{{implicits_str}}}({args_str}){return_decl_str}:"
+        )
 
         ret.append(fn_def_str)
         # Add body
@@ -287,7 +300,7 @@ class CairoWriter:
 
     def write_Module(self, node):
         # Add import directives
-        imports = node._metadata["import_directives"]
+        imports = node._metadata.get("import_directives")
         for k, v in imports.items():
             imported = ", ".join(v)
             self.imports.append(f"from {k} import {imported}\n")
@@ -353,7 +366,7 @@ class CairoWriter:
 
     def write_VariableDecl(self, node):
 
-        typ = node._metadata["type"]
+        typ = node._metadata.get("type")
         if not typ.is_constant and not typ.is_immutable:
             name = node.target.id
             storage_var_stub = generate_storage_var_stub(name, typ)

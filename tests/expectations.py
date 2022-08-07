@@ -34,4 +34,16 @@ EXPECTATIONS = [
             ("mod_uint256", [7, 3], 1),
         ],
     ),
+    (
+        "binop_bitwise_int128",
+        [
+            ("and_int128", [200, 231], 192),
+        ],
+    ),
+    (
+        "binop_bitwise_uint256",
+        [
+            ("and_uint256", [200, 231], 192),
+        ],
+    ),
 ]

@@ -5,12 +5,15 @@ from vyro.exceptions import TranspilerPanic
 IMPORT_DIRECTIVES = {
     # Builtins
     "HashBuiltin": "starkware.cairo.common.cairo_builtins",
+    "BitwiseBuiltin": "starkware.cairo.common.cairo_builtins",
     # Syscalls
     "get_caller_address": "starkware.starknet.common.syscalls",
     "get_block_timestamp": "starkware.starknet.common.syscalls",
     # Constants
     "TRUE": "starkware.cairo.common.bool",
     "FALSE": "starkware.cairo.common.bool",
+    # Bitwise
+    "bitwise_and": "starkware.cairo.common.bitwise",
     # Math
     "vyro_div": "vyrolib.div",
     "vyro_mod": "vyrolib.mod",
@@ -22,6 +25,7 @@ IMPORT_DIRECTIVES = {
     "sub256": "vyrolib.openzeppelin.sub",
     "div256": "vyrolib.openzeppelin.div",
     "vyro_mod256": "vyrolib.mod",
+    "uint256_and": "starkware.cairo.common.uint256",
     # Vyro lib
     "felt_to_uint256": "vyrolib.utils",
 }

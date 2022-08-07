@@ -22,7 +22,7 @@ def set_parent(child: vy_ast.VyperNode, parent: vy_ast.VyperNode):
 
 
 def insert_statement_before(
-    node: vy_ast.VyperNode, before: vy_ast.VyperNode, body_node: List[vy_ast.VyperNode]
+    node: vy_ast.VyperNode, before: vy_ast.VyperNode, body_node: vy_ast.VyperNode
 ):
     """
     Helper function to insert a new node before a given node in a list.
@@ -87,3 +87,20 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
         raise UnsupportedType(f"{typ} is not supported.")
 
     return FeltDefinition(False, False, False)
+
+
+def add_implicit_to_function(node: vy_ast.VyperNode, implicit: str):
+    """
+    Add an implicit argument to parent function node.
+    """
+    fn_node = node.get_ancestor(vy_ast.FunctionDef)
+    fn_node._metadata["implicits"].add(implicit)
+
+
+def initialise_function_implicits(node: vy_ast.FunctionDef):
+    """
+    Initialise the implicits attribute in metadata for a FunctionDef node.
+    """
+    node._metadata["implicits"] = set(
+        {"syscall_ptr", "pedersen_ptr", "range_check_ptr"}
+    )

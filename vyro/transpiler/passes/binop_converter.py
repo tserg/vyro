@@ -3,7 +3,7 @@ from vyper import ast as vy_ast
 from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition
 from vyro.exceptions import UnsupportedOperation
-from vyro.transpiler.utils import get_cairo_type
+from vyro.transpiler.utils import add_implicit_to_function, get_cairo_type
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -32,6 +32,14 @@ class BinOpConverterVisitor(BaseVisitor):
                     "`pow` operations for Uint256 are not supported.", node
                 )
             vyro_op = "pow"
+        elif isinstance(op, vy_ast.BitAnd):
+            vyro_op = (
+                "uint256_and"
+                if isinstance(cairo_typ, CairoUint256Definition)
+                else "bitwise_and"
+            )
+            add_implicit_to_function(node, "bitwise_ptr")
+            add_builtin_to_module(ast, "BitwiseBuiltin")
         else:
             return
 

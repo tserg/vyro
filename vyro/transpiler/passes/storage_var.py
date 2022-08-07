@@ -11,6 +11,7 @@ from vyro.transpiler.utils import (
     convert_node_type_definition,
     generate_name_node,
     get_cairo_type,
+    initialise_function_implicits,
     insert_statement_before,
     set_parent,
 )
@@ -78,6 +79,7 @@ class StorageVarVisitor(BaseVisitor):
                 doc_string=None,
                 ast_type="FunctionDef",
             )
+            initialise_function_implicits(fn_node)
 
             fn_node._children.add(storage_read_node)
             fn_node._children.add(fn_node_args)
