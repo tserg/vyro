@@ -38,12 +38,14 @@ EXPECTATIONS = [
         "binop_bitwise_int128",
         [
             ("and_int128", [200, 231], 192),
+            ("or_int128", [150, 200], 222),
         ],
     ),
     (
         "binop_bitwise_uint256",
         [
             ("and_uint256", [200, 231], 192),
+            ("or_uint256", [150, 200], 222),
         ],
     ),
 ]

@@ -4,3 +4,8 @@
 @view
 def and_uint256(a: uint256, b: uint256) -> uint256:
     return a & b
+
+@external
+@view
+def or_uint256(a: uint256, b: uint256) -> uint256:
+    return a | b

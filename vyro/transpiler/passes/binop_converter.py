@@ -40,6 +40,14 @@ class BinOpConverterVisitor(BaseVisitor):
             )
             add_implicit_to_function(node, "bitwise_ptr")
             add_builtin_to_module(ast, "BitwiseBuiltin")
+        elif isinstance(op, vy_ast.BitOr):
+            vyro_op = (
+                "uint256_or"
+                if isinstance(cairo_typ, CairoUint256Definition)
+                else "bitwise_or"
+            )
+            add_implicit_to_function(node, "bitwise_ptr")
+            add_builtin_to_module(ast, "BitwiseBuiltin")
         else:
             return
 
