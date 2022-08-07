@@ -43,7 +43,7 @@ class StorageVarVisitor(BaseVisitor):
             storage_read_node = CairoStorageRead(
                 node_id=context.reserve_id(),
                 parent=ast,
-                targets=[temp_name_node],
+                targets=[temp_name_node],  # type: ignore
                 value=value_node,
             )
             storage_read_node._children.add(value_node)
@@ -135,7 +135,7 @@ class StorageVarVisitor(BaseVisitor):
             storage_write_node = CairoStorageWrite(
                 node_id=context.reserve_id(),
                 parent=fn_node,
-                targets=[
+                targets=[  # type: ignore
                     vy_ast.Name(
                         node_id=context.reserve_id(),
                         id=f"{contract_var_attribute.attr}_STORAGE",

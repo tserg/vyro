@@ -1,5 +1,3 @@
-from typing import Dict, Set
-
 from vyper import ast as vy_ast
 
 from vyro.transpiler.context import ASTContext
@@ -18,7 +16,7 @@ class InitialisationVisitor(BaseVisitor):
         self, node: vy_ast.Module, ast: vy_ast.Module, context: ASTContext
     ):
         # Initialise import directives
-        node._metadata["import_directives"]: Dict[str, Set[str]] = {}
+        node._metadata["import_directives"] = {}
 
         for i in node.body:
             self.visit(i, ast, context)
