@@ -6,6 +6,7 @@ from vyper.semantics.types.bases import BaseTypeDefinition
 
 from vyro.cairo.types import CairoTypeDefinition, CairoUint256Definition, FeltDefinition
 from vyro.exceptions import UnsupportedType
+from vyro.transpiler.context import ASTContext
 
 
 def generate_name_node(node_id: int) -> vy_ast.Name:
@@ -104,3 +105,21 @@ def initialise_function_implicits(node: vy_ast.FunctionDef):
     node._metadata["implicits"] = set(
         {"syscall_ptr", "pedersen_ptr", "range_check_ptr"}
     )
+
+
+def wrap_operation_in_call(
+    ast: vy_ast.Module,
+    context: ASTContext,
+    call_id: str,
+    args: List[vy_ast.VyperNode] = [],
+    keywords: List[vy_ast.keyword] = [],
+) -> vy_ast.Call:
+    wrapped_op = vy_ast.Call(
+        node_id=context.reserve_id(),
+        func=vy_ast.Name(node_id=context.reserve_id(), id=call_id, ast_type="Name"),
+        args=vy_ast.arguments(
+            node_id=context.reserve_id(), args=args, ast_type="arguments"
+        ),
+        keywords=keywords,
+    )
+    return wrapped_op

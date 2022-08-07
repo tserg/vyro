@@ -5,8 +5,15 @@ from vyper.semantics.types.utils import get_type_from_annotation
 
 from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition
-from vyro.transpiler.utils import get_cairo_type
+from vyro.transpiler.utils import get_cairo_type, wrap_operation_in_call
 from vyro.transpiler.visitor import BaseVisitor
+
+
+UINT256_BINOP_TABLE = {
+    "addition": "add256",
+    "subtraction": "sub256",
+    "multiplication": "mul256",
+}
 
 
 class Uint256HandlerVisitor(BaseVisitor):
@@ -19,32 +26,26 @@ class Uint256HandlerVisitor(BaseVisitor):
             hi = value_node.value >> 128
 
             # Cast literals as Uint256
-            wrapped_convert = vy_ast.Call(
-                node_id=context.reserve_id(),
-                func=vy_ast.Name(
-                    node_id=context.reserve_id(), id="Uint256", ast_type="Name"
-                ),
-                args=vy_ast.arguments(
-                    node_id=context.reserve_id(), args=[], ast_type="arguments"
-                ),
-                keywords=[
-                    vy_ast.keyword(
-                        node_id=context.reserve_id(),
-                        arg="low",
-                        value=vy_ast.Int(
-                            node_id=context.reserve_id(), value=lo, ast_type="Int"
-                        ),
-                        ast_type="keyword",
+            keywords = [
+                vy_ast.keyword(
+                    node_id=context.reserve_id(),
+                    arg="low",
+                    value=vy_ast.Int(
+                        node_id=context.reserve_id(), value=lo, ast_type="Int"
                     ),
-                    vy_ast.keyword(
-                        node_id=context.reserve_id(),
-                        arg="high",
-                        value=vy_ast.Int(
-                            node_id=context.reserve_id(), value=hi, ast_type="Int"
-                        ),
-                        ast_typ="keyword",
+                    ast_type="keyword",
+                ),
+                vy_ast.keyword(
+                    node_id=context.reserve_id(),
+                    arg="high",
+                    value=vy_ast.Int(
+                        node_id=context.reserve_id(), value=hi, ast_type="Int"
                     ),
-                ],
+                    ast_typ="keyword",
+                ),
+            ]
+            wrapped_convert = wrap_operation_in_call(
+                ast, context, "Uint256", keywords=keywords
             )
 
             node.value = wrapped_convert
@@ -84,37 +85,25 @@ class Uint256HandlerVisitor(BaseVisitor):
         self.visit(node.value, ast, context)
 
     def visit_BinOp(self, node, ast, context):
+        op_description = node.op._description
+        if op_description not in UINT256_BINOP_TABLE:
+            return
+
         typ = node._metadata.get("type")
+        cairo_typ = get_cairo_type(typ)
 
         # Early termination if `BinOp` is not of Uint256 type
-        if not isinstance(typ, Uint256Definition):
+        if not isinstance(cairo_typ, CairoUint256Definition):
             return
-
-        op = node.op
 
         # Determine the operation
-        if isinstance(op, vy_ast.Add):
-            uint256_op = "add256"
-        elif isinstance(op, vy_ast.Sub):
-            uint256_op = "sub256"
-        elif isinstance(op, vy_ast.Mult):
-            uint256_op = "mul256"
-        else:
-            return
+        uint256_op = UINT256_BINOP_TABLE[op_description]
 
         # Wrap left and right in a function call
-        wrapped_uint256_op = vy_ast.Call(
-            node_id=context.reserve_id(),
-            func=vy_ast.Name(
-                node_id=context.reserve_id(), id=uint256_op, ast_type="Name"
-            ),
-            args=vy_ast.arguments(
-                node_id=context.reserve_id(),
-                args=[node.left, node.right],
-                ast_type="arguments",
-            ),
-            keywords=[],
+        wrapped_uint256_op = wrap_operation_in_call(
+            ast, context, uint256_op, args=[node.left, node.right]
         )
+        wrapped_uint256_op._metadata["type"] = cairo_typ
 
         # Replace `BinOp` node with wrapped call
         ast.replace_in_tree(node, wrapped_uint256_op)
