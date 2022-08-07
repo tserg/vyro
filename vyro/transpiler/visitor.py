@@ -68,7 +68,8 @@ class BaseVisitor:
 
     def visit_BoolOp(self, node, ast, context):
         self.visit(node.op, ast, context)
-        self.visit(node.values, ast, context)
+        for i in node.values:
+            self.visit(i, ast, context)
 
     def visit_Break(self, node, ast, context):
         pass

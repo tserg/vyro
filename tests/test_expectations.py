@@ -73,8 +73,8 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
     test_cases = code[1]
     for c in test_cases:
         function_name = c[0]
-        call_args = c[1]
-        expected = c[2]
+        call_args = c[3]
+        expected = c[4]
 
         print(f"Testing function: {function_name}")
         fn_call = getattr(contract, function_name)

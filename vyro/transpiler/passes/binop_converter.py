@@ -76,3 +76,37 @@ class BinOpConverterVisitor(BaseVisitor):
 
         # Add import
         add_builtin_to_module(ast, vyro_op)
+
+    def visit_BoolOp(self, node, ast, context):
+        typ = node._metadata.get("type")
+        cairo_typ = get_cairo_type(typ)
+
+        op = node.op
+
+        if isinstance(op, vy_ast.And):
+            vyro_op ="bitwise_and"
+            add_implicit_to_function(node, "bitwise_ptr")
+            add_builtin_to_module(ast, "BitwiseBuiltin")
+        elif isinstance(op, vy_ast.Or):
+            vyro_op = "bitwise_or"
+            add_implicit_to_function(node, "bitwise_ptr")
+            add_builtin_to_module(ast, "BitwiseBuiltin")
+
+        # Wrap left and right in a function call
+        values = node.values
+        wrapped_op = vy_ast.Call(
+            node_id=context.reserve_id(),
+            func=vy_ast.Name(node_id=context.reserve_id(), id=vyro_op, ast_type="Name"),
+            args=vy_ast.arguments(
+                node_id=context.reserve_id(),
+                args=[values[0], values[1]],
+                ast_type="arguments",
+            ),
+            keywords=[],
+        )
+
+        # Replace `BoolOp` node with wrapped call
+        ast.replace_in_tree(node, wrapped_op)
+
+        # Add import
+        add_builtin_to_module(ast, vyro_op)
