@@ -18,7 +18,7 @@ We recommend working within a virtual environment whenever using Python for proj
 
 Once you have your virtual environment set up and running, install Vyro with the following command:
 ```
-python setup.py install
+pip install .[dev]
 ```
 
 ## Usage

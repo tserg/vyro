@@ -33,13 +33,13 @@ setup(
     author_email="",
     url="https://github.com/tserg/vyro",
     keywords=["ethereum", "starknet", "vyper", "cairo", "transpiler"],
-    python_requires=">=3.7,<3.11",
+    python_requires=">=3.7,<3.10",
     packages=find_packages(
         where=".",
         include=["vyro*"],
     ),
     install_requires=[
-        "vyper==0.3.5",
+        "vyper==0.3.6",
         "cairo-lang==0.9.1",
     ],
     extras_require=extras_require,
