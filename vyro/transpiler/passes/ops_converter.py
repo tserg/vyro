@@ -23,6 +23,10 @@ BINOP_TABLE = {
 
 
 class OpsConverterVisitor(BaseVisitor):
+    """
+    Handles arithmetic, bitwise and boolean operations that require a Cairo builtin,
+    and AugAssign nodes.
+    """
     def visit_BinOp(self, node, ast, context):
         typ = node._metadata.get("type")
         cairo_typ = get_cairo_type(typ)

@@ -3,15 +3,14 @@ EXPECTATIONS = [
     #    (method_name, [vyper call_args], vyper expected, [cairo call_args], cairo expected)
     # ]
     (
-        "state_variable",
+        "augassign",
         [
-            ("foo", [], None, [], None),
-            ("a", [], 7, [], 7),
-            ("set_a", [100], None, [100], None),
-            ("a", [], 100, [], 100),
-            ("set_a", [2**256 - 1], None, [2**256 - 1], None),
-            ("a", [], 2**256 - 1, [], 2**256 - 1),
-        ],
+            ("aug_int128", [5], None, [5], None),
+            ("a", [], 5, [], 5),
+            ("aug_uint256", [5], None, [5], None),
+            ("b", [], 5, [], 5),
+        ]
+
     ),
     (
         "binop_arithmetic_int128",
@@ -61,5 +60,16 @@ EXPECTATIONS = [
             ["bool_or", [True, True], True, [1, 1], 1],
             ["bool_or", [False, False], False, [0, 0], 0],
         )
-    )
+    ),
+    (
+        "state_variable",
+        [
+            ("foo", [], None, [], None),
+            ("a", [], 7, [], 7),
+            ("set_a", [100], None, [100], None),
+            ("a", [], 100, [], 100),
+            ("set_a", [2**256 - 1], None, [2**256 - 1], None),
+            ("a", [], 2**256 - 1, [], 2**256 - 1),
+        ],
+    ),
 ]

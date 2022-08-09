@@ -17,13 +17,13 @@ UINT256_BINOP_TABLE = {
 
 
 class Uint256HandlerVisitor(BaseVisitor):
-    def _wrap_convert(self, node, ast, context):
-        value_node = node.value
-
-        if isinstance(value_node, vy_ast.Int):
-
-            lo = value_node.value & ((1 << 128) - 1)
-            hi = value_node.value >> 128
+    def _wrap_literal_as_uint256(self, node, ast, context):
+        """
+        Replace literal node with wrapped `Uint256` `Call` node.
+        """
+        if isinstance(node, vy_ast.Int):
+            lo = node.value & ((1 << 128) - 1)
+            hi = node.value >> 128
 
             # Cast literals as Uint256
             keywords = [
@@ -48,15 +48,23 @@ class Uint256HandlerVisitor(BaseVisitor):
                 ast, context, "Uint256", keywords=keywords
             )
 
-            node.value = wrapped_convert
+            ast.replace_in_tree(node, wrapped_convert)
             node._children.add(wrapped_convert)
 
             # Set type
-            node.target._metadata["type"] = CairoUint256Definition()
-            node.value._metadata["type"] = CairoUint256Definition()
+            wrapped_convert._metadata["type"] = CairoUint256Definition()
 
             # Add import
             add_builtin_to_module(ast, "Uint256")
+        return
+
+
+    def _wrap_convert(self, node, ast, context):
+        value_node = node.value
+
+        if isinstance(value_node, vy_ast.Int):
+            self._wrap_literal_as_uint256(value_node, ast, context)
+            node.target._metadata["type"] = CairoUint256Definition()
 
         elif isinstance(value_node, vy_ast.Name):
             value_typ = value_node._metadata["type"]
@@ -98,6 +106,10 @@ class Uint256HandlerVisitor(BaseVisitor):
 
         # Determine the operation
         uint256_op = UINT256_BINOP_TABLE[op_description]
+
+        # Wrap left and right in Uint256 if necessary
+        self._wrap_literal_as_uint256(node.left, ast, context)
+        self._wrap_literal_as_uint256(node.right, ast, context)
 
         # Wrap left and right in a function call
         wrapped_uint256_op = wrap_operation_in_call(

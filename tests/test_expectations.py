@@ -2,6 +2,9 @@ import os
 
 import pytest
 
+from ape.api.transactions import ReceiptAPI
+from ape_starknet.transactions import InvocationReceipt
+
 from tests.expectations import EXPECTATIONS
 from tests.unsupported import UNSUPPORTED
 from tests.utils import transpile_to_cairo
@@ -34,7 +37,11 @@ def test_vyper_code(project, eth_owner, eth_user, code):
             fn_call(*call_args, sender=eth_user)
 
         else:
-            assert fn_call(*call_args, sender=eth_user) == expected
+            ret = fn_call(*call_args, sender=eth_user)
+            if isinstance(ret, ReceiptAPI):
+                assert 1 == 0
+            else:
+                assert ret == expected
 
 
 # Transpile and output cairo to same folder
@@ -83,7 +90,12 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
             fn_call(*call_args, sender=starknet_user)
 
         else:
-            assert fn_call(*call_args) == expected
+            ret = fn_call(*call_args)
+
+            if isinstance(ret, InvocationReceipt):
+                assert 1 == 0
+            else:
+                assert ret == expected
 
 
 @pytest.mark.parametrize("code", UNSUPPORTED)

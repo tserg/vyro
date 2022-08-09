@@ -17,8 +17,8 @@ PASSES = {
     "I": InitialisationVisitor,
     "Fc": UnsupportedVisitor,
     "Rv": ReturnValueHandler,
-    "Oc": OpsConverterVisitor,
     "Sv": StorageVarVisitor,
+    "Oc": OpsConverterVisitor,
     "Ui": Uint256HandlerVisitor,
     "CI": CairoImporterVisitor,
 }

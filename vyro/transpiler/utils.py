@@ -9,8 +9,10 @@ from vyro.exceptions import UnsupportedType
 from vyro.transpiler.context import ASTContext
 
 
-def generate_name_node(node_id: int) -> vy_ast.Name:
-    ret = vy_ast.Name(id=f"VYRO_VAR_{node_id}", node_id=node_id, ast_type="Name")
+def generate_name_node(node_id: int, name: str = None) -> vy_ast.Name:
+    if name is None:
+        name = f"VYRO_VAR_{node_id}"
+    ret = vy_ast.Name(id=name, node_id=node_id, ast_type="Name")
     return ret
 
 
