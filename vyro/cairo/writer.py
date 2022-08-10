@@ -75,7 +75,6 @@ class CairoWriter:
 
     def write_AnnAssign(self, node):
         typ = node._metadata.get("type")
-        print("write_AnnAssign - type: ", typ)
         target_str = self.write(node.target)
         value_str = self.write(node.value)
         return f"tempvar {target_str} : {typ} = {value_str}"
@@ -233,7 +232,6 @@ class CairoWriter:
         for n in node.body:
             stmt_str = self.write(n)
             if not stmt_str:
-                print("unable to write: ", type(n))
                 raise TranspilerPanic("Unable to write statement in function body")
             ret.append(INDENT + stmt_str)
 
@@ -360,11 +358,12 @@ class CairoWriter:
             self.write(e)
 
     def write_UnaryOp(self, node):
-        self.write(node.op)
-        self.write(node.operand)
+        op_str = self.write(node.op)
+        value_str = self.write(node.operand)
+        return f"{op_str}{value_str}"
 
     def write_USub(self, node):
-        pass
+        return "-"
 
     def write_VariableDecl(self, node):
         typ = node._metadata.get("type")

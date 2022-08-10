@@ -23,12 +23,16 @@ BINOP_TABLE = {
     "bitwise xor": ["bitwise_xor", "uint256_xor"],
 }
 
+# Note: Vyper only supports `bitwise_not` for uint256
+UNARY_OP_TABLE = {"bitwise not": ["bitwise_not", "uint256_not"]}
+
 
 class OpsConverterVisitor(BaseVisitor):
     """
     Handles arithmetic, bitwise and boolean operations that require a Cairo builtin,
     and AugAssign nodes.
     """
+
     def visit_AugAssign(self, node, ast, context):
         # Replace AugAssign with Assign
         target = node.target
@@ -131,6 +135,44 @@ class OpsConverterVisitor(BaseVisitor):
         wrapped_op._metadata["type"] = cairo_typ
 
         # Replace `BoolOp` node with wrapped call
+        ast.replace_in_tree(node, wrapped_op)
+
+        # Add import
+        add_builtin_to_module(ast, vyro_op)
+
+    def visit_UnaryOp(self, node, ast, context):
+        typ = node._metadata.get("type")
+        cairo_typ = get_cairo_type(typ)
+
+        op = node.op
+        if isinstance(op, vy_ast.Not):
+            raise UnsupportedOperation("`not` operations are not supported.", node.op)
+
+        op_description = op._description
+
+        # Early termination if not in conversion table
+        if op_description not in UNARY_OP_TABLE:
+            return
+
+        is_uint256 = isinstance(cairo_typ, CairoUint256Definition)
+
+        # Derive the operation
+        vyro_op = (
+            UNARY_OP_TABLE[op_description][1]
+            if is_uint256
+            else UNARY_OP_TABLE[op_description][0]
+        )
+
+        # Add implicits for bitwise ops
+        if isinstance(op, (vy_ast.Invert,)):
+            add_implicit_to_function(node, "bitwise_ptr")
+            add_builtin_to_module(ast, "BitwiseBuiltin")
+
+        # Wrap operation in a function call
+        wrapped_op = wrap_operation_in_call(ast, context, vyro_op, [node.operand])
+        wrapped_op._metadata["type"] = cairo_typ
+
+        # Replace `BinOp` node with wrapped call
         ast.replace_in_tree(node, wrapped_op)
 
         # Add import

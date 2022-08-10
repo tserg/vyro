@@ -5,7 +5,13 @@ from vyper.semantics.types.utils import get_type_from_annotation
 
 from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition
-from vyro.transpiler.utils import generate_name_node, get_cairo_type, insert_statement_before, set_parent, wrap_operation_in_call
+from vyro.transpiler.utils import (
+    generate_name_node,
+    get_cairo_type,
+    insert_statement_before,
+    set_parent,
+    wrap_operation_in_call,
+)
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -58,7 +64,6 @@ class Uint256HandlerVisitor(BaseVisitor):
             add_builtin_to_module(ast, "Uint256")
         return
 
-
     def _wrap_convert(self, node, ast, context):
         value_node = node.value
 
@@ -108,7 +113,9 @@ class Uint256HandlerVisitor(BaseVisitor):
                 insert_statement_before(rhs_assignment_node, node, fn_node)
 
                 # Replace `BinOp` with temporary name node
-                temp_name_node_copy = generate_name_node(context.reserve_id(), name=temp_name_node.id)
+                temp_name_node_copy = generate_name_node(
+                    context.reserve_id(), name=temp_name_node.id
+                )
                 temp_name_node_copy._metadata["type"] = cairo_typ
                 node.value = temp_name_node_copy
 
@@ -124,7 +131,6 @@ class Uint256HandlerVisitor(BaseVisitor):
         self.visit(node.value, ast, context)
 
     def visit_BinOp(self, node, ast, context):
-        parent = node.get_ancestor()
         op_description = node.op._description
         if op_description not in UINT256_BINOP_TABLE:
             return

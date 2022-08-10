@@ -1,3 +1,5 @@
+from tests.utils import signed_int_to_felt
+
 EXPECTATIONS = [
     # .vy filename, [
     #    (method_name, [vyper call_args], vyper expected, [cairo call_args], cairo expected)
@@ -11,8 +13,7 @@ EXPECTATIONS = [
             ("b", [], 5, [], 5),
             ("aug_int128_local", [5], 15, [5], 15),
             ("aug_uint256_local", [5], 15, [5], 15),
-        ]
-
+        ],
     ),
     (
         "binop_arithmetic_int128",
@@ -61,7 +62,7 @@ EXPECTATIONS = [
             ["bool_or", [False, True], True, [0, 1], 1],
             ["bool_or", [True, True], True, [1, 1], 1],
             ["bool_or", [False, False], False, [0, 0], 0],
-        )
+        ),
     ),
     (
         "state_variable",
@@ -72,6 +73,20 @@ EXPECTATIONS = [
             ("a", [], 100, [], 100),
             ("set_a", [2**256 - 1], None, [2**256 - 1], None),
             ("a", [], 2**256 - 1, [], 2**256 - 1),
+        ],
+    ),
+    (
+        "unary",
+        [
+            ("usub_constant", [], -1, [], signed_int_to_felt(-1)),
+            ("usub_arg", [75], -75, [75], signed_int_to_felt(-75)),
+            (
+                "not_uint256",
+                [2**200],
+                115792089237316193816632940749697632311307892324477961517254590225120294338559,
+                [2**200],
+                115792089237316193816632940749697632311307892324477961517254590225120294338559,
+            ),
         ],
     ),
 ]

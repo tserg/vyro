@@ -104,7 +104,9 @@ class StorageVarVisitor(BaseVisitor):
     ):
         # Check for storage variable on LHS of assignment
         lhs = node.target
-        contract_vars = lhs.get_descendants(vy_ast.Attribute, {"value.id": "self"}, include_self=True)
+        contract_vars = lhs.get_descendants(
+            vy_ast.Attribute, {"value.id": "self"}, include_self=True
+        )
 
         cairo_typ = convert_node_type_definition(node.target)
 
@@ -157,7 +159,9 @@ class StorageVarVisitor(BaseVisitor):
 
         # Handle storage variables on RHS of assignment
         rhs = node.value
-        rhs_contract_vars = rhs.get_descendants(vy_ast.Attribute, {"value.id": "self"}, include_self=True)
+        rhs_contract_vars = rhs.get_descendants(
+            vy_ast.Attribute, {"value.id": "self"}, include_self=True
+        )
         if rhs_contract_vars:
             contract_var = rhs_contract_vars.pop()
             # Store original variable name
@@ -186,14 +190,20 @@ class StorageVarVisitor(BaseVisitor):
             insert_statement_before(storage_read_node, node, fn_node)
 
             # Duplicate name node
-            temp_name_node_copy = generate_name_node(context.reserve_id(), name=temp_name_node.id)
+            temp_name_node_copy = generate_name_node(
+                context.reserve_id(), name=temp_name_node.id
+            )
             ast.replace_in_tree(contract_var, temp_name_node_copy)
             print("replaced contract var in RHS")
 
-    def visit_AugAssign(self, node: vy_ast.AugAssign, ast: vy_ast.Module, context: ASTContext):
+    def visit_AugAssign(
+        self, node: vy_ast.AugAssign, ast: vy_ast.Module, context: ASTContext
+    ):
         # Check for storage variable on LHS of assignment
         lhs = node.target
-        contract_vars = lhs.get_descendants(vy_ast.Attribute, {"value.id": "self"}, include_self=True)
+        contract_vars = lhs.get_descendants(
+            vy_ast.Attribute, {"value.id": "self"}, include_self=True
+        )
 
         cairo_typ = convert_node_type_definition(node.target)
 

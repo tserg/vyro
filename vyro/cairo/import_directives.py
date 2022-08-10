@@ -14,6 +14,7 @@ IMPORT_DIRECTIVES = {
     "FALSE": "starkware.cairo.common.bool",
     # Bitwise
     "bitwise_and": "starkware.cairo.common.bitwise",
+    "bitwise_not": "starkware.cairo.common.bitwise",
     "bitwise_or": "starkware.cairo.common.bitwise",
     "bitwise_xor": "starkware.cairo.common.bitwise",
     # Math
@@ -29,6 +30,7 @@ IMPORT_DIRECTIVES = {
     "vyro_mod256": "vyrolib.mod",
     "uint256_and": "starkware.cairo.common.uint256",
     "uint256_or": "starkware.cairo.common.uint256",
+    "uint256_not": "starkware.cairo.common.uint256",
     "uint256_xor": "starkware.cairo.common.uint256",
     # Vyro lib
     "felt_to_uint256": "vyrolib.utils",
