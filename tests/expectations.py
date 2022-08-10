@@ -9,6 +9,8 @@ EXPECTATIONS = [
             ("a", [], 5, [], 5),
             ("aug_uint256", [5], None, [5], None),
             ("b", [], 5, [], 5),
+            ("aug_int128_local", [5], 15, [5], 15),
+            ("aug_uint256_local", [5], 15, [5], 15),
         ]
 
     ),

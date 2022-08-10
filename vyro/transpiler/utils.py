@@ -5,7 +5,7 @@ from vyper.semantics.types.abstract import FixedAbstractType, IntegerAbstractTyp
 from vyper.semantics.types.bases import BaseTypeDefinition
 
 from vyro.cairo.types import CairoTypeDefinition, CairoUint256Definition, FeltDefinition
-from vyro.exceptions import UnsupportedType
+from vyro.exceptions import TranspilerPanic, UnsupportedType
 from vyro.transpiler.context import ASTContext
 
 
@@ -67,6 +67,9 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
     Convert a type definition to its Cairo type.
     If the type definition is already a `CairoTypeDefinition`, return.
     """
+    if typ is None:
+        raise TranspilerPanic("No type provided for conversion")
+
     if isinstance(typ, CairoTypeDefinition):
         return typ
 

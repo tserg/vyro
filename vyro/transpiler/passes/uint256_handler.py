@@ -5,7 +5,7 @@ from vyper.semantics.types.utils import get_type_from_annotation
 
 from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition
-from vyro.transpiler.utils import get_cairo_type, wrap_operation_in_call
+from vyro.transpiler.utils import generate_name_node, get_cairo_type, insert_statement_before, set_parent, wrap_operation_in_call
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -82,8 +82,39 @@ class Uint256HandlerVisitor(BaseVisitor):
 
     def visit_AnnAssign(self, node, ast, context):
         type_ = node.value._metadata.get("type")
-        if isinstance(type_, Uint256Definition):
-            self._wrap_convert(node, ast, context)
+        cairo_typ = get_cairo_type(type_)
+        if isinstance(cairo_typ, CairoUint256Definition):
+            value_node = node.value
+            if isinstance(value_node, (vy_ast.Int, vy_ast.Name)):
+                self._wrap_convert(node, ast, context)
+
+            elif isinstance(value_node, vy_ast.BinOp):
+                # Move `BinOp` (RHS) to standalone assign
+                temp_name_node = generate_name_node(context.reserve_id())
+                temp_name_node._metadata["type"] = cairo_typ
+
+                rhs_assignment_node = vy_ast.Assign(
+                    node_id=context.reserve_id(),
+                    targets=[temp_name_node],
+                    value=value_node,
+                    ast_type="Assign",
+                )
+                rhs_assignment_node._children.add(temp_name_node)
+                rhs_assignment_node._children.add(value_node)
+                rhs_assignment_node._metadata["type"] = cairo_typ
+                set_parent(value_node, rhs_assignment_node)
+
+                fn_node = node.get_ancestor(vy_ast.FunctionDef)
+                insert_statement_before(rhs_assignment_node, node, fn_node)
+
+                # Replace `BinOp` with temporary name node
+                temp_name_node_copy = generate_name_node(context.reserve_id(), name=temp_name_node.id)
+                temp_name_node_copy._metadata["type"] = cairo_typ
+                node.value = temp_name_node_copy
+
+                # Visit newly added assignment node and value node
+                self.visit(rhs_assignment_node, ast, context)
+                self.visit(node.value, ast, context)
 
     def visit_Assign(self, node, ast, context):
         type_ = node.value._metadata.get("type")
@@ -93,6 +124,7 @@ class Uint256HandlerVisitor(BaseVisitor):
         self.visit(node.value, ast, context)
 
     def visit_BinOp(self, node, ast, context):
+        parent = node.get_ancestor()
         op_description = node.op._description
         if op_description not in UINT256_BINOP_TABLE:
             return
@@ -107,14 +139,22 @@ class Uint256HandlerVisitor(BaseVisitor):
         # Determine the operation
         uint256_op = UINT256_BINOP_TABLE[op_description]
 
+        left = node.left
+        right = node.right
         # Wrap left and right in Uint256 if necessary
         self._wrap_literal_as_uint256(node.left, ast, context)
         self._wrap_literal_as_uint256(node.right, ast, context)
 
         # Wrap left and right in a function call
         wrapped_uint256_op = wrap_operation_in_call(
-            ast, context, uint256_op, args=[node.left, node.right]
+            ast, context, uint256_op, args=[left, right]
         )
+        set_parent(left, wrapped_uint256_op)
+        set_parent(right, wrapped_uint256_op)
+        node._children.remove(left)
+        node._children.remove(right)
+        wrapped_uint256_op._children.add(left)
+        wrapped_uint256_op._children.add(right)
         wrapped_uint256_op._metadata["type"] = cairo_typ
 
         # Replace `BinOp` node with wrapped call

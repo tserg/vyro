@@ -16,8 +16,12 @@ class ReturnValueHandler(BaseVisitor):
     def visit_FunctionDef(self, node, ast, context):
         fn_typ = node._metadata["type"]
 
+        return_type = fn_typ.return_type
+        if return_type is None:
+            return
+
         # Convert return type to Cairo type
-        return_cairo_typ = get_cairo_type(fn_typ.return_type)
+        return_cairo_typ = get_cairo_type(return_type)
         fn_typ.return_type = return_cairo_typ
 
         # Check for `Return` node in body

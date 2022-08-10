@@ -1,11 +1,13 @@
 from vyper import ast as vy_ast
 
 from vyro.cairo.import_directives import add_builtin_to_module
-from vyro.cairo.types import CairoUint256Definition
+from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.exceptions import UnsupportedOperation
 from vyro.transpiler.utils import (
     add_implicit_to_function,
     get_cairo_type,
+    generate_name_node,
+    set_parent,
     wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
@@ -27,6 +29,50 @@ class OpsConverterVisitor(BaseVisitor):
     Handles arithmetic, bitwise and boolean operations that require a Cairo builtin,
     and AugAssign nodes.
     """
+    def visit_AugAssign(self, node, ast, context):
+        # Replace AugAssign with Assign
+        target = node.target
+        op = node.op
+        value = node.value
+
+        typ = node._metadata.get("type")
+        cairo_typ = get_cairo_type(typ)
+
+        binop = vy_ast.BinOp(
+            node_id=context.reserve_id(),
+            left=target,
+            op=op,
+            right=value,
+            ast_type="BinOp",
+        )
+        binop._children.add(target)
+        binop._children.add(op)
+        binop._children.add(value)
+        set_parent(value, binop)
+        set_parent(target, binop)
+        set_parent(op, binop)
+
+        # Set to Vyper type for `uint256_handler` pass
+        binop._metadata["type"] = cairo_typ
+
+        target_copy = generate_name_node(context.reserve_id(), name=target.id)
+        target_copy._metadata["type"] = cairo_typ
+
+        ann_assign = vy_ast.AnnAssign(
+            node_id=context.reserve_id(),
+            target=target_copy,
+            value=binop,
+            ast_type="AnnAssign",
+        )
+        ann_assign._children.add(target_copy)
+        ann_assign._children.add(binop)
+        set_parent(binop, ann_assign)
+        set_parent(target_copy, ann_assign)
+        ann_assign._metadata["type"] = cairo_typ
+
+        # Replace `AugAssign` node with `AnnAssign`
+        ast.replace_in_tree(node, ann_assign)
+
     def visit_BinOp(self, node, ast, context):
         typ = node._metadata.get("type")
         cairo_typ = get_cairo_type(typ)
@@ -69,8 +115,8 @@ class OpsConverterVisitor(BaseVisitor):
         add_builtin_to_module(ast, vyro_op)
 
     def visit_BoolOp(self, node, ast, context):
-        typ = node._metadata.get("type")
-        cairo_typ = get_cairo_type(typ)
+        # Assign felt type directly
+        cairo_typ = FeltDefinition()
 
         if isinstance(node.op, vy_ast.And):
             vyro_op = "bitwise_and"
