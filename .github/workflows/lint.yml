@@ -1,0 +1,37 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Python setup
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+          cache: pip
+          cache-dependency-path: '**/requirements-dev.txt'
+
+      - name: Env setup
+        run: pip install .[lint]
+
+      - name: Lint Cairo code
+        run: find contracts -type f -name '*.cairo' | xargs cairo-format -c
+
+      - name: Run black
+        run: black --check -C ./tests ./vyro ./setup.py
+
+      - name: Run flake8
+        run: flake8 ./tests ./vyro ./setup.py
+
+      - name: Run isort
+        run: isort --check-only --diff ./tests ./vyro ./setup.py
