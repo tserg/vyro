@@ -1,6 +1,7 @@
 from typing import List
 
 from vyper import ast as vy_ast
+from vyper.semantics.types import AddressDefinition
 from vyper.semantics.types.abstract import FixedAbstractType, IntegerAbstractType
 from vyper.semantics.types.bases import BaseTypeDefinition
 
@@ -91,6 +92,13 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
 
     elif isinstance(typ, FixedAbstractType):
         raise UnsupportedType(f"{typ} is not supported.")
+
+    elif isinstance(typ, AddressDefinition):
+        return FeltDefinition(
+            is_constant=typ.is_constant,
+            is_public=typ.is_public,
+            is_immutable=typ.is_immutable,
+        )
 
     return FeltDefinition(False, False, False)
 

@@ -55,19 +55,21 @@ EXPECTATIONS = [
     (
         "boolop",
         (
-            ["bool_and", [True, False], False, [1, 0], 0],
-            ["bool_and", [True, True], True, [1, 1], 1],
-            ["bool_and", [False, False], False, [0, 0], 0],
-            ["bool_or", [True, False], True, [1, 0], 1],
-            ["bool_or", [False, True], True, [0, 1], 1],
-            ["bool_or", [True, True], True, [1, 1], 1],
-            ["bool_or", [False, False], False, [0, 0], 0],
+            ("bool_and", [True, False], False, [1, 0], 0),
+            ("bool_and", [True, True], True, [1, 1], 1),
+            ("bool_and", [False, False], False, [0, 0], 0),
+            ("bool_or", [True, False], True, [1, 0], 1),
+            ("bool_or", [False, True], True, [0, 1], 1),
+            ("bool_or", [True, True], True, [1, 1], 1),
+            ("bool_or", [False, False], False, [0, 0], 0),
         ),
     ),
     (
         "constants",
         (
-            ["add_to_constant", [111], 234, [111], 234],
+            ("add_to_constant", [111], 234, [111], 234),
+            ("get_addr", [], "0x3cD751E6b0078Be393132286c442345e5DC49699", [], 347341241061202630446643950033957413255697962649),
+
         ),
     ),
     (
