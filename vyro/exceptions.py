@@ -21,6 +21,10 @@ class VyroException(Exception):
         return f"\nTranspilation failed with the following error:\n{self.message}\n"
 
 
+class FeltOverflowException(VyroException):
+    """Overflow of felt"""
+
+
 class UnsupportedNode(VyroException):
     """Unsupported Vyper AST node"""
 

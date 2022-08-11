@@ -194,7 +194,6 @@ class StorageVarVisitor(BaseVisitor):
                 context.reserve_id(), name=temp_name_node.id
             )
             ast.replace_in_tree(contract_var, temp_name_node_copy)
-            print("replaced contract var in RHS")
 
     def visit_AugAssign(
         self, node: vy_ast.AugAssign, ast: vy_ast.Module, context: ASTContext

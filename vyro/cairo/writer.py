@@ -12,6 +12,7 @@ class CairoWriter:
     def __init__(self) -> None:
         self.header: str = "%lang starknet\n"
         self.imports: List[str] = []
+        self.constants: List[str] = []
         self.events: List[str] = []
         self.storage_vars: List[str] = []
         self.storage_vars_getters: List[str] = []
@@ -22,6 +23,10 @@ class CairoWriter:
         imports = ""
         if self.imports:
             imports = "\n".join(self.imports)
+
+        constants = ""
+        if self.constants:
+            constants = "\n".join(self.constants)
 
         storage_vars = ""
         if self.storage_vars:
@@ -36,7 +41,14 @@ class CairoWriter:
             functions = "\n\n".join(self.functions)
 
         cairo = "\n".join(
-            [self.header, imports, storage_vars, storage_vars_getters, functions]
+            [
+                self.header,
+                imports,
+                constants,
+                storage_vars,
+                storage_vars_getters,
+                functions,
+            ]
         )
         return cairo
 
@@ -367,10 +379,15 @@ class CairoWriter:
 
     def write_VariableDecl(self, node):
         typ = node._metadata.get("type")
+        name = node.target.id
         if not typ.is_constant and not typ.is_immutable:
-            name = node.target.id
             storage_var_stub = generate_storage_var_stub(name, typ)
             self.storage_vars.append(storage_var_stub)
+
+        if typ.is_constant:
+            value_str = self.write(node.value)
+            constant_decl_str = f"const {name} = {value_str}"
+            self.constants.append(constant_decl_str)
 
 
 def write(ast: vy_ast.Module):

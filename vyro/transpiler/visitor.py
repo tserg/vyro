@@ -33,7 +33,6 @@ class BaseVisitor:
 
     def visit_AnnAssign(self, node, ast, context):
         self.visit(node.target, ast, context)
-        self.visit(node.annotation, ast, context)
         if node.value:
             self.visit(node.value, ast, context)
 

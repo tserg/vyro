@@ -38,10 +38,8 @@ def test_vyper_code(project, eth_owner, eth_user, code):
 
         else:
             ret = fn_call(*call_args, sender=eth_user)
-            if isinstance(ret, ReceiptAPI):
-                assert 1 == 0
-            else:
-                assert ret == expected
+            assert not isinstance(ret, ReceiptAPI)
+            assert ret == expected
 
 
 # Transpile and output cairo to same folder
@@ -91,11 +89,8 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
 
         else:
             ret = fn_call(*call_args)
-
-            if isinstance(ret, InvocationReceipt):
-                assert 1 == 0
-            else:
-                assert ret == expected
+            assert not isinstance(ret, InvocationReceipt)
+            assert ret == expected
 
 
 @pytest.mark.parametrize("code", UNSUPPORTED)

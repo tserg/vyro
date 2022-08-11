@@ -65,6 +65,12 @@ EXPECTATIONS = [
         ),
     ),
     (
+        "constants",
+        (
+            ["add_to_constant", [111], 234, [111], 234],
+        ),
+    ),
+    (
         "state_variable",
         [
             ("foo", [], None, [], None),
