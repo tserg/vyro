@@ -78,16 +78,12 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
 
         if typ._bits > 251:
             return CairoUint256Definition(
-                is_constant=typ.is_constant,
-                is_public=typ.is_public,
-                is_immutable=typ.is_immutable,
+                is_constant=typ.is_constant, is_public=typ.is_public, is_immutable=typ.is_immutable
             )
 
         else:
             return FeltDefinition(
-                is_constant=typ.is_constant,
-                is_public=typ.is_public,
-                is_immutable=typ.is_immutable,
+                is_constant=typ.is_constant, is_public=typ.is_public, is_immutable=typ.is_immutable
             )
 
     elif isinstance(typ, FixedAbstractType):
@@ -95,9 +91,7 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
 
     elif isinstance(typ, AddressDefinition):
         return FeltDefinition(
-            is_constant=typ.is_constant,
-            is_public=typ.is_public,
-            is_immutable=typ.is_immutable,
+            is_constant=typ.is_constant, is_public=typ.is_public, is_immutable=typ.is_immutable
         )
 
     return FeltDefinition(False, False, False)
@@ -115,9 +109,7 @@ def initialise_function_implicits(node: vy_ast.FunctionDef):
     """
     Initialise the implicits attribute in metadata for a FunctionDef node.
     """
-    node._metadata["implicits"] = set(
-        {"syscall_ptr", "pedersen_ptr", "range_check_ptr"}
-    )
+    node._metadata["implicits"] = set({"syscall_ptr", "pedersen_ptr", "range_check_ptr"})
 
 
 def wrap_operation_in_call(
@@ -130,9 +122,7 @@ def wrap_operation_in_call(
     wrapped_op = vy_ast.Call(
         node_id=context.reserve_id(),
         func=vy_ast.Name(node_id=context.reserve_id(), id=call_id, ast_type="Name"),
-        args=vy_ast.arguments(
-            node_id=context.reserve_id(), args=args, ast_type="arguments"
-        ),
+        args=vy_ast.arguments(node_id=context.reserve_id(), args=args, ast_type="arguments"),
         keywords=keywords,
     )
     return wrapped_op

@@ -37,9 +37,7 @@ def main():
     cmd = sys.argv[1]
     cmd_list = [i.stem for i in Path(__file__).parent.glob("[!_]*.py")]
     if cmd not in cmd_list:
-        distances = sorted(
-            [(i, levenshtein_norm(cmd, i)) for i in cmd_list], key=lambda k: k[1]
-        )
+        distances = sorted([(i, levenshtein_norm(cmd, i)) for i in cmd_list], key=lambda k: k[1])
         if distances[0][1] <= 0.2:
             sys.exit(f"Invalid command. Did you mean 'vyro {distances[0][0]}'?")
         sys.exit("Invalid command. Try 'vyro --help' for available commands.")

@@ -21,8 +21,7 @@ class ConstantHandlerVisitor(BaseVisitor):
         cairo_typ = convert_node_type_definition(node)
         if isinstance(cairo_typ, CairoUint256Definition):
             raise FeltOverflowException(
-                "Constants of Uint256 type cannot be represented as a felt constant",
-                node,
+                "Constants of Uint256 type cannot be represented as a felt constant", node
             )
 
         self.visit(node.value, ast, context)

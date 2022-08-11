@@ -14,11 +14,7 @@ from vyro.transpiler.utils import (
 )
 from vyro.transpiler.visitor import BaseVisitor
 
-UINT256_BINOP_TABLE = {
-    "addition": "add256",
-    "subtraction": "sub256",
-    "multiplication": "mul256",
-}
+UINT256_BINOP_TABLE = {"addition": "add256", "subtraction": "sub256", "multiplication": "mul256"}
 
 
 class Uint256HandlerVisitor(BaseVisitor):
@@ -35,23 +31,17 @@ class Uint256HandlerVisitor(BaseVisitor):
                 vy_ast.keyword(
                     node_id=context.reserve_id(),
                     arg="low",
-                    value=vy_ast.Int(
-                        node_id=context.reserve_id(), value=lo, ast_type="Int"
-                    ),
+                    value=vy_ast.Int(node_id=context.reserve_id(), value=lo, ast_type="Int"),
                     ast_type="keyword",
                 ),
                 vy_ast.keyword(
                     node_id=context.reserve_id(),
                     arg="high",
-                    value=vy_ast.Int(
-                        node_id=context.reserve_id(), value=hi, ast_type="Int"
-                    ),
+                    value=vy_ast.Int(node_id=context.reserve_id(), value=hi, ast_type="Int"),
                     ast_typ="keyword",
                 ),
             ]
-            wrapped_convert = wrap_operation_in_call(
-                ast, context, "Uint256", keywords=keywords
-            )
+            wrapped_convert = wrap_operation_in_call(ast, context, "Uint256", keywords=keywords)
 
             ast.replace_in_tree(node, wrapped_convert)
             node._children.add(wrapped_convert)
@@ -151,9 +141,7 @@ class Uint256HandlerVisitor(BaseVisitor):
         self._wrap_literal_as_uint256(node.right, ast, context)
 
         # Wrap left and right in a function call
-        wrapped_uint256_op = wrap_operation_in_call(
-            ast, context, uint256_op, args=[left, right]
-        )
+        wrapped_uint256_op = wrap_operation_in_call(ast, context, uint256_op, args=[left, right])
         set_parent(left, wrapped_uint256_op)
         set_parent(right, wrapped_uint256_op)
         node._children.remove(left)

@@ -95,9 +95,7 @@ class StorageVarVisitor(BaseVisitor):
 
             ast.add_to_body(fn_node)
 
-    def visit_Assign(
-        self, node: vy_ast.Assign, ast: vy_ast.Module, context: ASTContext
-    ):
+    def visit_Assign(self, node: vy_ast.Assign, ast: vy_ast.Module, context: ASTContext):
         # Check for storage variable on LHS of assignment
         lhs = node.target
         contract_vars = lhs.get_descendants(
@@ -186,14 +184,10 @@ class StorageVarVisitor(BaseVisitor):
             insert_statement_before(storage_read_node, node, fn_node)
 
             # Duplicate name node
-            temp_name_node_copy = generate_name_node(
-                context.reserve_id(), name=temp_name_node.id
-            )
+            temp_name_node_copy = generate_name_node(context.reserve_id(), name=temp_name_node.id)
             ast.replace_in_tree(contract_var, temp_name_node_copy)
 
-    def visit_AugAssign(
-        self, node: vy_ast.AugAssign, ast: vy_ast.Module, context: ASTContext
-    ):
+    def visit_AugAssign(self, node: vy_ast.AugAssign, ast: vy_ast.Module, context: ASTContext):
         # Check for storage variable on LHS of assignment
         lhs = node.target
         contract_vars = lhs.get_descendants(

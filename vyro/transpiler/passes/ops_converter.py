@@ -42,11 +42,7 @@ class OpsConverterVisitor(BaseVisitor):
         cairo_typ = get_cairo_type(typ)
 
         binop = vy_ast.BinOp(
-            node_id=context.reserve_id(),
-            left=target,
-            op=op,
-            right=value,
-            ast_type="BinOp",
+            node_id=context.reserve_id(), left=target, op=op, right=value, ast_type="BinOp"
         )
         binop._children.add(target)
         binop._children.add(op)
@@ -62,10 +58,7 @@ class OpsConverterVisitor(BaseVisitor):
         target_copy._metadata["type"] = cairo_typ
 
         ann_assign = vy_ast.AnnAssign(
-            node_id=context.reserve_id(),
-            target=target_copy,
-            value=binop,
-            ast_type="AnnAssign",
+            node_id=context.reserve_id(), target=target_copy, value=binop, ast_type="AnnAssign"
         )
         ann_assign._children.add(target_copy)
         ann_assign._children.add(binop)
@@ -89,16 +82,10 @@ class OpsConverterVisitor(BaseVisitor):
 
         is_uint256 = isinstance(cairo_typ, CairoUint256Definition)
         if isinstance(op, vy_ast.Pow) and is_uint256:
-            raise UnsupportedOperation(
-                "`pow` operations for Uint256 are not supported.", node
-            )
+            raise UnsupportedOperation("`pow` operations for Uint256 are not supported.", node)
 
         # Derive the operation
-        vyro_op = (
-            BINOP_TABLE[op_description][1]
-            if is_uint256
-            else BINOP_TABLE[op_description][0]
-        )
+        vyro_op = BINOP_TABLE[op_description][1] if is_uint256 else BINOP_TABLE[op_description][0]
 
         # Add implicits for bitwise ops
         if isinstance(op, (vy_ast.BitAnd, vy_ast.BitOr, vy_ast.BitXor)):
@@ -106,9 +93,7 @@ class OpsConverterVisitor(BaseVisitor):
             add_builtin_to_module(ast, "BitwiseBuiltin")
 
         # Wrap operation in a function call
-        wrapped_op = wrap_operation_in_call(
-            ast, context, vyro_op, [node.left, node.right]
-        )
+        wrapped_op = wrap_operation_in_call(ast, context, vyro_op, [node.left, node.right])
         wrapped_op._metadata["type"] = cairo_typ
 
         # Replace `BinOp` node with wrapped call
@@ -157,9 +142,7 @@ class OpsConverterVisitor(BaseVisitor):
 
         # Derive the operation
         vyro_op = (
-            UNARY_OP_TABLE[op_description][1]
-            if is_uint256
-            else UNARY_OP_TABLE[op_description][0]
+            UNARY_OP_TABLE[op_description][1] if is_uint256 else UNARY_OP_TABLE[op_description][0]
         )
 
         # Add implicits for bitwise ops

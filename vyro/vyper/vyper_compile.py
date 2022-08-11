@@ -17,9 +17,7 @@ def get_vyper_ast(file_name: str, root_folder: str = ".") -> vy_ast.Module:
 
     root_path = Path(root_folder).resolve()
     if not root_path.exists():
-        raise FileNotFoundError(
-            f"Invalid root path - '{root_path.as_posix()}' does not exist"
-        )
+        raise FileNotFoundError(f"Invalid root path - '{root_path.as_posix()}' does not exist")
 
     file_path = Path(file_name)
     with file_path.open() as fh:
