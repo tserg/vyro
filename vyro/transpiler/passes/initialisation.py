@@ -1,8 +1,8 @@
 from vyper import ast as vy_ast
 
 from vyro.transpiler.context import ASTContext
-from vyro.transpiler.visitor import BaseVisitor
 from vyro.transpiler.utils import get_cairo_type, initialise_function_implicits
+from vyro.transpiler.visitor import BaseVisitor
 
 
 class InitialisationVisitor(BaseVisitor):

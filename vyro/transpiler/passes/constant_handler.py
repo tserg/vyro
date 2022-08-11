@@ -1,9 +1,9 @@
 from vyper import ast as vy_ast
 
 from vyro.cairo.types import CairoUint256Definition
-from vyro.transpiler.visitor import BaseVisitor
-from vyro.transpiler.utils import convert_node_type_definition
 from vyro.exceptions import FeltOverflowException
+from vyro.transpiler.utils import convert_node_type_definition
+from vyro.transpiler.visitor import BaseVisitor
 
 
 class ConstantHandlerVisitor(BaseVisitor):

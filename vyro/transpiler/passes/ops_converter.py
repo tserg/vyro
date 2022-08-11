@@ -5,13 +5,12 @@ from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.exceptions import UnsupportedOperation
 from vyro.transpiler.utils import (
     add_implicit_to_function,
-    get_cairo_type,
     generate_name_node,
+    get_cairo_type,
     set_parent,
     wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
-
 
 BINOP_TABLE = {
     # operation: [felt op, uint256 op]

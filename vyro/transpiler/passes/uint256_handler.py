@@ -14,7 +14,6 @@ from vyro.transpiler.utils import (
 )
 from vyro.transpiler.visitor import BaseVisitor
 
-
 UINT256_BINOP_TABLE = {
     "addition": "add256",
     "subtraction": "sub256",

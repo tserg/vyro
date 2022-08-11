@@ -1,7 +1,6 @@
 import os
 
 import pytest
-
 from ape.api.transactions import ReceiptAPI
 from ape_starknet.transactions import InvocationReceipt
 
