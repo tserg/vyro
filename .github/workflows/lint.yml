@@ -18,15 +18,14 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: '3.9'
-          cache: pip
 
-      - name: Env setup
+      - name: Install Dependencies
         run: pip install .[lint]
 
       - name: Lint Cairo code
         run: find contracts -type f -name '*.cairo' | xargs cairo-format -c
 
-      - name: Run black
+      - name: Run Black
         run: black --check -C ./tests ./vyro ./setup.py
 
       - name: Run flake8
