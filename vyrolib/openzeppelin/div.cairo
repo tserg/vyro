@@ -9,17 +9,14 @@ from starkware.cairo.common.uint256 import (
     uint256_eq,
 )
 
-
 # Integer division of two numbers. Returns uint256 quotient and remainder.
 # Reverts if divisor is zero as per OpenZeppelin's Solidity implementation.
 # Cairo's `uint256_unsigned_div_rem` already checks:
 #    remainder < divisor
 #    quotient * divisor + remainder == dividend
-func div256{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    } (a: Uint256, b: Uint256) -> (c: Uint256):
+func div256{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    a : Uint256, b : Uint256
+) -> (c : Uint256):
     alloc_locals
     uint256_check(a)
     uint256_check(b)
@@ -29,6 +26,6 @@ func div256{
         assert is_zero = FALSE
     end
 
-    let (c: Uint256, rem: Uint256) = uint256_unsigned_div_rem(a, b)
+    let (c : Uint256, rem : Uint256) = uint256_unsigned_div_rem(a, b)
     return (c)
 end
