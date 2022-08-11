@@ -9,6 +9,7 @@ from vyro.utils.docopt import docopt, levenshtein_norm
 __doc__ = """Usage: vyro <command> [<args>...] [options <args>]
 
 Commands:
+  transform             Print the Vyper AST to console.
   transpile             Transpile a Vyper contract to Cairo.
   test                  Run test cases in the tests/ folder.
 
