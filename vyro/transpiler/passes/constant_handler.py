@@ -33,17 +33,11 @@ class ConstantHandlerVisitor(BaseVisitor):
         int_value = int(hex_value, 16)
 
         # Replace with integer node
-        replacement_int = vy_ast.Int.from_node(
-            node,
-            value=int_value,
-        )
+        replacement_int = vy_ast.Int.from_node(node, value=int_value)
 
         ast.replace_in_tree(node, replacement_int)
 
         # Search for folded nodes
         for n in ast.get_descendants(vy_ast.Hex, {"value": hex_value}, reverse=True):
-            new_replacement_int = vy_ast.Int.from_node(
-                n,
-                value=int_value,
-            )
+            new_replacement_int = vy_ast.Int.from_node(n, value=int_value)
             ast.replace_in_tree(n, new_replacement_int)
