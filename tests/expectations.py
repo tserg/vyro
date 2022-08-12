@@ -1,3 +1,5 @@
+from hexbytes import HexBytes
+
 from tests.utils import signed_int_to_felt
 
 EXPECTATIONS = [
@@ -67,9 +69,10 @@ EXPECTATIONS = [
     (
         "constants",
         (
-            ("add_to_constant", [111], 234, [111], 234),
+            ("add_to_uint8", [111], 234, [111], 234),
+            ("add_to_uint256", [111], 234, [111], 234),
             ("get_addr", [], "0x3cD751E6b0078Be393132286c442345e5DC49699", [], 347341241061202630446643950033957413255697962649),
-
+            ("get_bytes20", [], HexBytes("0x3cd751e6b0078be393132286c442345e5dc49699"), [], 347341241061202630446643950033957413255697962649),
         ),
     ),
     (

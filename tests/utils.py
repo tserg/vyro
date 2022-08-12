@@ -2,9 +2,7 @@ from vyro.cairo.writer import write
 from vyro.transpiler.transpile import transpile
 from vyro.utils.output import write_cairo
 from vyro.vyper.vyper_compile import get_vyper_ast
-
-
-CAIRO_PRIME = 2**251 + 17 * 2**192 + 1
+from vyro.utils.utils import CAIRO_PRIME
 
 
 def transpile_to_cairo(path, output_file):
