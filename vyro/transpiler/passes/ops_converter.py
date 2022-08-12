@@ -5,13 +5,13 @@ from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.exceptions import UnsupportedOperation
 from vyro.transpiler.utils import (
     add_implicit_to_function,
-    get_cairo_type,
     generate_name_node,
+    get_cairo_type,
+    replace_in_tree,
     set_parent,
     wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
-
 
 BINOP_TABLE = {
     # operation: [felt op, uint256 op]
@@ -75,7 +75,7 @@ class OpsConverterVisitor(BaseVisitor):
         ann_assign._metadata["type"] = cairo_typ
 
         # Replace `AugAssign` node with `AnnAssign`
-        ast.replace_in_tree(node, ann_assign)
+        replace_in_tree(ast, node, ann_assign)
 
     def visit_BinOp(self, node, ast, context):
         typ = node._metadata.get("type")
@@ -113,7 +113,7 @@ class OpsConverterVisitor(BaseVisitor):
         wrapped_op._metadata["type"] = cairo_typ
 
         # Replace `BinOp` node with wrapped call
-        ast.replace_in_tree(node, wrapped_op)
+        replace_in_tree(ast, node, wrapped_op)
 
         # Add import
         add_builtin_to_module(ast, vyro_op)
@@ -135,7 +135,7 @@ class OpsConverterVisitor(BaseVisitor):
         wrapped_op._metadata["type"] = cairo_typ
 
         # Replace `BoolOp` node with wrapped call
-        ast.replace_in_tree(node, wrapped_op)
+        replace_in_tree(ast, node, wrapped_op)
 
         # Add import
         add_builtin_to_module(ast, vyro_op)
@@ -173,7 +173,7 @@ class OpsConverterVisitor(BaseVisitor):
         wrapped_op._metadata["type"] = cairo_typ
 
         # Replace `BinOp` node with wrapped call
-        ast.replace_in_tree(node, wrapped_op)
+        replace_in_tree(ast, node, wrapped_op)
 
         # Add import
         add_builtin_to_module(ast, vyro_op)

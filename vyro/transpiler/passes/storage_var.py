@@ -1,9 +1,5 @@
 from vyper import ast as vy_ast
-from vyper.semantics.types.function import (
-    ContractFunction,
-    FunctionVisibility,
-    StateMutability,
-)
+from vyper.semantics.types.function import ContractFunction, FunctionVisibility, StateMutability
 
 from vyro.cairo.nodes import CairoStorageRead, CairoStorageWrite
 from vyro.transpiler.context import ASTContext
@@ -13,6 +9,7 @@ from vyro.transpiler.utils import (
     get_cairo_type,
     initialise_function_implicits,
     insert_statement_before,
+    replace_in_tree,
     set_parent,
 )
 from vyro.transpiler.visitor import BaseVisitor
@@ -22,6 +19,9 @@ class StorageVarVisitor(BaseVisitor):
     def visit_VariableDecl(
         self, node: vy_ast.VariableDecl, ast: vy_ast.Module, context: ASTContext
     ):
+        if node.is_constant or node.is_immutable:
+            return
+
         # Store original variable name
         var_name = node.target.id
 
@@ -153,7 +153,7 @@ class StorageVarVisitor(BaseVisitor):
             storage_write_node.target._metadata["type"] = cairo_typ
 
             # Replace assign node with RHS
-            ast.replace_in_tree(node, storage_write_node)
+            replace_in_tree(ast, node, storage_write_node)
             # Add RHS node before storage write node
             insert_statement_before(rhs_assignment_node, storage_write_node, fn_node)
 
@@ -193,7 +193,7 @@ class StorageVarVisitor(BaseVisitor):
             temp_name_node_copy = generate_name_node(
                 context.reserve_id(), name=temp_name_node.id
             )
-            ast.replace_in_tree(contract_var, temp_name_node_copy)
+            replace_in_tree(ast, contract_var, temp_name_node_copy)
 
     def visit_AugAssign(
         self, node: vy_ast.AugAssign, ast: vy_ast.Module, context: ASTContext
@@ -287,7 +287,7 @@ class StorageVarVisitor(BaseVisitor):
             storage_write_node.target._metadata["type"] = cairo_typ
 
             # Replace assign node with RHS
-            ast.replace_in_tree(node, storage_write_node)
+            replace_in_tree(ast, node, storage_write_node)
             # Add RHS node before storage write node
             insert_statement_before(rhs_assignment_node, storage_write_node, fn_node)
             insert_statement_before(storage_read_node, rhs_assignment_node, fn_node)

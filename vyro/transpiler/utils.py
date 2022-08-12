@@ -25,6 +25,26 @@ def set_parent(child: vy_ast.VyperNode, parent: vy_ast.VyperNode):
     child._depth = getattr(parent, "_depth", -1) + 1
 
 
+def replace_in_tree(
+    ast: vy_ast.Module, old_node: vy_ast.VyperNode, new_node: vy_ast.VyperNode
+):
+    """
+    Wrapper function over Vyper AST's `replace_in_tree` to include replacement of node
+    in `vy_ast.arguments`.
+    """
+    parent = old_node._parent
+    if isinstance(parent, vy_ast.Call) and old_node in parent.args.args:
+        obj = parent.args.args
+        obj[obj.index(old_node)] = new_node
+        parent._children.remove(old_node)
+
+        new_node._parent = parent
+        new_node._depth = old_node._depth
+        parent._children.add(new_node)
+    else:
+        ast.replace_in_tree(old_node, new_node)
+
+
 def insert_statement_before(
     node: vy_ast.VyperNode, before: vy_ast.VyperNode, body_node: vy_ast.VyperNode
 ):
@@ -135,4 +155,7 @@ def wrap_operation_in_call(
         ),
         keywords=keywords,
     )
+    for a in args:
+        set_parent(a, wrapped_op)
+        wrapped_op._children.add(a)
     return wrapped_op
