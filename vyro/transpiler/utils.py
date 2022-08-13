@@ -111,7 +111,7 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
             )
 
     elif isinstance(typ, FixedAbstractType):
-        raise UnsupportedType(f"{typ} is not supported.")
+        raise UnsupportedType(f"`{typ}` type is not supported.")
 
     elif isinstance(typ, AddressDefinition):
         return FeltDefinition(

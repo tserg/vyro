@@ -173,7 +173,7 @@ class CairoWriter:
         pass
 
     def write_Decimal(self, node):
-        return str(node.value)
+        pass
 
     def write_Dict(self, node):
         for k in node.keys:
