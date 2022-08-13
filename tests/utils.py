@@ -1,3 +1,5 @@
+from vyper.utils import string_to_bytes
+
 from vyro.cairo.writer import write
 from vyro.transpiler.transpile import transpile
 from vyro.utils.output import write_cairo
@@ -24,3 +26,8 @@ def signed_int_to_felt(i: int) -> int:
     """
     assert i < 0
     return CAIRO_PRIME + i
+
+
+def str_to_int(str_: str) -> int:
+    b, _ = string_to_bytes(str_)
+    return int(b.hex(), 16)

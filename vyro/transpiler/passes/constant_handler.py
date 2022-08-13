@@ -5,6 +5,8 @@ from vyro.transpiler.utils import convert_node_type_definition, replace_in_tree
 from vyro.transpiler.visitor import BaseVisitor
 from vyro.utils.utils import CAIRO_PRIME
 
+STR_LIMIT = 31
+
 
 class ConstantHandlerVisitor(BaseVisitor):
     def _assert_valid_felt(self, node, int_value):
@@ -56,6 +58,15 @@ class ConstantHandlerVisitor(BaseVisitor):
         replace_in_tree(ast, node, replacement_int)
 
         # Search for folded nodes
-        for n in ast.get_descendants(vy_ast.NameConstant, {"value": bool_value}, reverse=True):
+        for n in ast.get_descendants(
+            vy_ast.NameConstant, {"value": bool_value}, reverse=True
+        ):
             new_replacement_int = vy_ast.Int.from_node(n, value=int_value)
             replace_in_tree(ast, n, new_replacement_int)
+
+    def visit_Str(self, node, ast, context):
+        str_value = node.value
+        if len(str_value) > STR_LIMIT:
+            raise FeltOverflowException(
+                f"Strings cannot exceed {STR_LIMIT} characters in length", node
+            )

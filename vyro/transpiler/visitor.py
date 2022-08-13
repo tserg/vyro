@@ -226,6 +226,9 @@ class BaseVisitor:
     def visit_Return(self, node, ast, context):
         self.visit(node.value, ast, context)
 
+    def visit_Str(self, node, ast, context):
+        pass
+
     def visit_StructDef(self, node, ast, context):
         self.visit(node.name, ast, context)
         self.visit(node.body, ast, context)

@@ -354,6 +354,10 @@ class CairoWriter:
         value_str = self.write(node.value)
         return f"return ({value_str})"
 
+    def write_Str(self, node):
+        value_str = f"'{node.value}'"
+        return value_str
+
     def write_StructDef(self, node):
         self.write(node.name)
         self.write(node.body)

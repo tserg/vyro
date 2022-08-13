@@ -1,6 +1,7 @@
 from hexbytes import HexBytes
 
-from tests.utils import signed_int_to_felt
+from tests.utils import signed_int_to_felt, str_to_int
+
 
 EXPECTATIONS = [
     # .vy filename, [
@@ -75,6 +76,7 @@ EXPECTATIONS = [
             ("get_addr", [], "0x3cD751E6b0078Be393132286c442345e5DC49699", [], 347341241061202630446643950033957413255697962649),
             ("get_bool", [], True, [], 1),
             ("get_bytes20", [], HexBytes("0x3cd751e6b0078be393132286c442345e5dc49699"), [], 347341241061202630446643950033957413255697962649),
+            ("get_string", [], "transpiler", [], str_to_int("transpiler")),
         ),
     ),
     (

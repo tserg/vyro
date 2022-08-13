@@ -120,7 +120,7 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
             is_immutable=typ.is_immutable,
         )
 
-    return FeltDefinition(False, False, False)
+    return FeltDefinition(typ.is_constant, typ.is_public, typ.is_immutable)
 
 
 def add_implicit_to_function(node: vy_ast.VyperNode, implicit: str):
