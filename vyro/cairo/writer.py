@@ -132,6 +132,9 @@ class CairoWriter:
     def write_Break(self, node):
         pass
 
+    def write_Bytes(self, node):
+        pass
+
     def write_CairoStorageRead(self, node):
         target_str = self.write(node.target)
         target_typ = node.target._metadata.get("type")

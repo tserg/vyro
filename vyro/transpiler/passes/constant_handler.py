@@ -16,19 +16,22 @@ class ConstantHandlerVisitor(BaseVisitor):
                 node,
             )
 
-    def visit_Module(self, node, ast, context):
-        # Visit contract variable declarations only
-        contract_vars = [i for i in node.body if isinstance(i, vy_ast.VariableDecl)]
-        for c in contract_vars:
-            self.visit(c, ast, context)
+    def visit_Bytes(self, node, ast, context):
+        # Get integer value
+        byte_value = node.value
+        int_value = int(byte_value.hex(), 16)
 
-    def visit_VariableDecl(self, node, ast, context):
-        # Early termination if not a constant
-        if node.is_constant is False:
-            return
+        # Replace with integer node
+        replacement_int = vy_ast.Int.from_node(node, value=int_value)
 
-        convert_node_type_definition(node)
-        self.visit(node.value, ast, context)
+        self._assert_valid_felt(node, int_value)
+
+        replace_in_tree(ast, node, replacement_int)
+
+        # Search for folded nodes
+        for n in ast.get_descendants(vy_ast.Bytes, {"value": byte_value}, reverse=True):
+            new_replacement_int = vy_ast.Int.from_node(n, value=int_value)
+            replace_in_tree(ast, n, new_replacement_int)
 
     def visit_Hex(self, node, ast, context):
         # Get integer value
@@ -51,6 +54,12 @@ class ConstantHandlerVisitor(BaseVisitor):
         int_value = node.value
         self._assert_valid_felt(node, int_value)
 
+    def visit_Module(self, node, ast, context):
+        # Visit contract variable declarations only
+        contract_vars = [i for i in node.body if isinstance(i, vy_ast.VariableDecl)]
+        for c in contract_vars:
+            self.visit(c, ast, context)
+
     def visit_NameConstant(self, node, ast, context):
         bool_value = node.value
         int_value = int(bool_value)
@@ -70,3 +79,11 @@ class ConstantHandlerVisitor(BaseVisitor):
             raise FeltOverflowException(
                 f"Strings cannot exceed {STR_LIMIT} characters in length", node
             )
+
+    def visit_VariableDecl(self, node, ast, context):
+        # Early termination if not a constant
+        if node.is_constant is False:
+            return
+
+        convert_node_type_definition(node)
+        self.visit(node.value, ast, context)

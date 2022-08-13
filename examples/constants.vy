@@ -7,6 +7,7 @@ UINT256_VALID: constant(uint256) = 123
 ADDR: constant(address) = 0x3cD751E6b0078Be393132286c442345e5DC49699
 BOOL: constant(bool) = True
 FIXED_BYTES_20: constant(bytes20) = 0x3cd751e6b0078be393132286c442345e5dc49699
+BYTES_ARRAY_10: constant(Bytes[10]) = b"\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10"
 STRING_10: constant(String[10]) = "transpiler"
 
 @external
@@ -38,6 +39,11 @@ def get_bool() -> bool:
 @view
 def get_bytes20() -> bytes20:
     return FIXED_BYTES_20
+
+@external
+@view
+def get_bytes_array_10() -> Bytes[10]:
+    return BYTES_ARRAY_10
 
 @external
 @view

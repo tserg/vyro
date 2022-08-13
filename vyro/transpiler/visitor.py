@@ -73,6 +73,9 @@ class BaseVisitor:
     def visit_Break(self, node, ast, context):
         pass
 
+    def visit_Bytes(self, node, ast, context):
+        pass
+
     def visit_CairoStorageRead(self, node, ast, context):
         pass
 
