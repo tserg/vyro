@@ -22,7 +22,7 @@ class ConstantHandlerVisitor(BaseVisitor):
 
     def visit_VariableDecl(self, node, ast, context):
         # Early termination if not a constant
-        if not node.is_constant:
+        if node.is_constant is False:
             return
 
         convert_node_type_definition(node)
@@ -49,11 +49,13 @@ class ConstantHandlerVisitor(BaseVisitor):
         int_value = node.value
         self._assert_valid_felt(node, int_value)
 
-        # Get type from parent `VariableDecl`
-        # parent = node.get_ancestor(vy_ast.VariableDecl)
-        # typ = parent._metadata.get("type")
-        # cairo_typ = get_cairo_type(typ)
+    def visit_NameConstant(self, node, ast, context):
+        bool_value = node.value
+        int_value = int(bool_value)
+        replacement_int = vy_ast.Int.from_node(node, value=int_value)
+        replace_in_tree(ast, node, replacement_int)
 
-        # Propagate type for folded nodes for `uint256_handler` pass
-        # for n in ast.get_descendants(vy_ast.Int, {"value": int_value}, reverse=True):
-        #    n._metadata["type"] = cairo_typ
+        # Search for folded nodes
+        for n in ast.get_descendants(vy_ast.NameConstant, {"value": bool_value}, reverse=True):
+            new_replacement_int = vy_ast.Int.from_node(n, value=int_value)
+            replace_in_tree(ast, n, new_replacement_int)
