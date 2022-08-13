@@ -7,7 +7,6 @@ from vyro.transpiler.utils import (
     add_implicit_to_function,
     generate_name_node,
     get_cairo_type,
-    replace_in_tree,
     set_parent,
     wrap_operation_in_call,
 )
@@ -75,7 +74,7 @@ class OpsConverterVisitor(BaseVisitor):
         ann_assign._metadata["type"] = cairo_typ
 
         # Replace `AugAssign` node with `AnnAssign`
-        replace_in_tree(ast, node, ann_assign)
+        ast.replace_in_tree(node, ann_assign)
 
     def visit_BinOp(self, node, ast, context):
         typ = node._metadata.get("type")
@@ -113,7 +112,7 @@ class OpsConverterVisitor(BaseVisitor):
         wrapped_op._metadata["type"] = cairo_typ
 
         # Replace `BinOp` node with wrapped call
-        replace_in_tree(ast, node, wrapped_op)
+        ast.replace_in_tree(node, wrapped_op)
 
         # Add import
         add_builtin_to_module(ast, vyro_op)
@@ -135,7 +134,7 @@ class OpsConverterVisitor(BaseVisitor):
         wrapped_op._metadata["type"] = cairo_typ
 
         # Replace `BoolOp` node with wrapped call
-        replace_in_tree(ast, node, wrapped_op)
+        ast.replace_in_tree(node, wrapped_op)
 
         # Add import
         add_builtin_to_module(ast, vyro_op)
@@ -173,7 +172,7 @@ class OpsConverterVisitor(BaseVisitor):
         wrapped_op._metadata["type"] = cairo_typ
 
         # Replace `BinOp` node with wrapped call
-        replace_in_tree(ast, node, wrapped_op)
+        ast.replace_in_tree(node, wrapped_op)
 
         # Add import
         add_builtin_to_module(ast, vyro_op)

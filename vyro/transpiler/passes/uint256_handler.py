@@ -8,7 +8,6 @@ from vyro.transpiler.utils import (
     generate_name_node,
     get_cairo_type,
     insert_statement_before,
-    replace_in_tree,
     set_parent,
     wrap_operation_in_call,
 )
@@ -108,7 +107,7 @@ class Uint256HandlerVisitor(BaseVisitor):
         wrapped_uint256_op._metadata["type"] = cairo_typ
 
         # Replace `BinOp` node with wrapped call
-        replace_in_tree(ast, node, wrapped_uint256_op)
+        ast.replace_in_tree(node, wrapped_uint256_op)
 
         # Add import
         add_builtin_to_module(ast, uint256_op)
@@ -148,7 +147,7 @@ class Uint256HandlerVisitor(BaseVisitor):
                 )
 
                 # Replace node with wrapped convert
-                replace_in_tree(ast, node, wrapped_convert)
+                ast.replace_in_tree(node, wrapped_convert)
 
                 # Set type
                 wrapped_convert._metadata["type"] = CairoUint256Definition()

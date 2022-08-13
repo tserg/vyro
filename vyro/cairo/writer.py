@@ -150,7 +150,7 @@ class CairoWriter:
         func_str = self.write(node.func)
 
         args = []
-        for a in node.args.args:
+        for a in node.args:
             arg_str = self.write(a)
             args.append(arg_str)
 

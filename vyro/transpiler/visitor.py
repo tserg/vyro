@@ -84,7 +84,10 @@ class BaseVisitor:
 
     def visit_Call(self, node, ast, context):
         self.visit(node.func, ast, context)
-        self.visit(node.args, ast, context)
+
+        for a in node.args:
+            self.visit(a, ast, context)
+
         for k in node.keywords:
             self.visit(k, ast, context)
 
