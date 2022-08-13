@@ -199,7 +199,7 @@ class CairoWriter:
         pass
 
     def write_Expr(self, node):
-        self.write(node.value)
+        return self.write(node.value)
 
     def write_For(self, node):
         self.write(node.iter)

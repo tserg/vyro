@@ -2,6 +2,7 @@ from vyper import ast as vy_ast
 from vyper.semantics.types.function import ContractFunction, FunctionVisibility, StateMutability
 
 from vyro.cairo.nodes import CairoStorageRead, CairoStorageWrite
+from vyro.cairo.types import CairoTypeDefinition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     convert_node_type_definition,
@@ -15,6 +16,51 @@ from vyro.transpiler.visitor import BaseVisitor
 
 
 class StorageVarVisitor(BaseVisitor):
+    def _handle_rhs(
+        self,
+        contract_var: vy_ast.Attribute,
+        ast: vy_ast.Module,
+        context: ASTContext,
+        parent_node: vy_ast.VyperNode,
+        cairo_typ: CairoTypeDefinition,
+    ):
+        """
+        Helper function to extract a `contract_var` storage variable referenced in the
+        RHS into a new `Assign` node that is inserted before the `parent_node`,
+        and replaces the initial storage variable reference with a newly generated
+        `Name` node.
+        """
+        # Store original variable name
+        var_name = contract_var.attr
+        # Create temporary variable for assignment of storage read value
+        temp_name_node = generate_name_node(context.reserve_id())
+        temp_name_node._metadata["type"] = cairo_typ
+
+        value_node = vy_ast.Name(
+            node_id=context.reserve_id(), id=f"{var_name}_STORAGE", ast_type="Name"
+        )
+
+        # Create storage read node
+        storage_read_node = CairoStorageRead(
+            node_id=context.reserve_id(),
+            parent=ast,
+            targets=[temp_name_node],  # type: ignore
+            value=value_node,
+            ast_type="CairoStorageRead",
+        )
+        storage_read_node._children.add(value_node)
+        storage_read_node._children.add(temp_name_node)
+
+        # Insert `CairoStorageRead` node before `Assign`
+        fn_node = parent_node.get_ancestor(vy_ast.FunctionDef)
+        insert_statement_before(storage_read_node, parent_node, fn_node)
+
+        # Duplicate name node
+        temp_name_node_copy = generate_name_node(
+            context.reserve_id(), name=temp_name_node.id
+        )
+        ast.replace_in_tree(contract_var, temp_name_node_copy)
+
     def visit_VariableDecl(
         self, node: vy_ast.VariableDecl, ast: vy_ast.Module, context: ASTContext
     ):
@@ -98,6 +144,19 @@ class StorageVarVisitor(BaseVisitor):
 
             ast.add_to_body(fn_node)
 
+    def visit_AnnAssign(
+        self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext
+    ):
+        cairo_typ = convert_node_type_definition(node.target)
+        # Handle storage variables on RHS of assignment
+        rhs = node.value
+        rhs_contract_vars = rhs.get_descendants(
+            vy_ast.Attribute, {"value.id": "self"}, include_self=True
+        )
+        if rhs_contract_vars:
+            contract_var = rhs_contract_vars.pop()
+            self._handle_rhs(contract_var, ast, context, node, cairo_typ)
+
     def visit_Assign(
         self, node: vy_ast.Assign, ast: vy_ast.Module, context: ASTContext
     ):
@@ -163,36 +222,7 @@ class StorageVarVisitor(BaseVisitor):
         )
         if rhs_contract_vars:
             contract_var = rhs_contract_vars.pop()
-            # Store original variable name
-            var_name = contract_var.attr
-            # Create temporary variable for assignment of storage read value
-            temp_name_node = generate_name_node(context.reserve_id())
-            temp_name_node._metadata["type"] = cairo_typ
-
-            value_node = vy_ast.Name(
-                node_id=context.reserve_id(), id=f"{var_name}_STORAGE", ast_type="Name"
-            )
-
-            # Create storage read node
-            storage_read_node = CairoStorageRead(
-                node_id=context.reserve_id(),
-                parent=ast,
-                targets=[temp_name_node],  # type: ignore
-                value=value_node,
-                ast_type="CairoStorageRead",
-            )
-            storage_read_node._children.add(value_node)
-            storage_read_node._children.add(temp_name_node)
-
-            # Insert `CairoStorageRead` node before `Assign`
-            fn_node = node.get_ancestor(vy_ast.FunctionDef)
-            insert_statement_before(storage_read_node, node, fn_node)
-
-            # Duplicate name node
-            temp_name_node_copy = generate_name_node(
-                context.reserve_id(), name=temp_name_node.id
-            )
-            ast.replace_in_tree(contract_var, temp_name_node_copy)
+            self._handle_rhs(contract_var, ast, context, node, cairo_typ)
 
     def visit_AugAssign(
         self, node: vy_ast.AugAssign, ast: vy_ast.Module, context: ASTContext

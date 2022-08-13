@@ -81,6 +81,17 @@ EXPECTATIONS = [
         ),
     ),
     (
+        "internal_fns",
+        [
+            ("get_abc", [], 0, [], 0),
+            ("foo", [77], None, [77], None),
+            ("get_abc", [], 154, [], 154),
+            ("get_xyz", [], 1, [], 1),
+            ("baz", [77], None, [77], None),
+            ("get_xyz", [], 155, [], 155),
+        ],
+    ),
+    (
         "state_variable",
         [
             ("foo", [], None, [], None),

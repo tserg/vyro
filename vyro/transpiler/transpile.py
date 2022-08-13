@@ -7,6 +7,7 @@ from vyro.transpiler.passes import (
     CairoImporterVisitor,
     ConstantHandlerVisitor,
     InitialisationVisitor,
+    InternalFunctionsHandler,
     OpsConverterVisitor,
     ReturnValueHandler,
     StorageVarVisitor,
@@ -17,6 +18,7 @@ from vyro.transpiler.passes import (
 PASSES = {
     "I": InitialisationVisitor,
     "Fc": UnsupportedVisitor,
+    "If": InternalFunctionsHandler,
     "Rv": ReturnValueHandler,
     "Sv": StorageVarVisitor,
     "Oc": OpsConverterVisitor,
