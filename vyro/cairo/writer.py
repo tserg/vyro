@@ -1,7 +1,7 @@
 from typing import List
 
 from vyper import ast as vy_ast
-from vyper.semantics.types.function import FunctionVisibility, StateMutability
+from vyper.semantics.types.function import StateMutability
 
 from vyro.cairo.implicits import IMPLICITS
 from vyro.cairo.utils import INDENT, generate_storage_var_stub

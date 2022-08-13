@@ -1,6 +1,6 @@
 from vyper import ast as vy_ast
 
-from vyro.exceptions import FeltOverflowException, UnsupportedType
+from vyro.exceptions import FeltOverflowException
 from vyro.transpiler.utils import convert_node_type_definition
 from vyro.transpiler.visitor import BaseVisitor
 from vyro.utils.utils import CAIRO_PRIME

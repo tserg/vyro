@@ -1,6 +1,3 @@
-from vyper import ast as vy_ast
-
-from vyro.transpiler.utils import generate_name_node
 from vyro.transpiler.visitor import BaseVisitor
 
 
