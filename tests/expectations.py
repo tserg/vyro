@@ -83,6 +83,15 @@ EXPECTATIONS = [
         ),
     ),
     (
+        "constructor",
+        (
+            ("x", [], -10, [], signed_int_to_felt(-10)),
+            ("y", [], 100, [], 100),
+            ("z", [], True, [], 1),
+        ),
+        ([-10, 100, True], [signed_int_to_felt(-10), 100, 1]),
+    ),
+    (
         "internal_fns",
         [
             ("get_abc", [], 0, [], 0),

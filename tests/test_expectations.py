@@ -20,7 +20,11 @@ def test_vyper_code(project, eth_owner, eth_user, code):
     contract_object = getattr(project, filename)
 
     # Obtain the `ContractInstance`
-    contract = eth_owner.deploy(contract_object)
+    if len(code) == 2:
+        contract = eth_owner.deploy(contract_object)
+    elif len(code) == 3:
+        constructor_args = code[2][0]
+        contract = eth_owner.deploy(contract_object, *constructor_args)
 
     print(f"Testing Vyper contract: {filename}.vy")
 
@@ -70,8 +74,11 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
     contract_object = getattr(project, filename)
 
     # Obtain the `ContractInstance`
-    # with networks.starknet.local.use_provider("starknet"):
-    contract = contract_object.deploy()
+    if len(code) == 2:
+        contract = contract_object.deploy()
+    elif len(code) == 3:
+        constructor_args = code[2][1]
+        contract = contract_object.deploy(*constructor_args)
 
     print(f"Testing Cairo contract: {filename}.cairo")
 

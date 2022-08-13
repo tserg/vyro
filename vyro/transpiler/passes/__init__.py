@@ -1,5 +1,6 @@
 from vyro.transpiler.passes.cairo_importer import CairoImporterVisitor
 from vyro.transpiler.passes.constant_handler import ConstantHandlerVisitor
+from vyro.transpiler.passes.constructor_handler import ConstructorHandler
 from vyro.transpiler.passes.initialisation import InitialisationVisitor
 from vyro.transpiler.passes.internal_fns_handler import InternalFunctionsHandler
 from vyro.transpiler.passes.ops_converter import OpsConverterVisitor

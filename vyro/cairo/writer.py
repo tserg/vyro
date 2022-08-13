@@ -212,8 +212,10 @@ class CairoWriter:
         fn_typ = node._metadata.get("type")
 
         # Add view or external decorator
-        if fn_typ.visibility == FunctionVisibility.EXTERNAL:
-            if fn_typ.mutability == StateMutability.VIEW:
+        if fn_typ.is_external:
+            if fn_typ.is_constructor:
+                ret.append("@constructor")
+            elif fn_typ.mutability == StateMutability.VIEW:
                 ret.append("@view")
             else:
                 ret.append("@external")
