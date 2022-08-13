@@ -1,11 +1,18 @@
+from string import ascii_lowercase as alc
 from typing import List
 
 from vyper import ast as vy_ast
 from vyper.semantics.types import AddressDefinition
 from vyper.semantics.types.abstract import FixedAbstractType, IntegerAbstractType
 from vyper.semantics.types.bases import BaseTypeDefinition
+from vyper.semantics.types.indexable.mapping import MappingDefinition
 
-from vyro.cairo.types import CairoTypeDefinition, CairoUint256Definition, FeltDefinition
+from vyro.cairo.types import (
+    CairoMappingDefinition,
+    CairoTypeDefinition,
+    CairoUint256Definition,
+    FeltDefinition,
+)
 from vyro.exceptions import TranspilerPanic, UnsupportedType
 from vyro.transpiler.context import ASTContext
 
@@ -100,6 +107,15 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
             is_immutable=typ.is_immutable,
         )
 
+    elif isinstance(typ, MappingDefinition):
+        key_types, value_type = get_hashmap_types(typ)
+        # Ensure key types and value type are converted
+        key_types = list(map(get_cairo_type, key_types))
+        value_type = get_cairo_type(value_type)
+        return CairoMappingDefinition(
+            typ.is_constant, typ.is_public, typ.is_immutable, key_types, value_type
+        )
+
     return FeltDefinition(typ.is_constant, typ.is_public, typ.is_immutable)
 
 
@@ -137,3 +153,41 @@ def wrap_operation_in_call(
         set_parent(a, wrapped_op)
         wrapped_op._children.add(a)
     return wrapped_op
+
+
+def get_hashmap_types(
+    typ: BaseTypeDefinition, keys: List[BaseTypeDefinition] = []
+) -> (List[BaseTypeDefinition], BaseTypeDefinition):
+    if not isinstance(typ, MappingDefinition):
+        return keys
+
+    cairo_typ = get_cairo_type(typ.key_type)
+    keys.append(cairo_typ)
+    value_typ = typ.value_type
+    if isinstance(value_typ, MappingDefinition):
+        return get_hashmap_types(value_typ, keys)
+
+    return keys, value_typ
+
+
+def extract_mapping_args(
+    typ: CairoMappingDefinition, context: ASTContext, include_type: bool = False
+):
+    ret = []
+    for i in range(len(typ.key_types)):
+        arg_name = alc[i]
+        key_type = typ.key_types[i]
+
+        # Create `arg` node
+        if include_type:
+            arg_node = vy_ast.arg(
+                node_id=context.reserve_id(),
+                arg=arg_name,
+                annotation=vy_ast.Name(node_id=context.reserve_id(), id=str(key_type)),
+            )
+        else:
+            arg_node = generate_name_node(context.reserve_id(), arg_name)
+
+        arg_node._metadata["type"] = key_type
+        ret.append(arg_node)
+    return ret

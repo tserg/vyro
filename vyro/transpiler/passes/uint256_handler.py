@@ -22,6 +22,9 @@ UINT256_BINOP_TABLE = {
 
 class Uint256HandlerVisitor(BaseVisitor):
     def visit_arg(self, node, ast, context):
+        if "type" in node._metadata:
+            return
+
         vyper_typ = get_type_from_annotation(node.annotation, DataLocation.UNSET)
         cairo_typ = get_cairo_type(vyper_typ)
         node._metadata["type"] = cairo_typ

@@ -4,6 +4,7 @@ from vyper import ast as vy_ast
 from vyper.semantics.types.function import StateMutability
 
 from vyro.cairo.implicits import IMPLICITS
+from vyro.cairo.types import CairoMappingDefinition
 from vyro.cairo.utils import INDENT, generate_storage_var_stub
 from vyro.exceptions import TranspilerPanic, UnsupportedNode
 
@@ -139,12 +140,25 @@ class CairoWriter:
         target_str = self.write(node.target)
         target_typ = node.target._metadata.get("type")
         value_str = self.write(node.value)
-        return f"let ({target_str} : {target_typ}) = {value_str}.read()"
+
+        arg_str = ""
+        args = []
+        for a in node.args:
+            args.append(self.write(a))
+            arg_str = ", ".join(args)
+
+        return f"let ({target_str} : {target_typ}) = {value_str}.read({arg_str})"
 
     def write_CairoStorageWrite(self, node):
         target_str = self.write(node.target)
-        value_str = self.write(node.value)
-        return f"{target_str}.write({value_str})"
+
+        arg_str = ""
+        args = []
+        for a in node.value:
+            args.append(self.write(a))
+            arg_str = ", ".join(args)
+
+        return f"{target_str}.write({arg_str})"
 
     def write_Call(self, node):
         func_str = self.write(node.func)
@@ -236,6 +250,8 @@ class CairoWriter:
         return_decl_str = ""
         if node.returns:
             return_typ = fn_typ.return_type
+            if isinstance(return_typ, CairoMappingDefinition):
+                return_typ = return_typ.value_type
             return_decl_str = f" -> ({node.name}_ret : {return_typ})"
 
         fn_def_str = (
@@ -392,9 +408,8 @@ class CairoWriter:
             constant_decl_str = f"const {name} = {value_str}"
             self.constants.append(constant_decl_str)
 
-        elif not node.is_immutable:
-            storage_var_stub = generate_storage_var_stub(name, typ)
-            self.storage_vars.append(storage_var_stub)
+        storage_var_stub = generate_storage_var_stub(name, typ)
+        self.storage_vars.append(storage_var_stub)
 
 
 def write(ast: vy_ast.Module):

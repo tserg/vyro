@@ -2,10 +2,11 @@ from vyper import ast as vy_ast
 from vyper.semantics.types.function import ContractFunction, FunctionVisibility, StateMutability
 
 from vyro.cairo.nodes import CairoStorageRead, CairoStorageWrite
-from vyro.cairo.types import CairoTypeDefinition
+from vyro.cairo.types import CairoMappingDefinition, CairoTypeDefinition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     convert_node_type_definition,
+    extract_mapping_args,
     generate_name_node,
     get_cairo_type,
     initialise_function_implicits,
@@ -16,6 +17,23 @@ from vyro.transpiler.visitor import BaseVisitor
 
 
 class StorageVarVisitor(BaseVisitor):
+    def _get_mapping_keys_write(
+        self, var_name: str, ast: vy_ast.Module, context: ASTContext
+    ):
+        """
+        Helper function to get the mapping keys for writing to a storage mapping.
+        """
+        ret = []
+        # Get type from variable declaration
+        contract_var_decl = ast.get_children(
+            vy_ast.VariableDecl, {"target.id": var_name}
+        ).pop()
+        mapping_typ = contract_var_decl._metadata.get("type")
+        if isinstance(mapping_typ, CairoMappingDefinition):
+            ret = extract_mapping_args(mapping_typ, context)
+
+        return ret
+
     def _handle_rhs(
         self,
         contract_var: vy_ast.Attribute,
@@ -46,7 +64,6 @@ class StorageVarVisitor(BaseVisitor):
             parent=ast,
             targets=[temp_name_node],  # type: ignore
             value=value_node,
-            ast_type="CairoStorageRead",
         )
         storage_read_node._children.add(value_node)
         storage_read_node._children.add(temp_name_node)
@@ -84,12 +101,18 @@ class StorageVarVisitor(BaseVisitor):
                 node_id=context.reserve_id(), id=f"{var_name}_STORAGE", ast_type="Name"
             )
 
+            # Handle args
+            read_args = []
+            if isinstance(cairo_typ, CairoMappingDefinition):
+                read_args = extract_mapping_args(cairo_typ, context)
+
             # Create storage read node
             storage_read_node = CairoStorageRead(
                 node_id=context.reserve_id(),
                 parent=ast,
                 targets=[temp_name_node],  # type: ignore
                 value=value_node,
+                args=read_args,
             )
             storage_read_node._children.add(value_node)
             storage_read_node._children.add(temp_name_node)
@@ -99,8 +122,16 @@ class StorageVarVisitor(BaseVisitor):
             )
             return_value_node._metadata["type"] = cairo_typ
 
+            # Derive arguments
+            fn_args = []
+            if isinstance(cairo_typ, CairoMappingDefinition):
+                fn_args = extract_mapping_args(cairo_typ, context, include_type=True)
+
             fn_node_args = vy_ast.arguments(
-                node_id=context.reserve_id(), args=[], defaults=[], ast_type="arguments"
+                node_id=context.reserve_id(),
+                args=fn_args,
+                defaults=[],
+                ast_type="arguments",
             )
 
             # Create return node
@@ -190,6 +221,16 @@ class StorageVarVisitor(BaseVisitor):
             value_node = vy_ast.Name(
                 node_id=context.reserve_id(), id=rhs_name_node.id, ast_type="Name"
             )
+            value_node._metadata["type"] = cairo_typ
+
+            value_list = [value_node]
+            # Retrieve mapping keys for writing
+            if isinstance(node.target, vy_ast.Subscript):
+                contract_var_name = node.target.value.attr
+                value_list = self._get_mapping_keys_write(
+                    contract_var_name, ast, context
+                )
+                value_list.append(value_node)
 
             storage_write_node = CairoStorageWrite(
                 node_id=context.reserve_id(),
@@ -201,13 +242,12 @@ class StorageVarVisitor(BaseVisitor):
                         ast_type="Name",
                     )
                 ],
-                value=value_node,
+                value=value_list,
             )
             storage_write_node._children.add(value_node)
 
             # Update type
             storage_write_node._metadata["type"] = cairo_typ
-            storage_write_node.value._metadata["type"] = cairo_typ
             storage_write_node.target._metadata["type"] = cairo_typ
 
             # Replace assign node with RHS
@@ -244,7 +284,9 @@ class StorageVarVisitor(BaseVisitor):
                 temp_name_node._metadata["type"] = cairo_typ
 
                 value_node = vy_ast.Name(
-                    node_id=context.reserve_id(), id=f"{var_name}_STORAGE", ast_type="Name"
+                    node_id=context.reserve_id(),
+                    id=f"{var_name}_STORAGE",
+                    ast_type="Name",
                 )
 
                 # Create storage read node
@@ -253,7 +295,6 @@ class StorageVarVisitor(BaseVisitor):
                     parent=ast,
                     targets=[temp_name_node],  # type: ignore
                     value=value_node,
-                    ast_type="CairoStorageRead",
                 )
                 storage_read_node._children.add(value_node)
                 storage_read_node._children.add(temp_name_node)
@@ -296,6 +337,16 @@ class StorageVarVisitor(BaseVisitor):
                 value_node = vy_ast.Name(
                     node_id=context.reserve_id(), id=rhs_name_node.id, ast_type="Name"
                 )
+                value_node._metadata["type"] = cairo_typ
+
+                value_list = [value_node]
+                # Retrieve mapping keys for writing
+                if isinstance(node.target, vy_ast.Subscript):
+                    contract_var_name = node.target.value.attr
+                    value_list = self._get_mapping_keys_write(
+                        contract_var_name, ast, context
+                    )
+                    value_list.append(value_node)
 
                 storage_write_node = CairoStorageWrite(
                     node_id=context.reserve_id(),
@@ -307,19 +358,20 @@ class StorageVarVisitor(BaseVisitor):
                             ast_type="Name",
                         )
                     ],
-                    value=value_node,
+                    value=value_list,
                 )
                 storage_write_node._children.add(value_node)
 
                 # Update type
                 storage_write_node._metadata["type"] = cairo_typ
-                storage_write_node.value._metadata["type"] = cairo_typ
                 storage_write_node.target._metadata["type"] = cairo_typ
 
                 # Replace assign node with RHS
                 ast.replace_in_tree(node, storage_write_node)
                 # Add RHS node before storage write node
-                insert_statement_before(rhs_assignment_node, storage_write_node, fn_node)
+                insert_statement_before(
+                    rhs_assignment_node, storage_write_node, fn_node
+                )
                 insert_statement_before(storage_read_node, rhs_assignment_node, fn_node)
 
         # Handle storage variables on RHS of assignment
