@@ -41,40 +41,41 @@ class OpsConverterVisitor(BaseVisitor):
         typ = node._metadata.get("type")
         cairo_typ = get_cairo_type(typ)
 
-        binop = vy_ast.BinOp(
-            node_id=context.reserve_id(),
-            left=target,
-            op=op,
-            right=value,
-            ast_type="BinOp",
-        )
-        binop._children.add(target)
-        binop._children.add(op)
-        binop._children.add(value)
-        set_parent(value, binop)
-        set_parent(target, binop)
-        set_parent(op, binop)
+        if isinstance(target, vy_ast.Name):
+            binop = vy_ast.BinOp(
+                node_id=context.reserve_id(),
+                left=target,
+                op=op,
+                right=value,
+                ast_type="BinOp",
+            )
+            binop._children.add(target)
+            binop._children.add(op)
+            binop._children.add(value)
+            set_parent(value, binop)
+            set_parent(target, binop)
+            set_parent(op, binop)
 
-        # Set to Vyper type for `uint256_handler` pass
-        binop._metadata["type"] = cairo_typ
+            # Set to Vyper type for `uint256_handler` pass
+            binop._metadata["type"] = cairo_typ
 
-        target_copy = generate_name_node(context.reserve_id(), name=target.id)
-        target_copy._metadata["type"] = cairo_typ
+            target_copy = generate_name_node(context.reserve_id(), name=target.id)
+            target_copy._metadata["type"] = cairo_typ
 
-        ann_assign = vy_ast.AnnAssign(
-            node_id=context.reserve_id(),
-            target=target_copy,
-            value=binop,
-            ast_type="AnnAssign",
-        )
-        ann_assign._children.add(target_copy)
-        ann_assign._children.add(binop)
-        set_parent(binop, ann_assign)
-        set_parent(target_copy, ann_assign)
-        ann_assign._metadata["type"] = cairo_typ
+            ann_assign = vy_ast.AnnAssign(
+                node_id=context.reserve_id(),
+                target=target_copy,
+                value=binop,
+                ast_type="AnnAssign",
+            )
+            ann_assign._children.add(target_copy)
+            ann_assign._children.add(binop)
+            set_parent(binop, ann_assign)
+            set_parent(target_copy, ann_assign)
+            ann_assign._metadata["type"] = cairo_typ
 
-        # Replace `AugAssign` node with `AnnAssign`
-        ast.replace_in_tree(node, ann_assign)
+            # Replace `AugAssign` node with `AnnAssign`
+            ast.replace_in_tree(node, ann_assign)
 
     def visit_BinOp(self, node, ast, context):
         typ = node._metadata.get("type")

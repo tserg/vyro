@@ -7,9 +7,8 @@ class InternalFunctionsHandler(BaseVisitor):
     def visit_Call(self, node, ast, context):
         fn_typ = node.func._metadata["type"]
 
-        fn_name = node.func.attr
-
-        if fn_typ.is_internal:
+        if hasattr(fn_typ, "is_internal") and fn_typ.is_internal:
+            fn_name = node.func.attr
             # Unwrap `foo` from `self.foo`
             fn_name_node = vy_ast.Name.from_node(
                 node,

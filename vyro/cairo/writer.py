@@ -235,8 +235,6 @@ class CairoWriter:
 
         return_decl_str = ""
         if node.returns:
-            # TODO Set return types
-            # return_values = self.write(node.returns)
             return_typ = fn_typ.return_type
             return_decl_str = f" -> ({node.name}_ret : {return_typ})"
 

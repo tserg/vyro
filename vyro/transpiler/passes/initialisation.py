@@ -35,5 +35,15 @@ class InitialisationVisitor(BaseVisitor):
         # Initialise import directives
         node._metadata["import_directives"] = {}
 
+        # Remove `implements`
+        implements = ast.get_children(vy_ast.AnnAssign, {"target.id": "implements"})
+        for i in implements:
+            ast.remove_from_body(i)
+
+        # Remove `vy_ast.ImportFrom`
+        import_froms = ast.get_children(vy_ast.ImportFrom)
+        for i in import_froms:
+            ast.remove_from_body(i)
+
         for i in node.body:
             self.visit(i, ast, context)

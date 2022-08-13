@@ -236,90 +236,91 @@ class StorageVarVisitor(BaseVisitor):
         cairo_typ = convert_node_type_definition(node.target)
 
         if contract_vars:
-            # Store original variable name
-            var_name = node.target.attr
-            # Create temporary variable for assignment of storage read value
-            temp_name_node = generate_name_node(context.reserve_id())
-            temp_name_node._metadata["type"] = cairo_typ
+            if isinstance(node.target, vy_ast.Attribute):
+                # Store original variable name
+                var_name = node.target.attr
+                # Create temporary variable for assignment of storage read value
+                temp_name_node = generate_name_node(context.reserve_id())
+                temp_name_node._metadata["type"] = cairo_typ
 
-            value_node = vy_ast.Name(
-                node_id=context.reserve_id(), id=f"{var_name}_STORAGE", ast_type="Name"
-            )
+                value_node = vy_ast.Name(
+                    node_id=context.reserve_id(), id=f"{var_name}_STORAGE", ast_type="Name"
+                )
 
-            # Create storage read node
-            storage_read_node = CairoStorageRead(
-                node_id=context.reserve_id(),
-                parent=ast,
-                targets=[temp_name_node],  # type: ignore
-                value=value_node,
-                ast_type="CairoStorageRead",
-            )
-            storage_read_node._children.add(value_node)
-            storage_read_node._children.add(temp_name_node)
+                # Create storage read node
+                storage_read_node = CairoStorageRead(
+                    node_id=context.reserve_id(),
+                    parent=ast,
+                    targets=[temp_name_node],  # type: ignore
+                    value=value_node,
+                    ast_type="CairoStorageRead",
+                )
+                storage_read_node._children.add(value_node)
+                storage_read_node._children.add(temp_name_node)
 
-            # Convert `AugAssign` operation to `BinOp`
-            binop_node = vy_ast.BinOp(
-                node_id=context.reserve_id(),
-                op=node.op,
-                left=temp_name_node,
-                right=node.value,
-                ast_type="BinOp",
-            )
-            binop_node._children.add(node.op)
-            binop_node._children.add(temp_name_node)
-            binop_node._children.add(node.value)
-            binop_node._metadata["type"] = cairo_typ
+                # Convert `AugAssign` operation to `BinOp`
+                binop_node = vy_ast.BinOp(
+                    node_id=context.reserve_id(),
+                    op=node.op,
+                    left=temp_name_node,
+                    right=node.value,
+                    ast_type="BinOp",
+                )
+                binop_node._children.add(node.op)
+                binop_node._children.add(temp_name_node)
+                binop_node._children.add(node.value)
+                binop_node._metadata["type"] = cairo_typ
 
-            # Create new variable and assign RHS
-            rhs_name_node = generate_name_node(context.reserve_id())
-            rhs_name_node._metadata["type"] = cairo_typ
+                # Create new variable and assign RHS
+                rhs_name_node = generate_name_node(context.reserve_id())
+                rhs_name_node._metadata["type"] = cairo_typ
 
-            rhs_assignment_node = vy_ast.Assign(
-                node_id=context.reserve_id(),
-                targets=[rhs_name_node],
-                value=binop_node,
-                ast_type="Assign",
-            )
-            rhs_assignment_node._children.add(rhs_name_node)
-            rhs_assignment_node._children.add(binop_node)
-            rhs_assignment_node._metadata["type"] = cairo_typ
-            set_parent(binop_node, rhs_assignment_node)
+                rhs_assignment_node = vy_ast.Assign(
+                    node_id=context.reserve_id(),
+                    targets=[rhs_name_node],
+                    value=binop_node,
+                    ast_type="Assign",
+                )
+                rhs_assignment_node._children.add(rhs_name_node)
+                rhs_assignment_node._children.add(binop_node)
+                rhs_assignment_node._metadata["type"] = cairo_typ
+                set_parent(binop_node, rhs_assignment_node)
 
-            # Add storage write node to body of function
+                # Add storage write node to body of function
 
-            fn_node = node.get_ancestor(vy_ast.FunctionDef)
+                fn_node = node.get_ancestor(vy_ast.FunctionDef)
 
-            # Create storage write node
-            contract_var = contract_vars.pop()
+                # Create storage write node
+                contract_var = contract_vars.pop()
 
-            value_node = vy_ast.Name(
-                node_id=context.reserve_id(), id=rhs_name_node.id, ast_type="Name"
-            )
+                value_node = vy_ast.Name(
+                    node_id=context.reserve_id(), id=rhs_name_node.id, ast_type="Name"
+                )
 
-            storage_write_node = CairoStorageWrite(
-                node_id=context.reserve_id(),
-                parent=fn_node,
-                targets=[  # type: ignore
-                    vy_ast.Name(
-                        node_id=context.reserve_id(),
-                        id=f"{contract_var.attr}_STORAGE",
-                        ast_type="Name",
-                    )
-                ],
-                value=value_node,
-            )
-            storage_write_node._children.add(value_node)
+                storage_write_node = CairoStorageWrite(
+                    node_id=context.reserve_id(),
+                    parent=fn_node,
+                    targets=[  # type: ignore
+                        vy_ast.Name(
+                            node_id=context.reserve_id(),
+                            id=f"{contract_var.attr}_STORAGE",
+                            ast_type="Name",
+                        )
+                    ],
+                    value=value_node,
+                )
+                storage_write_node._children.add(value_node)
 
-            # Update type
-            storage_write_node._metadata["type"] = cairo_typ
-            storage_write_node.value._metadata["type"] = cairo_typ
-            storage_write_node.target._metadata["type"] = cairo_typ
+                # Update type
+                storage_write_node._metadata["type"] = cairo_typ
+                storage_write_node.value._metadata["type"] = cairo_typ
+                storage_write_node.target._metadata["type"] = cairo_typ
 
-            # Replace assign node with RHS
-            ast.replace_in_tree(node, storage_write_node)
-            # Add RHS node before storage write node
-            insert_statement_before(rhs_assignment_node, storage_write_node, fn_node)
-            insert_statement_before(storage_read_node, rhs_assignment_node, fn_node)
+                # Replace assign node with RHS
+                ast.replace_in_tree(node, storage_write_node)
+                # Add RHS node before storage write node
+                insert_statement_before(rhs_assignment_node, storage_write_node, fn_node)
+                insert_statement_before(storage_read_node, rhs_assignment_node, fn_node)
 
         # Handle storage variables on RHS of assignment
         rhs = node.value

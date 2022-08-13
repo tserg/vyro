@@ -123,8 +123,7 @@ class BaseVisitor:
         pass
 
     def visit_EventDef(self, node, ast, context):
-        for i in node.body:
-            self.visit(i, ast, context)
+        pass
 
     def visit_Expr(self, node, ast, context):
         self.visit(node.value, ast, context)
