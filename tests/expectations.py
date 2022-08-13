@@ -12,7 +12,9 @@ EXPECTATIONS = [
         [
             ("aug_int128", [5], None, [5], None),
             ("a", [], 5, [], 5),
+            ("aug_int128_rhs", [5], 10, [5], 10),
             ("aug_uint256", [5], None, [5], None),
+            ("aug_uint256_rhs", [5], 10, [5], 10),
             ("b", [], 5, [], 5),
             ("aug_int128_local", [5], 15, [5], 15),
             ("aug_uint256_local", [5], 15, [5], 15),

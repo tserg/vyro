@@ -320,3 +320,12 @@ class StorageVarVisitor(BaseVisitor):
             # Add RHS node before storage write node
             insert_statement_before(rhs_assignment_node, storage_write_node, fn_node)
             insert_statement_before(storage_read_node, rhs_assignment_node, fn_node)
+
+        # Handle storage variables on RHS of assignment
+        rhs = node.value
+        rhs_contract_vars = rhs.get_descendants(
+            vy_ast.Attribute, {"value.id": "self"}, include_self=True
+        )
+        if rhs_contract_vars:
+            contract_var = rhs_contract_vars.pop()
+            self._handle_rhs(contract_var, ast, context, node, cairo_typ)
