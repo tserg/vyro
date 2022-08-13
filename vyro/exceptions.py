@@ -25,6 +25,10 @@ class FeltOverflowException(VyroException):
     """Overflow of felt"""
 
 
+class UnsupportedFeature(VyroException):
+    """Unsupported Vyper feature"""
+
+
 class UnsupportedNode(VyroException):
     """Unsupported Vyper AST node"""
 
