@@ -103,7 +103,26 @@ EXPECTATIONS = [
         ],
     ),
     (
-        "state_variable",
+        "state_variable_int128",
+        [
+            ("set_a", [-10], None, [signed_int_to_felt(-10)], None),
+            ("a", [], -10, [], signed_int_to_felt(-10)),
+            ("set_b", [100], None, [100], None),
+            ("b", [], 100, [], 100),
+            ("set_c", [], None, [], None),
+            ("c", [], 90, [], 90),
+        ],
+    ),
+    (
+        "state_variable_mapping",
+        [
+            ("b", [10], 0, [10], 0),
+            ("set_b", [10, 77], None, [10, 77], None),
+            ("b", [10], 77, [10], 77),
+        ],
+    ),
+    (
+        "state_variable_uint256",
         [
             ("foo", [], None, [], None),
             ("a", [], 7, [], 7),
@@ -111,9 +130,6 @@ EXPECTATIONS = [
             ("a", [], 100, [], 100),
             ("set_a", [2**256 - 1], None, [2**256 - 1], None),
             ("a", [], 2**256 - 1, [], 2**256 - 1),
-            ("b", [10], 0, [10], 0),
-            ("set_b", [10, 77], None, [10, 77], None),
-            ("b", [10], 77, [10], 77),
         ],
     ),
     (

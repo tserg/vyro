@@ -191,17 +191,20 @@ class StorageVarVisitor(BaseVisitor):
     def visit_Assign(
         self, node: vy_ast.Assign, ast: vy_ast.Module, context: ASTContext
     ):
+
         # Check for storage variable on LHS of assignment
         lhs = node.target
         contract_vars = lhs.get_descendants(
             vy_ast.Attribute, {"value.id": "self"}, include_self=True
         )
-
         cairo_typ = convert_node_type_definition(node.target)
 
+        lhs_replaced = False
         if contract_vars:
             # Create new variable and assign RHS
             rhs_name_node = generate_name_node(context.reserve_id())
+            rhs_name_node._metadata["type"] = cairo_typ
+
             rhs_assignment_node = vy_ast.Assign(
                 node_id=context.reserve_id(),
                 targets=[rhs_name_node],
@@ -210,6 +213,7 @@ class StorageVarVisitor(BaseVisitor):
             )
             rhs_assignment_node._children.add(rhs_name_node)
             rhs_assignment_node._children.add(node.value)
+            rhs_assignment_node._metadata["type"] = cairo_typ
             set_parent(node.value, rhs_assignment_node)
 
             # Add storage write node to body of function
@@ -255,6 +259,8 @@ class StorageVarVisitor(BaseVisitor):
             # Add RHS node before storage write node
             insert_statement_before(rhs_assignment_node, storage_write_node, fn_node)
 
+            lhs_replaced = True
+
         # Handle storage variables on RHS of assignment
         rhs = node.value
         rhs_contract_vars = rhs.get_descendants(
@@ -262,6 +268,11 @@ class StorageVarVisitor(BaseVisitor):
         )
         if rhs_contract_vars:
             contract_var = rhs_contract_vars.pop()
+
+            # Update parent node argument to `_handle_rhs` if LHS is replaced
+            if lhs_replaced is True:
+                node = rhs_assignment_node
+
             self._handle_rhs(contract_var, ast, context, node, cairo_typ)
 
     def visit_AugAssign(
@@ -275,6 +286,7 @@ class StorageVarVisitor(BaseVisitor):
 
         cairo_typ = convert_node_type_definition(node.target)
 
+        lhs_replaced = False
         if contract_vars:
             if isinstance(node.target, vy_ast.Attribute):
                 # Store original variable name
@@ -374,6 +386,8 @@ class StorageVarVisitor(BaseVisitor):
                 )
                 insert_statement_before(storage_read_node, rhs_assignment_node, fn_node)
 
+                lhs_replaced = True
+
         # Handle storage variables on RHS of assignment
         rhs = node.value
         rhs_contract_vars = rhs.get_descendants(
@@ -381,4 +395,9 @@ class StorageVarVisitor(BaseVisitor):
         )
         if rhs_contract_vars:
             contract_var = rhs_contract_vars.pop()
+
+            # Update parent node argument to `_handle_rhs` if LHS is replaced
+            if lhs_replaced is True:
+                node = rhs_assignment_node
+
             self._handle_rhs(contract_var, ast, context, node, cairo_typ)
