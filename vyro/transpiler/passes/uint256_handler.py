@@ -69,7 +69,7 @@ class Uint256HandlerVisitor(BaseVisitor):
                 # Visit newly added assignment node
                 self.visit(rhs_assignment_node, ast, context)
 
-        self.visit(node.value, ast, context)
+        super().visit_AnnAssign(node, ast, context)
 
     def visit_Assign(self, node, ast, context):
         type_ = node.value._metadata.get("type")
@@ -79,7 +79,7 @@ class Uint256HandlerVisitor(BaseVisitor):
             node.target._metadata["type"] = cairo_typ
             node._metadata["type"] = cairo_typ
 
-        self.visit(node.value, ast, context)
+        super().visit_Assign(node, ast, context)
 
     def visit_BinOp(self, node, ast, context):
         op_description = node.op._description

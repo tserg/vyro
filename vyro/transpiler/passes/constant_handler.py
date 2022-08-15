@@ -86,4 +86,5 @@ class ConstantHandlerVisitor(BaseVisitor):
             return
 
         convert_node_type_definition(node)
-        self.visit(node.value, ast, context)
+
+        super().visit_VariableDecl(node, ast, context)
