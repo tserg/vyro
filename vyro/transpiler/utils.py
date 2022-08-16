@@ -6,6 +6,7 @@ from vyper.semantics.types import AddressDefinition
 from vyper.semantics.types.abstract import FixedAbstractType, IntegerAbstractType
 from vyper.semantics.types.bases import BaseTypeDefinition
 from vyper.semantics.types.indexable.mapping import MappingDefinition
+from vyper.semantics.types.indexable.sequence import ArrayDefinition, DynamicArrayDefinition
 
 from vyro.cairo.types import (
     CairoMappingDefinition,
@@ -97,8 +98,8 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
                 is_immutable=typ.is_immutable,
             )
 
-    elif isinstance(typ, FixedAbstractType):
-        raise UnsupportedType(f"`{typ}` type is not supported.")
+    elif isinstance(typ, (FixedAbstractType, ArrayDefinition, DynamicArrayDefinition)):
+        raise UnsupportedType(f"`{type(typ)}` type is not supported.")
 
     elif isinstance(typ, AddressDefinition):
         return FeltDefinition(

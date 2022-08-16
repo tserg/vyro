@@ -2,6 +2,7 @@ from vyro.exceptions import (
     FeltOverflowException,
     UnsupportedFeature,
     UnsupportedOperation,
+    UnsupportedType,
 )
 
 UNSUPPORTED = [
@@ -10,6 +11,9 @@ UNSUPPORTED = [
     ("constants/bytesarray32_constant", FeltOverflowException),
     ("constants/string_constant", FeltOverflowException),
     ("constants/uint256_constant", FeltOverflowException),
+    ("array", UnsupportedType),
+    ("decimal", UnsupportedType),
+    ("dynarray", UnsupportedType),
     ("immutable", UnsupportedFeature),
     ("pow_uint256", UnsupportedOperation),
     ("unary_not", UnsupportedOperation),
