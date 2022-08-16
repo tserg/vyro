@@ -1,4 +1,8 @@
-from vyro.exceptions import FeltOverflowException, UnsupportedFeature, UnsupportedOperation
+from vyro.exceptions import (
+    FeltOverflowException,
+    UnsupportedFeature,
+    UnsupportedOperation,
+)
 
 UNSUPPORTED = [
     # .vy filename, expected exception

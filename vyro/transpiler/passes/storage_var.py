@@ -1,5 +1,9 @@
 from vyper import ast as vy_ast
-from vyper.semantics.types.function import ContractFunction, FunctionVisibility, StateMutability
+from vyper.semantics.types.function import (
+    ContractFunction,
+    FunctionVisibility,
+    StateMutability,
+)
 
 from vyro.cairo.nodes import CairoStorageRead, CairoStorageWrite
 from vyro.cairo.types import CairoMappingDefinition, CairoTypeDefinition
@@ -9,6 +13,7 @@ from vyro.transpiler.utils import (
     extract_mapping_args,
     generate_name_node,
     get_cairo_type,
+    get_mapping_var_name,
     initialise_function_implicits,
     insert_statement_before,
     set_parent,
@@ -230,7 +235,7 @@ class StorageVarVisitor(BaseVisitor):
             value_list = [value_node]
             # Retrieve mapping keys for writing
             if isinstance(node.target, vy_ast.Subscript):
-                contract_var_name = node.target.value.attr
+                contract_var_name = get_mapping_var_name(node.target)
                 value_list = self._get_mapping_keys_write(
                     contract_var_name, ast, context
                 )
@@ -354,7 +359,7 @@ class StorageVarVisitor(BaseVisitor):
                 value_list = [value_node]
                 # Retrieve mapping keys for writing
                 if isinstance(node.target, vy_ast.Subscript):
-                    contract_var_name = node.target.value.attr
+                    contract_var_name = get_mapping_var_name(node.target)
                     value_list = self._get_mapping_keys_write(
                         contract_var_name, ast, context
                     )

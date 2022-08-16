@@ -156,13 +156,17 @@ def wrap_operation_in_call(
 
 
 def get_hashmap_types(
-    typ: BaseTypeDefinition, keys: List[BaseTypeDefinition] = []
+    typ: BaseTypeDefinition, keys: List[BaseTypeDefinition] = None
 ) -> (List[BaseTypeDefinition], BaseTypeDefinition):
     if not isinstance(typ, MappingDefinition):
         return keys
 
     cairo_typ = get_cairo_type(typ.key_type)
+
+    if keys is None:
+        keys = []
     keys.append(cairo_typ)
+
     value_typ = typ.value_type
     if isinstance(value_typ, MappingDefinition):
         return get_hashmap_types(value_typ, keys)
@@ -191,3 +195,14 @@ def extract_mapping_args(
         arg_node._metadata["type"] = key_type
         ret.append(arg_node)
     return ret
+
+
+def get_mapping_var_name(node: vy_ast.Subscript) -> str:
+    """
+    Helper function to get the contract variable name for a mapping.
+    """
+    if isinstance(node.value, vy_ast.Attribute):
+        return node.value.attr
+    elif isinstance(node.value, vy_ast.Subscript):
+        return get_mapping_var_name(node.value)
+    raise

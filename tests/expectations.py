@@ -2,7 +2,6 @@ from hexbytes import HexBytes
 
 from tests.utils import signed_int_to_felt, str_to_int
 
-
 EXPECTATIONS = [
     # .vy filename, [
     #    (method_name, [vyper call_args], vyper expected, [cairo call_args], cairo expected)
@@ -75,10 +74,28 @@ EXPECTATIONS = [
             ("add_to_int128", [101], -1899, [101], signed_int_to_felt(-1899)),
             ("add_to_uint8", [111], 234, [111], 234),
             ("add_to_uint256", [111], 234, [111], 234),
-            ("get_addr", [], "0x3cD751E6b0078Be393132286c442345e5DC49699", [], 347341241061202630446643950033957413255697962649),
+            (
+                "get_addr",
+                [],
+                "0x3cD751E6b0078Be393132286c442345e5DC49699",
+                [],
+                347341241061202630446643950033957413255697962649,
+            ),
             ("get_bool", [], True, [], 1),
-            ("get_bytes20", [], HexBytes("0x3cd751e6b0078be393132286c442345e5dc49699"), [], 347341241061202630446643950033957413255697962649),
-            ("get_bytes_array_10", [], b"\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10", [], 4759477275222530853136),
+            (
+                "get_bytes20",
+                [],
+                HexBytes("0x3cd751e6b0078be393132286c442345e5dc49699"),
+                [],
+                347341241061202630446643950033957413255697962649,
+            ),
+            (
+                "get_bytes_array_10",
+                [],
+                b"\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10",
+                [],
+                4759477275222530853136,
+            ),
             ("get_string", [], "transpiler", [], str_to_int("transpiler")),
         ),
     ),
@@ -119,6 +136,13 @@ EXPECTATIONS = [
             ("b", [10], 0, [10], 0),
             ("set_b", [10, 77], None, [10, 77], None),
             ("b", [10], 77, [10], 77),
+        ],
+    ),
+    (
+        "state_variable_nested_mapping",
+        [
+            ("set_a", [123, 123, 456], None, [123, 123, 456], None),
+            ("a", [123, 123], 456, [123, 123], 456),
         ],
     ),
     (
