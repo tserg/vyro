@@ -1,7 +1,6 @@
 import os
 
 import pytest
-
 from ape.api.transactions import ReceiptAPI
 from ape_starknet.transactions import InvocationReceipt
 
@@ -17,7 +16,7 @@ def test_vyper_code(project, eth_owner, eth_user, code):
     Test Vyper code against expectations.
     """
     filename = code[0]
-    contract_object = getattr(project, filename)
+    contract_object = project.get_contract(filename)
 
     # Obtain the `ContractInstance`
     if len(code) == 2:
@@ -71,7 +70,8 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
     Test Cairo code against expectations.
     """
     filename = f"{code[0]}_transpiled"
-    contract_object = getattr(project, filename)
+
+    contract_object = project.get_contract(filename)
 
     # Obtain the `ContractInstance`
     if len(code) == 2:
