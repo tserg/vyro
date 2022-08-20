@@ -92,7 +92,13 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
         fn_call = getattr(contract, function_name)
 
         if expected is None:
-            fn_call(*call_args, sender=starknet_user)
+            receipt = fn_call(*call_args, sender=starknet_user)
+
+            # Test for events. Only handles 1 event currently
+            if len(c) == 6:
+                expected_event = c[5]
+                logs = receipt.decode_logs()
+                assert next(logs).event_name == expected_event
 
         else:
             ret = fn_call(*call_args)

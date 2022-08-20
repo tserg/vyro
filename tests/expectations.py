@@ -4,7 +4,7 @@ from tests.utils import signed_int_to_felt, str_to_int
 
 EXPECTATIONS = [
     # .vy filename, [
-    #    (method_name, [vyper call_args], vyper expected, [cairo call_args], cairo expected)
+    #    (method_name, [vyper call_args], vyper expected, [cairo call_args], cairo expected, cairo event name)
     # ]
     (
         "augassign",
@@ -107,6 +107,12 @@ EXPECTATIONS = [
             ("z", [], True, [], 1),
         ),
         ([-10, 100, True], [signed_int_to_felt(-10), 100, 1]),
+    ),
+    (
+        "event",
+        [
+            ("foo", [111], None, [111], None, "Trigger"),
+        ]
     ),
     (
         "internal_fns",

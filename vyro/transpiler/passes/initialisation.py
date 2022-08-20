@@ -9,9 +9,10 @@ class InitialisationVisitor(BaseVisitor):
     def visit_AnnAssign(
         self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext
     ):
-        typ = node.target._metadata.get("type")
-        cairo_typ = get_cairo_type(typ)
-        node._metadata["type"] = cairo_typ
+        typ = node.target._metadata.get("type") or node._metadata.get("type")
+        if typ:
+            cairo_typ = get_cairo_type(typ)
+            node._metadata["type"] = cairo_typ
 
     def visit_AugAssign(
         self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext

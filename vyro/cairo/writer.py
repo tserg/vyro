@@ -1,3 +1,4 @@
+from string import ascii_lowercase as alc
 from typing import List
 
 from vyper import ast as vy_ast
@@ -29,6 +30,10 @@ class CairoWriter:
         if self.constants:
             constants = "\n".join(self.constants)
 
+        events = ""
+        if self.events:
+            events = "\n".join(self.events)
+
         storage_vars = ""
         if self.storage_vars:
             storage_vars = "\n\n".join(self.storage_vars)
@@ -46,6 +51,7 @@ class CairoWriter:
                 self.header,
                 imports,
                 constants,
+                events,
                 storage_vars,
                 storage_vars_getters,
                 functions,
@@ -210,7 +216,23 @@ class CairoWriter:
         pass
 
     def write_EventDef(self, node):
-        pass
+        ret = ["@event"]
+
+        args_str = ""
+        args = []
+        for i in range(len(node.body)):
+            n = node.body[i]
+            arg_name = alc[i]
+            arg_typ = n._metadata.get("type")
+            args_str += f"{arg_name} : {arg_typ}"
+
+        if len(args) > 0:
+            args_str = ", ".join(args)
+
+        event_def = f"func {node.name}({args_str}):"
+        ret.append(event_def)
+        ret.append("end")
+        self.events.append("\n".join(ret))
 
     def write_Expr(self, node):
         return self.write(node.value)
@@ -318,7 +340,20 @@ class CairoWriter:
             self.write(e)
 
     def write_Log(self, node):
-        pass
+        # We cannot rely on `write_Call` because of `emit` in Cairo
+        call_node = node.value
+
+        # Event name is in `func` attribute of `vy_ast.Call`
+        event_name = self.write(call_node.func)
+
+        args = []
+        for a in call_node.args:
+            arg_str = self.write(a)
+            args.append(arg_str)
+
+        args_str = ", ".join(args)
+
+        return f"{event_name}.emit({args_str})"
 
     def write_Lt(self, node):
         pass
