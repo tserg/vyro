@@ -6,7 +6,10 @@ from vyper.semantics.types import AddressDefinition
 from vyper.semantics.types.abstract import FixedAbstractType, IntegerAbstractType
 from vyper.semantics.types.bases import BaseTypeDefinition
 from vyper.semantics.types.indexable.mapping import MappingDefinition
-from vyper.semantics.types.indexable.sequence import ArrayDefinition, DynamicArrayDefinition
+from vyper.semantics.types.indexable.sequence import (
+    ArrayDefinition,
+    DynamicArrayDefinition,
+)
 
 from vyro.cairo.types import (
     CairoMappingDefinition,
@@ -196,14 +199,3 @@ def extract_mapping_args(
         arg_node._metadata["type"] = key_type
         ret.append(arg_node)
     return ret
-
-
-def get_mapping_var_name(node: vy_ast.Subscript) -> str:
-    """
-    Helper function to get the contract variable name for a mapping.
-    """
-    if isinstance(node.value, vy_ast.Attribute):
-        return node.value.attr
-    elif isinstance(node.value, vy_ast.Subscript):
-        return get_mapping_var_name(node.value)
-    raise

@@ -15,7 +15,10 @@ class EventHandlerVisitor(BaseVisitor):
         for i in node.body:
 
             # Handle indexed members
-            if isinstance(i.annotation, vy_ast.Call) and i.annotation.func.id == "indexed":
+            if (
+                isinstance(i.annotation, vy_ast.Call)
+                and i.annotation.func.id == "indexed"
+            ):
                 annotation = i.annotation.args[0]
             else:
                 annotation = i.annotation
