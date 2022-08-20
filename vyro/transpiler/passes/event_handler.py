@@ -11,7 +11,15 @@ class EventHandlerVisitor(BaseVisitor):
     def visit_EventDef(
         self, node: vy_ast.EventDef, ast: vy_ast.Module, context: ASTContext
     ):
+        # Iterate over event members
         for i in node.body:
-            vyper_typ = get_type_from_annotation(i.annotation, DataLocation.UNSET)
+
+            # Handle indexed members
+            if isinstance(i.annotation, vy_ast.Call) and i.annotation.func.id == "indexed":
+                annotation = i.annotation.args[0]
+            else:
+                annotation = i.annotation
+
+            vyper_typ = get_type_from_annotation(annotation, DataLocation.UNSET)
             cairo_typ = get_cairo_type(vyper_typ)
             i._metadata["type"] = cairo_typ

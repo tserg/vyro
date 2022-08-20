@@ -94,11 +94,18 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
         if expected is None:
             receipt = fn_call(*call_args, sender=starknet_user)
 
-            # Test for events. Only handles 1 event currently
+            # Test for events.
             if len(c) == 6:
-                expected_event = c[5]
+                expected_events = c[5]
                 logs = receipt.decode_logs()
-                assert next(logs).event_name == expected_event
+
+                for log in logs:
+                    event_name = log.event_name
+                    if event_name in expected_events:
+                        expected_events.remove(event_name)
+
+                # Assert all events have been popped off
+                assert len(expected_events) == 0
 
         else:
             ret = fn_call(*call_args)
