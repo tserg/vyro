@@ -1,4 +1,5 @@
 from vyper import ast as vy_ast
+from vyper.utils import bytes_to_int, hex_to_int
 
 from vyro.exceptions import FeltOverflowException
 from vyro.transpiler.utils import convert_node_type_definition
@@ -19,7 +20,7 @@ class ConstantHandlerVisitor(BaseVisitor):
     def visit_Bytes(self, node, ast, context):
         # Get integer value
         byte_value = node.value
-        int_value = int(byte_value.hex(), 16)
+        int_value = bytes_to_int(byte_value)
 
         # Replace with integer node
         replacement_int = vy_ast.Int.from_node(node, value=int_value)
@@ -36,7 +37,7 @@ class ConstantHandlerVisitor(BaseVisitor):
     def visit_Hex(self, node, ast, context):
         # Get integer value
         hex_value = node.value
-        int_value = int(hex_value, 16)
+        int_value = hex_to_int(hex_value)
 
         # Replace with integer node
         replacement_int = vy_ast.Int.from_node(node, value=int_value)

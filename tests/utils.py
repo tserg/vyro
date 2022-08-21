@@ -1,4 +1,4 @@
-from vyper.utils import string_to_bytes
+from vyper.utils import bytes_to_int, string_to_bytes
 
 from vyro.cairo.writer import write
 from vyro.transpiler.transpile import transpile
@@ -30,4 +30,5 @@ def signed_int_to_felt(i: int) -> int:
 
 def str_to_int(str_: str) -> int:
     b, _ = string_to_bytes(str_)
-    return int(b.hex(), 16)
+    ret = bytes_to_int(b)
+    return ret
