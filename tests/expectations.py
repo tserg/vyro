@@ -109,6 +109,13 @@ EXPECTATIONS = [
         ([-10, 100, True], [signed_int_to_felt(-10), 100, 1]),
     ),
     (
+        "empty",
+        [
+            ("get_addr", [], "0x0000000000000000000000000000000000000000", [], 0),
+            ("get_uint256", [], 0, [], 0),
+        ]
+    ),
+    (
         "event",
         [
             ("foo", [111], None, [111], None, ["Trigger", "IndexedTrigger"]),
