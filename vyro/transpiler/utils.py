@@ -48,8 +48,9 @@ def insert_statement_before(
         Node to insert.
     before : vy_ast.VyperNode
         Node to insert before.
-    body: List[vy_ast.VyperNode]
-        List of a vy_ast.VyperNode that contains `before` and which `node` is to be added to.
+    body_node: vy_ast.VyperNode
+        A vy_ast.VyperNode that contains `before` and has a `body` attribute which
+        `node` is to be added to.
     """
     assert hasattr(body_node, "body")
     body = body_node.body

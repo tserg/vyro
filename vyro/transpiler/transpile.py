@@ -10,6 +10,7 @@ from vyro.transpiler.passes import (
     EventHandlerVisitor,
     InitialisationVisitor,
     InternalFunctionsHandler,
+    MsgSenderConverterVisitor,
     OpsConverterVisitor,
     ReturnValueHandler,
     StorageVarVisitor,
@@ -20,6 +21,7 @@ from vyro.transpiler.passes import (
 PASSES = {
     "I": InitialisationVisitor,
     "Fc": UnsupportedVisitor,
+    "Ms": MsgSenderConverterVisitor,
     "Ch": ConstructorHandler,
     "Ev": EventHandlerVisitor,
     "If": InternalFunctionsHandler,

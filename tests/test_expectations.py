@@ -3,6 +3,7 @@ import os
 import pytest
 from ape.api.transactions import ReceiptAPI
 from ape_starknet.transactions import InvocationReceipt
+from vyper.utils import hex_to_int
 
 from tests.expectations import EXPECTATIONS
 from tests.unsupported import UNSUPPORTED
@@ -32,6 +33,9 @@ def test_vyper_code(project, eth_owner, eth_user, code):
         function_name = c[0]
         call_args = c[1]
         expected = c[2]
+
+        if expected == "MSG_SENDER":
+            expected = eth_user.address
 
         print(f"Testing function: {function_name}")
         fn_call = getattr(contract, function_name)
@@ -87,6 +91,9 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
         function_name = c[0]
         call_args = c[3]
         expected = c[4]
+
+        if expected == "MSG_SENDER":
+            expected = hex_to_int(starknet_user.address)
 
         print(f"Testing function: {function_name}")
         fn_call = getattr(contract, function_name)

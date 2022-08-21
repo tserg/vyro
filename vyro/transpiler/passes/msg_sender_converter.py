@@ -1,0 +1,61 @@
+from vyper import ast as vy_ast
+
+from vyro.cairo.import_directives import add_builtin_to_module
+from vyro.cairo.types import FeltDefinition
+from vyro.transpiler.utils import (
+    generate_name_node,
+    insert_statement_before,
+    wrap_operation_in_call,
+)
+from vyro.transpiler.visitor import BaseVisitor
+
+
+class MsgSenderConverterVisitor(BaseVisitor):
+    """
+    Extract `msg.sender` into a call to `get_caller_address` as a preceding statement.
+    """
+
+    def visit_FunctionDef(self, node, ast, context):
+        # Search for `msg.sender`
+        nodes_to_replace = node.get_descendants(
+            vy_ast.Attribute, {"attr": "sender", "value.id": "msg"}, reverse=True
+        )
+
+        # If found, create a new `Assign` statement to `get_caller_address`
+        if len(nodes_to_replace) > 0:
+            temp_name_node = generate_name_node(context.reserve_id())
+            temp_name_node._metadata["type"] = FeltDefinition()
+
+            syscall_node = wrap_operation_in_call(ast, context, "get_caller_address")
+            syscall_node.func._metadata["type"] = FeltDefinition()
+
+            wrapped_call = vy_ast.Assign(
+                node_id=context.reserve_id(),
+                targets=[temp_name_node],
+                value=syscall_node,
+            )
+            wrapped_call._metadata["type"] = FeltDefinition()
+
+            # Add builtin
+            add_builtin_to_module(ast, "get_caller_address")
+
+            # Insert the wrapped call into the head of the function node body
+            first_statement = node.body[0]
+            insert_statement_before(wrapped_call, first_statement, node)
+
+            # Replace `msg.sender` with the temp reference
+            temp_name_node_ref = temp_name_node.id
+            temp_name_reference_node = generate_name_node(
+                context.reserve_id(), name=temp_name_node_ref
+            )
+
+            first_call_node = nodes_to_replace.pop()
+            ast.replace_in_tree(first_call_node, temp_name_node)
+
+            # Replace all descendants of the FunctionDef node with the replace variable
+
+            for n in nodes_to_replace:
+                temp_name_reference_node = generate_name_node(
+                    context.reserve_id(), name=temp_name_node_ref
+                )
+                ast.replace_in_tree(n, temp_name_reference_node)

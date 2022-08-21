@@ -126,6 +126,21 @@ EXPECTATIONS = [
         ],
     ),
     (
+        "msg_sender",
+        [
+            ("set_msg_sender", [], None, [], None),
+            ("a", [], "MSG_SENDER", [], "MSG_SENDER"),  # Dummy value
+        ]
+    ),
+    (
+        "msg_sender_duplicate",
+        [
+            ("set_msg_sender", [], None, [], None),
+            ("a", [], "MSG_SENDER", [], "MSG_SENDER"),  # Dummy value
+            ("b", [], "MSG_SENDER", [], "MSG_SENDER"),  # Dummy value
+        ]
+    ),
+    (
         "state_variable_int128",
         [
             ("set_a", [-10], None, [signed_int_to_felt(-10)], None),
