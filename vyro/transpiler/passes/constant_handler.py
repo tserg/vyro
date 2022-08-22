@@ -1,8 +1,9 @@
 from vyper import ast as vy_ast
 from vyper.utils import bytes_to_int, hex_to_int
 
+from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.exceptions import FeltOverflowException
-from vyro.transpiler.utils import convert_node_type_definition
+from vyro.transpiler.utils import convert_node_type_definition, generate_name_node
 from vyro.transpiler.visitor import BaseVisitor
 from vyro.utils.utils import CAIRO_PRIME
 
@@ -55,24 +56,33 @@ class ConstantHandlerVisitor(BaseVisitor):
         int_value = node.value
         self._assert_valid_felt(node, int_value)
 
+    def visit_Log(self, node, ast, context):
+        self.visit(node.value, ast, context)
+
     def visit_Module(self, node, ast, context):
-        # Visit contract variable declarations only
-        contract_vars = [i for i in node.body if isinstance(i, vy_ast.VariableDecl)]
+        # Visit contract variable declarations and functions only
+        contract_vars = [i for i in node.body if isinstance(i, (vy_ast.FunctionDef, vy_ast.VariableDecl))]
         for c in contract_vars:
             self.visit(c, ast, context)
 
     def visit_NameConstant(self, node, ast, context):
         bool_value = node.value
-        int_value = int(bool_value)
-        replacement_int = vy_ast.Int.from_node(node, value=int_value)
-        ast.replace_in_tree(node, replacement_int)
+
+        # Convert boolean value to string
+        bool_str = str(bool_value).upper()
+
+        # Add builtin
+        add_builtin_to_module(ast, bool_str)
+
+        replacement_node = generate_name_node(context.reserve_id(), name=bool_str)
+        ast.replace_in_tree(node, replacement_node)
 
         # Search for folded nodes
         for n in ast.get_descendants(
             vy_ast.NameConstant, {"value": bool_value}, reverse=True
         ):
-            new_replacement_int = vy_ast.Int.from_node(n, value=int_value)
-            ast.replace_in_tree(n, new_replacement_int)
+            new_replacement_node = generate_name_node(context.reserve_id(), name=bool_str)
+            ast.replace_in_tree(n, new_replacement_node)
 
     def visit_Str(self, node, ast, context):
         str_value = node.value

@@ -183,6 +183,7 @@ class BaseVisitor:
             self.visit(e, ast, context)
 
     def visit_Log(self, node, ast, context):
+        # Do not visit `Log` node by default.
         pass
 
     def visit_Lt(self, node, ast, context):
