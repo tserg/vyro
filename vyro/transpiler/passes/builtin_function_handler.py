@@ -9,6 +9,7 @@ from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.exceptions import UnsupportedFeature
 from vyro.transpiler.utils import (
+    generate_name_node,
     get_cairo_type,
     get_stmt_node,
     insert_statement_after,
@@ -35,13 +36,28 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
                 wrapped_call_node = wrap_operation_in_call(
                     ast, context, "felt_to_uint256", args=[node.args[0]]
                 )
-                wrapped_call_node.func._metadata["type"] = out_cairo_typ
+
+                # Temporarily assign to a `Name` node
+                temp_name_node = generate_name_node(context.reserve_id())
+                temp_name_node._metadata["type"] = out_cairo_typ
+
+                temp_assign_node = vy_ast.Assign(
+                    node_id=context.reserve_id(),
+                    targets=[temp_name_node],
+                    value=wrapped_call_node,
+                )
+
+                # Insert statement
+                stmt_node = get_stmt_node(node)
+                fn_node = node.get_ancestor(vy_ast.FunctionDef)
+                insert_statement_before(temp_assign_node, stmt_node, fn_node)
 
                 # Add `felt_to_uint256` to imports
                 add_builtin_to_module(ast, "felt_to_uint256")
 
-                # Replace call node
-                ast.replace_in_tree(node, wrapped_call_node)
+                # Replace call node with temporary name node
+                temp_name_node_dup = generate_name_node(context.reserve_id(), name=temp_name_node.id)
+                ast.replace_in_tree(node, temp_name_node_dup)
 
             else:
                 # Unwrap `convert` call
