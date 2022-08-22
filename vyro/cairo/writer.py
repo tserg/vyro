@@ -281,6 +281,10 @@ class CairoWriter:
         )
 
         ret.append(fn_def_str)
+
+        # Inject `alloc_locals`
+        ret.append(INDENT + "alloc_locals\n")
+
         # Add body
         for n in node.body:
             stmt_str = self.write(n)
