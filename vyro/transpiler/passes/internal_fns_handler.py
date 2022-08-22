@@ -5,7 +5,7 @@ from vyro.transpiler.visitor import BaseVisitor
 
 class InternalFunctionsHandler(BaseVisitor):
     def visit_Call(self, node, ast, context):
-        fn_typ = node.func._metadata["type"]
+        fn_typ = node.func._metadata.get("type")
 
         if hasattr(fn_typ, "is_internal") and fn_typ.is_internal:
             fn_name = node.func.attr

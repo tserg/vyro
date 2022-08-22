@@ -36,6 +36,29 @@ def set_parent(child: vy_ast.VyperNode, parent: vy_ast.VyperNode):
     child._depth = getattr(parent, "_depth", -1) + 1
 
 
+def insert_statement_after(
+    node: vy_ast.VyperNode, after: vy_ast.VyperNode, body_node: vy_ast.VyperNode
+):
+    """
+    Helper function to insert a new node before a given node in a list.
+
+    Arguments
+    ---------
+    node : vy_ast.VyperNode
+        Node to insert.
+    after : vy_ast.VyperNode
+        Node to insert after.
+    body_node: vy_ast.VyperNode
+        A vy_ast.VyperNode that contains `before` and has a `body` attribute which
+        `node` is to be added to.
+    """
+    assert hasattr(body_node, "body")
+    body = body_node.body
+    node_idx = body.index(after)
+    body.insert(node_idx + 1, node)
+    set_parent(node, body_node)
+
+
 def insert_statement_before(
     node: vy_ast.VyperNode, before: vy_ast.VyperNode, body_node: vy_ast.VyperNode
 ):
@@ -200,3 +223,10 @@ def extract_mapping_args(
         arg_node._metadata["type"] = key_type
         ret.append(arg_node)
     return ret
+
+
+def get_stmt_node(node: vy_ast.VyperNode) -> vy_ast.VyperNode:
+    parent = node.get_ancestor()
+    if isinstance(parent, vy_ast.FunctionDef):
+        return node
+    return get_stmt_node(parent)

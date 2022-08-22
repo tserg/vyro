@@ -18,6 +18,7 @@ IMPORT_DIRECTIVES = {
     "bitwise_or": "starkware.cairo.common.bitwise",
     "bitwise_xor": "starkware.cairo.common.bitwise",
     # Math
+    "assert_le": "starkware.cairo.common.math",
     "vyro_div": "vyrolib.div",
     "vyro_mod": "vyrolib.mod",
     "pow": "starkware.cairo.common.pow",

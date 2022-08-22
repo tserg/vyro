@@ -224,7 +224,7 @@ class CairoWriter:
             n = node.body[i]
             arg_name = alc[i]
             arg_typ = n._metadata.get("type")
-            args_str += f"{arg_name} : {arg_typ}"
+            args.append(f"{arg_name} : {arg_typ}")
 
         if len(args) > 0:
             args_str = ", ".join(args)
