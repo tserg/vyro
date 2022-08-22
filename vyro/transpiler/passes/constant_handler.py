@@ -61,7 +61,11 @@ class ConstantHandlerVisitor(BaseVisitor):
 
     def visit_Module(self, node, ast, context):
         # Visit contract variable declarations and functions only
-        contract_vars = [i for i in node.body if isinstance(i, (vy_ast.FunctionDef, vy_ast.VariableDecl))]
+        contract_vars = [
+            i
+            for i in node.body
+            if isinstance(i, (vy_ast.FunctionDef, vy_ast.VariableDecl))
+        ]
         for c in contract_vars:
             self.visit(c, ast, context)
 
@@ -81,7 +85,9 @@ class ConstantHandlerVisitor(BaseVisitor):
         for n in ast.get_descendants(
             vy_ast.NameConstant, {"value": bool_value}, reverse=True
         ):
-            new_replacement_node = generate_name_node(context.reserve_id(), name=bool_str)
+            new_replacement_node = generate_name_node(
+                context.reserve_id(), name=bool_str
+            )
             ast.replace_in_tree(n, new_replacement_node)
 
     def visit_Str(self, node, ast, context):

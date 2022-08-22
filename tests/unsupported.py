@@ -16,6 +16,5 @@ UNSUPPORTED = [
     ("decimal", UnsupportedType),
     ("dynarray", UnsupportedType),
     ("immutable", UnsupportedFeature),
-    ("pow_uint256", UnsupportedOperation),
     ("unary_not", UnsupportedOperation),
 ]

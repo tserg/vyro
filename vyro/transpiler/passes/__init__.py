@@ -1,6 +1,4 @@
-from vyro.transpiler.passes.builtin_function_handler import (
-    BuiltinFunctionHandlerVisitor,
-)
+from vyro.transpiler.passes.builtin_function_handler import BuiltinFunctionHandlerVisitor
 from vyro.transpiler.passes.cairo_importer import CairoImporterVisitor
 from vyro.transpiler.passes.constant_handler import ConstantHandlerVisitor
 from vyro.transpiler.passes.constructor_handler import ConstructorHandler

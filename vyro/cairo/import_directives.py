@@ -38,6 +38,7 @@ IMPORT_DIRECTIVES = {
     "uint256_xor": "starkware.cairo.common.uint256",
     # Vyro lib
     "felt_to_uint256": "vyrolib.utils",
+    "uint256_to_felt": "vyrolib.utils",
 }
 
 

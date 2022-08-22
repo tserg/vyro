@@ -6,10 +6,7 @@ from vyper.semantics.types import AddressDefinition
 from vyper.semantics.types.abstract import FixedAbstractType, IntegerAbstractType
 from vyper.semantics.types.bases import BaseTypeDefinition
 from vyper.semantics.types.indexable.mapping import MappingDefinition
-from vyper.semantics.types.indexable.sequence import (
-    ArrayDefinition,
-    DynamicArrayDefinition,
-)
+from vyper.semantics.types.indexable.sequence import ArrayDefinition, DynamicArrayDefinition
 
 from vyro.cairo.types import (
     CairoMappingDefinition,

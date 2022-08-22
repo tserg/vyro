@@ -40,6 +40,7 @@ EXPECTATIONS = [
             ("mul_uint256", [2, 2], 4, [2, 2], 4),
             ("div_uint256", [4, 2], 2, [4, 2], 2),
             ("mod_uint256", [7, 3], 1, [7, 3], 1),
+            ("pow_uint256", [18], 10**18, [18], 10**18),
         ],
     ),
     (
@@ -69,6 +70,14 @@ EXPECTATIONS = [
             ("bool_or", [True, True], True, [1, 1], 1),
             ("bool_or", [False, False], False, [0, 0], 0),
         ),
+    ),
+    (
+        "binop_nested_arithmetic_int128",
+        [("add_mul_int128", [100, 9], 101, [100, 9], 101)],
+    ),
+    (
+        "binop_nested_arithmetic_uint256",
+        [("pow_mul_uint256", [100, 18], 100 * 10**18, [100, 18], 100 * 10**18)],
     ),
     (
         "constants",

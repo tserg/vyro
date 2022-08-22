@@ -2,11 +2,7 @@ import copy
 from typing import List
 
 from vyper import ast as vy_ast
-from vyper.semantics.types.function import (
-    ContractFunction,
-    FunctionVisibility,
-    StateMutability,
-)
+from vyper.semantics.types.function import ContractFunction, FunctionVisibility, StateMutability
 
 from vyro.cairo.nodes import CairoStorageRead, CairoStorageWrite
 from vyro.cairo.types import CairoMappingDefinition, CairoTypeDefinition
