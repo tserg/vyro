@@ -1,7 +1,9 @@
 import os
 
+import ape
 import pytest
 from ape.api.transactions import ReceiptAPI
+from ape.exceptions import ContractLogicError
 from ape_starknet.transactions import InvocationReceipt
 from vyper.utils import hex_to_int
 
@@ -42,6 +44,10 @@ def test_vyper_code(project, eth_owner, eth_user, code):
 
         if expected is None:
             fn_call(*call_args, sender=eth_user)
+
+        elif isinstance(expected, ContractLogicError):
+            with ape.reverts():
+                fn_call(*call_args, sender=eth_user)
 
         else:
             ret = fn_call(*call_args, sender=eth_user)
@@ -113,6 +119,10 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
 
                 # Assert all events have been popped off
                 assert len(expected_events) == 0
+
+        elif isinstance(expected, ContractLogicError):
+            with ape.reverts():
+                fn_call(*call_args, sender=starknet_user)
 
         else:
             ret = fn_call(*call_args)

@@ -14,3 +14,7 @@ def uint8_to_uint128(x: uint8) -> uint128:
 @view
 def uint128_to_uint8(x: uint128) -> uint8:
     return convert(x, uint8)
+
+@external
+def uint128_to_uint8_external(x: uint128) -> uint8:
+    return convert(x, uint8)

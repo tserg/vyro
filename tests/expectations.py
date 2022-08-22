@@ -1,5 +1,7 @@
 from hexbytes import HexBytes
 
+from ape.exceptions import ContractLogicError
+
 from tests.utils import signed_int_to_felt, str_to_int
 
 EXPECTATIONS = [
@@ -114,6 +116,13 @@ EXPECTATIONS = [
             ("uint8_to_uint256", [255], 255, [255], 255),
             ("uint8_to_uint128", [246], 246, [246], 246),
             ("uint128_to_uint8", [255], 255, [255], 255),
+            (
+                "uint128_to_uint8_external",
+                [256],
+                ContractLogicError(),
+                [256],
+                ContractLogicError(),
+            ),
         ],
     ),
     (
@@ -121,14 +130,9 @@ EXPECTATIONS = [
         [
             ("get_addr", [], "0x0000000000000000000000000000000000000000", [], 0),
             ("get_uint256", [], 0, [], 0),
-        ]
+        ],
     ),
-    (
-        "event",
-        [
-            ("foo", [111], None, [111], None, ["Trigger", "IndexedTrigger"]),
-        ]
-    ),
+    ("event", [("foo", [111], None, [111], None, ["Trigger", "IndexedTrigger"])]),
     (
         "internal_fns",
         [
@@ -145,7 +149,7 @@ EXPECTATIONS = [
         [
             ("set_msg_sender", [], None, [], None),
             ("a", [], "MSG_SENDER", [], "MSG_SENDER"),  # Dummy value
-        ]
+        ],
     ),
     (
         "msg_sender_duplicate",
@@ -153,7 +157,7 @@ EXPECTATIONS = [
             ("set_msg_sender", [], None, [], None),
             ("a", [], "MSG_SENDER", [], "MSG_SENDER"),  # Dummy value
             ("b", [], "MSG_SENDER", [], "MSG_SENDER"),  # Dummy value
-        ]
+        ],
     ),
     (
         "state_variable_int128",
