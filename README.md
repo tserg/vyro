@@ -8,7 +8,7 @@ An experimental Vyper to Cairo transpiler, inspired by Warp from Nethermind, Bro
 
 #### Python
 
-Vyro requires Python 3.7 or higher. Follow the instructions to install the latest version of python for your platform in the [python docs](https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python)
+Vyro requires Python 3.7 to 3.9. Follow the instructions to install the latest version of python for your platform in the [python docs](https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python)
 
 #### Virtual Environment
 
