@@ -9,7 +9,7 @@ from vyper.utils import hex_to_int
 
 from tests.expectations import EXPECTATIONS
 from tests.unsupported import UNSUPPORTED
-from tests.utils import transpile_to_cairo
+from tests.utils import replace_args, transpile_to_cairo
 
 
 # Perform tests in vyper
@@ -26,6 +26,10 @@ def test_vyper_code(project, eth_owner, eth_user, code):
         contract = eth_owner.deploy(contract_object)
     elif len(code) == 3:
         constructor_args = code[2][0]
+        replace_args(
+            constructor_args,
+            [("ETH_OWNER", eth_owner.address), ("ETH_USER", eth_user.address)],
+        )
         contract = eth_owner.deploy(contract_object, *constructor_args)
 
     print(f"Testing Vyper contract: {filename}.vy")
@@ -34,9 +38,14 @@ def test_vyper_code(project, eth_owner, eth_user, code):
     for c in test_cases:
         function_name = c[0]
         call_args = c[1]
+        replace_args(
+            call_args,
+            [("ETH_OWNER", eth_owner.address), ("ETH_USER", eth_user.address)],
+        )
+
         expected = c[2]
 
-        if expected == "MSG_SENDER":
+        if expected == "ETH_USER":
             expected = eth_user.address
 
         print(f"Testing function: {function_name}")
@@ -75,7 +84,7 @@ def test_transpile(code):
 
 # Perform tests in cairo
 @pytest.mark.parametrize("code", EXPECTATIONS)
-def test_cairo_code(project, starknet_devnet, starknet_user, code):
+def test_cairo_code(project, starknet_devnet, starknet_owner, starknet_user, code):
     """
     Test Cairo code against expectations.
     """
@@ -88,6 +97,13 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
         contract = contract_object.deploy()
     elif len(code) == 3:
         constructor_args = code[2][1]
+        replace_args(
+            constructor_args,
+            [
+                ("STARKNET_OWNER", starknet_owner.address),
+                ("STARKNET_USER", starknet_user.address),
+            ],
+        )
         contract = contract_object.deploy(*constructor_args)
 
     print(f"Testing Cairo contract: {filename}.cairo")
@@ -96,9 +112,17 @@ def test_cairo_code(project, starknet_devnet, starknet_user, code):
     for c in test_cases:
         function_name = c[0]
         call_args = c[3]
+        replace_args(
+            call_args,
+            [
+                ("STARKNET_OWNER", starknet_owner.address),
+                ("STARKNET_USER", starknet_user.address),
+            ],
+        )
+
         expected = c[4]
 
-        if expected == "MSG_SENDER":
+        if expected == "STARKNET_USER":
             expected = hex_to_int(starknet_user.address)
 
         print(f"Testing function: {function_name}")

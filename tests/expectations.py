@@ -1,6 +1,5 @@
-from hexbytes import HexBytes
-
 from ape.exceptions import ContractLogicError
+from hexbytes import HexBytes
 
 from tests.utils import signed_int_to_felt, str_to_int
 
@@ -141,6 +140,22 @@ EXPECTATIONS = [
             ("get_uint256", [], 0, [], 0),
         ],
     ),
+    (
+        "ERC20",
+        (
+            (
+                "balanceOf",
+                ["ETH_OWNER"],
+                1_000 * 10**18,
+                ["STARKNET_OWNER"],
+                1_000 * 10**18,
+            ),
+        ),
+        (
+            ["Dogecoin", "DOGE", 18, 1_000, "ETH_OWNER"],
+            [str_to_int("Dogecoin"), str_to_int("DOGE"), 18, 1_000, "STARKNET_OWNER"],
+        ),
+    ),
     ("event", [("foo", [111], None, [111], None, ["Trigger", "IndexedTrigger"])]),
     (
         "internal_fns",
@@ -157,15 +172,15 @@ EXPECTATIONS = [
         "msg_sender",
         [
             ("set_msg_sender", [], None, [], None),
-            ("a", [], "MSG_SENDER", [], "MSG_SENDER"),  # Dummy value
+            ("a", [], "ETH_USER", [], "STARKNET_USER"),  # Dummy value
         ],
     ),
     (
         "msg_sender_duplicate",
         [
             ("set_msg_sender", [], None, [], None),
-            ("a", [], "MSG_SENDER", [], "MSG_SENDER"),  # Dummy value
-            ("b", [], "MSG_SENDER", [], "MSG_SENDER"),  # Dummy value
+            ("a", [], "ETH_USER", [], "STARKNET_USER"),  # Dummy value
+            ("b", [], "ETH_USER", [], "STARKNET_USER"),  # Dummy value
         ],
     ),
     (

@@ -1,10 +1,12 @@
+from typing import Any, List, Tuple
+
 from vyper.utils import bytes_to_int, string_to_bytes
 
 from vyro.cairo.writer import write
 from vyro.transpiler.transpile import transpile
 from vyro.utils.output import write_cairo
-from vyro.vyper.vyper_compile import get_vyper_ast
 from vyro.utils.utils import CAIRO_PRIME
+from vyro.vyper.vyper_compile import get_vyper_ast
 
 
 def transpile_to_cairo(path, output_file):
@@ -18,6 +20,19 @@ def transpile_to_cairo(path, output_file):
 
     # Write to output file
     write_cairo(output, output_file)
+
+
+def _replace_call_argument(args: List[Any], old: Any, new: Any):
+    for idx, a in enumerate(args):
+        if a == old:
+            args[idx] = new
+
+
+def replace_args(args: List[Any], replacements: List[Tuple[Any, Any]]):
+    for r in replacements:
+        old = r[0]
+        new = r[1]
+        _replace_call_argument(args, old, new)
 
 
 def signed_int_to_felt(i: int) -> int:
