@@ -14,7 +14,7 @@ from tests.utils import replace_args, transpile_to_cairo
 
 # Perform tests in vyper
 @pytest.mark.parametrize("code", EXPECTATIONS)
-def test_vyper_code(project, eth_owner, eth_user, code):
+def test_vyper_code(request, project, eth_owner, eth_user, eth_guest, code):
     """
     Test Vyper code against expectations.
     """
@@ -22,44 +22,56 @@ def test_vyper_code(project, eth_owner, eth_user, code):
     contract_object = project.get_contract(filename)
 
     # Obtain the `ContractInstance`
-    if len(code) == 2:
-        contract = eth_owner.deploy(contract_object)
-    elif len(code) == 3:
+    if len(code) >= 3:
         constructor_args = code[2][0]
         replace_args(
             constructor_args,
-            [("ETH_OWNER", eth_owner.address), ("ETH_USER", eth_user.address)],
+            [
+                ("ETH_OWNER", eth_owner.address),
+                ("ETH_USER", eth_user.address),
+                ("ETH_GUEST", eth_guest.address),
+            ],
         )
         contract = eth_owner.deploy(contract_object, *constructor_args)
+    else:
+        contract = eth_owner.deploy(contract_object)
 
     print(f"Testing Vyper contract: {filename}.vy")
 
     test_cases = code[1]
     for c in test_cases:
         function_name = c[0]
-        call_args = c[1]
+        vyper_args = c[1]
+
         replace_args(
-            call_args,
-            [("ETH_OWNER", eth_owner.address), ("ETH_USER", eth_user.address)],
+            vyper_args,
+            [
+                ("ETH_OWNER", eth_owner.address),
+                ("ETH_USER", eth_user.address),
+                ("ETH_GUEST", eth_guest.address),
+            ],
         )
 
-        expected = c[2]
+        call_args = vyper_args[0]
+        expected = vyper_args[1]
 
-        if expected == "ETH_USER":
-            expected = eth_user.address
+        caller = eth_owner
+        if len(vyper_args) >= 3:
+            account_name = vyper_args[2]
+            caller = request.getfixturevalue(account_name)
 
         print(f"Testing function: {function_name}")
         fn_call = getattr(contract, function_name)
 
         if expected is None:
-            fn_call(*call_args, sender=eth_user)
+            fn_call(*call_args, sender=caller)
 
         elif isinstance(expected, ContractLogicError):
             with ape.reverts():
-                fn_call(*call_args, sender=eth_user)
+                fn_call(*call_args, sender=caller)
 
         else:
-            ret = fn_call(*call_args, sender=eth_user)
+            ret = fn_call(*call_args, sender=caller)
             assert not isinstance(ret, ReceiptAPI)
             assert ret == expected
 
@@ -83,8 +95,16 @@ def test_transpile(code):
 
 
 # Perform tests in cairo
+@pytest.mark.usefixtures("starknet_devnet")
 @pytest.mark.parametrize("code", EXPECTATIONS)
-def test_cairo_code(project, starknet_devnet, starknet_owner, starknet_user, code):
+def test_cairo_code(
+    request,
+    project,
+    starknet_owner,
+    starknet_user,
+    starknet_guest,
+    code,
+):
     """
     Test Cairo code against expectations.
     """
@@ -93,47 +113,53 @@ def test_cairo_code(project, starknet_devnet, starknet_owner, starknet_user, cod
     contract_object = project.get_contract(filename)
 
     # Obtain the `ContractInstance`
-    if len(code) == 2:
-        contract = contract_object.deploy()
-    elif len(code) == 3:
+    if len(code) >= 3:
         constructor_args = code[2][1]
         replace_args(
             constructor_args,
             [
                 ("STARKNET_OWNER", starknet_owner.address),
                 ("STARKNET_USER", starknet_user.address),
+                ("STARKNET_GUEST", starknet_guest.address),
             ],
         )
         contract = contract_object.deploy(*constructor_args)
+    else:
+        contract = contract_object.deploy()
 
     print(f"Testing Cairo contract: {filename}.cairo")
 
     test_cases = code[1]
     for c in test_cases:
         function_name = c[0]
-        call_args = c[3]
+        cairo_args = c[2]
+
         replace_args(
-            call_args,
+            cairo_args,
             [
-                ("STARKNET_OWNER", starknet_owner.address),
-                ("STARKNET_USER", starknet_user.address),
+                ("STARKNET_OWNER", hex_to_int(starknet_owner.address)),
+                ("STARKNET_USER", hex_to_int(starknet_user.address)),
+                ("STARKNET_GUEST", hex_to_int(starknet_guest.address)),
             ],
         )
 
-        expected = c[4]
+        call_args = cairo_args[0]
+        expected = cairo_args[1]
 
-        if expected == "STARKNET_USER":
-            expected = hex_to_int(starknet_user.address)
+        caller = starknet_owner
+        if len(cairo_args) >= 4:
+            account_name = cairo_args[3]
+            caller = request.getfixturevalue(account_name)
 
         print(f"Testing function: {function_name}")
         fn_call = getattr(contract, function_name)
 
         if expected is None:
-            receipt = fn_call(*call_args, sender=starknet_user)
+            receipt = fn_call(*call_args, sender=caller)
 
             # Test for events.
-            if len(c) == 6:
-                expected_events = c[5]
+            if len(cairo_args) >= 3:
+                expected_events = cairo_args[2]
                 logs = receipt.decode_logs()
 
                 for log in logs:
@@ -146,7 +172,7 @@ def test_cairo_code(project, starknet_devnet, starknet_owner, starknet_user, cod
 
         elif isinstance(expected, ContractLogicError):
             with ape.reverts():
-                fn_call(*call_args, sender=starknet_user)
+                fn_call(*call_args, sender=caller)
 
         else:
             ret = fn_call(*call_args)

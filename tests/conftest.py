@@ -15,6 +15,11 @@ def eth_user(accounts):
 
 
 @pytest.fixture(scope="session")
+def eth_guest(accounts):
+    yield accounts[2]
+
+
+@pytest.fixture(scope="session")
 def starknet_devnet_accounts():
     yield accounts.containers["starknet"].test_accounts
 
@@ -27,6 +32,11 @@ def starknet_owner(starknet_devnet_accounts):
 @pytest.fixture(scope="session")
 def starknet_user(starknet_devnet_accounts):
     yield starknet_devnet_accounts[1]
+
+
+@pytest.fixture(scope="session")
+def starknet_guest(starknet_devnet_accounts):
+    yield starknet_devnet_accounts[2]
 
 
 @pytest.fixture(scope="session")

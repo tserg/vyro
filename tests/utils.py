@@ -1,4 +1,4 @@
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Union
 
 from vyper.utils import bytes_to_int, string_to_bytes
 
@@ -22,17 +22,23 @@ def transpile_to_cairo(path, output_file):
     write_cairo(output, output_file)
 
 
-def _replace_call_argument(args: List[Any], old: Any, new: Any):
+def _replace_call_argument(args: Union[Any, List[Any]], old: Any, new: Any):
     for idx, a in enumerate(args):
         if a == old:
             args[idx] = new
 
 
-def replace_args(args: List[Any], replacements: List[Tuple[Any, Any]]):
+def replace_args(args: Union[List[Any], Any], replacements: List[Tuple[Any, Any]]):
     for r in replacements:
         old = r[0]
         new = r[1]
-        _replace_call_argument(args, old, new)
+
+        for idx, a in enumerate(args):
+            if isinstance(a, list):
+                _replace_call_argument(a, old, new)
+            else:
+                if a == old:
+                    args[idx] = new
 
 
 def signed_int_to_felt(i: int) -> int:
