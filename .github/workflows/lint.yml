@@ -22,8 +22,8 @@ jobs:
       - name: Install Dependencies
         run: pip install .[lint]
 
-      - name: Lint Cairo code
-        run: find vyrolib -type f -name '*.cairo' | xargs cairo-format -c
+      - name: Check Cairo formatting
+        uses: milancermak/cairo-format-action@v1 --target vyrolib
 
       - name: Run Black
         run: black --check -C ./tests ./vyro ./setup.py
