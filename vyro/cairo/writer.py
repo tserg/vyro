@@ -1,9 +1,11 @@
+from string import ascii_lowercase as alc
 from typing import List
 
 from vyper import ast as vy_ast
-from vyper.semantics.types.function import FunctionVisibility, StateMutability
+from vyper.semantics.types.function import StateMutability
 
 from vyro.cairo.implicits import IMPLICITS
+from vyro.cairo.types import CairoMappingDefinition
 from vyro.cairo.utils import INDENT, generate_storage_var_stub
 from vyro.exceptions import TranspilerPanic, UnsupportedNode
 
@@ -28,6 +30,10 @@ class CairoWriter:
         if self.constants:
             constants = "\n".join(self.constants)
 
+        events = ""
+        if self.events:
+            events = "\n".join(self.events)
+
         storage_vars = ""
         if self.storage_vars:
             storage_vars = "\n\n".join(self.storage_vars)
@@ -41,7 +47,15 @@ class CairoWriter:
             functions = "\n\n".join(self.functions)
 
         cairo = "\n".join(
-            [self.header, imports, constants, storage_vars, storage_vars_getters, functions]
+            [
+                self.header,
+                imports,
+                constants,
+                events,
+                storage_vars,
+                storage_vars_getters,
+                functions,
+            ]
         )
         return cairo
 
@@ -123,22 +137,38 @@ class CairoWriter:
     def write_Break(self, node):
         pass
 
+    def write_Bytes(self, node):
+        pass
+
     def write_CairoStorageRead(self, node):
         target_str = self.write(node.target)
         target_typ = node.target._metadata.get("type")
         value_str = self.write(node.value)
-        return f"let ({target_str} : {target_typ}) = {value_str}.read()"
+
+        arg_str = ""
+        args = []
+        for a in node.args:
+            args.append(self.write(a))
+            arg_str = ", ".join(args)
+
+        return f"let ({target_str} : {target_typ}) = {value_str}.read({arg_str})"
 
     def write_CairoStorageWrite(self, node):
         target_str = self.write(node.target)
-        value_str = self.write(node.value)
-        return f"{target_str}.write({value_str})"
+
+        arg_str = ""
+        args = []
+        for a in node.value:
+            args.append(self.write(a))
+            arg_str = ", ".join(args)
+
+        return f"{target_str}.write({arg_str})"
 
     def write_Call(self, node):
         func_str = self.write(node.func)
 
         args = []
-        for a in node.args.args:
+        for a in node.args:
             arg_str = self.write(a)
             args.append(arg_str)
 
@@ -161,7 +191,7 @@ class CairoWriter:
         pass
 
     def write_Decimal(self, node):
-        return str(node.value)
+        pass
 
     def write_Dict(self, node):
         for k in node.keys:
@@ -184,10 +214,26 @@ class CairoWriter:
         pass
 
     def write_EventDef(self, node):
-        pass
+        ret = ["@event"]
+
+        args_str = ""
+        args = []
+        for i in range(len(node.body)):
+            n = node.body[i]
+            arg_name = alc[i]
+            arg_typ = n._metadata.get("type")
+            args.append(f"{arg_name} : {arg_typ}")
+
+        if len(args) > 0:
+            args_str = ", ".join(args)
+
+        event_def = f"func {node.name}({args_str}):"
+        ret.append(event_def)
+        ret.append("end")
+        self.events.append("\n".join(ret))
 
     def write_Expr(self, node):
-        self.write(node.value)
+        return self.write(node.value)
 
     def write_For(self, node):
         self.write(node.iter)
@@ -200,8 +246,10 @@ class CairoWriter:
         fn_typ = node._metadata.get("type")
 
         # Add view or external decorator
-        if fn_typ.visibility == FunctionVisibility.EXTERNAL:
-            if fn_typ.mutability == StateMutability.VIEW:
+        if fn_typ.is_external:
+            if fn_typ.is_constructor:
+                ret.append("@constructor")
+            elif fn_typ.mutability == StateMutability.VIEW:
                 ret.append("@view")
             else:
                 ret.append("@external")
@@ -221,14 +269,18 @@ class CairoWriter:
 
         return_decl_str = ""
         if node.returns:
-            # TODO Set return types
-            # return_values = self.write(node.returns)
             return_typ = fn_typ.return_type
+            if isinstance(return_typ, CairoMappingDefinition):
+                return_typ = return_typ.value_type
             return_decl_str = f" -> ({node.name}_ret : {return_typ})"
 
         fn_def_str = f"func {node.name}{{{implicits_str}}}({args_str}){return_decl_str}:"
 
         ret.append(fn_def_str)
+
+        # Inject `alloc_locals`
+        ret.append(INDENT + "alloc_locals\n")
+
         # Add body
         for n in node.body:
             stmt_str = self.write(n)
@@ -288,7 +340,20 @@ class CairoWriter:
             self.write(e)
 
     def write_Log(self, node):
-        pass
+        # We cannot rely on `write_Call` because of `emit` in Cairo
+        call_node = node.value
+
+        # Event name is in `func` attribute of `vy_ast.Call`
+        event_name = self.write(call_node.func)
+
+        args = []
+        for a in call_node.args:
+            arg_str = self.write(a)
+            args.append(arg_str)
+
+        args_str = ", ".join(args)
+
+        return f"{event_name}.emit({args_str})"
 
     def write_Lt(self, node):
         pass
@@ -343,6 +408,10 @@ class CairoWriter:
         value_str = self.write(node.value)
         return f"return ({value_str})"
 
+    def write_Str(self, node):
+        value_str = f"'{node.value}'"
+        return value_str
+
     def write_StructDef(self, node):
         self.write(node.name)
         self.write(node.body)
@@ -369,14 +438,13 @@ class CairoWriter:
     def write_VariableDecl(self, node):
         typ = node._metadata.get("type")
         name = node.target.id
-        if not typ.is_constant and not typ.is_immutable:
-            storage_var_stub = generate_storage_var_stub(name, typ)
-            self.storage_vars.append(storage_var_stub)
-
-        if typ.is_constant:
+        if node.is_constant:
             value_str = self.write(node.value)
             constant_decl_str = f"const {name} = {value_str}"
             self.constants.append(constant_decl_str)
+
+        storage_var_stub = generate_storage_var_stub(name, typ)
+        self.storage_vars.append(storage_var_stub)
 
 
 def write(ast: vy_ast.Module):

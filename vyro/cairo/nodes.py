@@ -14,6 +14,11 @@ class CairoStorageWrite(vy_ast.Assign):
 class CairoStorageRead(vy_ast.Assign):
     """Wrapper class for Cairo read from storage"""
 
+    args = []
+
     def __init__(self, parent: Optional[vy_ast.VyperNode] = None, **kwargs: dict):
         self.ast_type = "CairoStorageRead"
         super().__init__(parent, **kwargs)
+
+        if kwargs.get("args"):
+            self.args = kwargs["args"]

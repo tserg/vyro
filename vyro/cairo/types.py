@@ -13,3 +13,16 @@ class FeltDefinition(CairoTypeDefinition):
 class CairoUint256Definition(CairoTypeDefinition):
     _id = "Uint256"
     _max_value = 2**256 - 1
+
+
+class CairoMappingDefinition(CairoTypeDefinition):
+    def __init__(self, is_constant, is_public, is_immutable, key_types, value_type):
+        super().__init__(
+            is_constant=is_constant, is_public=is_public, is_immutable=is_immutable
+        )
+
+        self.key_types = key_types
+        self.value_type = value_type
+
+    def __repr__(self):
+        return str(self.value_type)

@@ -71,6 +71,9 @@ class BaseVisitor:
     def visit_Break(self, node, ast, context):
         pass
 
+    def visit_Bytes(self, node, ast, context):
+        pass
+
     def visit_CairoStorageRead(self, node, ast, context):
         pass
 
@@ -79,7 +82,10 @@ class BaseVisitor:
 
     def visit_Call(self, node, ast, context):
         self.visit(node.func, ast, context)
-        self.visit(node.args, ast, context)
+
+        for a in node.args:
+            self.visit(a, ast, context)
+
         for k in node.keywords:
             self.visit(k, ast, context)
 
@@ -115,8 +121,7 @@ class BaseVisitor:
         pass
 
     def visit_EventDef(self, node, ast, context):
-        for i in node.body:
-            self.visit(i, ast, context)
+        pass
 
     def visit_Expr(self, node, ast, context):
         self.visit(node.value, ast, context)
@@ -176,6 +181,7 @@ class BaseVisitor:
             self.visit(e, ast, context)
 
     def visit_Log(self, node, ast, context):
+        # Do not visit `Log` node by default.
         pass
 
     def visit_Lt(self, node, ast, context):
@@ -223,6 +229,9 @@ class BaseVisitor:
 
     def visit_Return(self, node, ast, context):
         self.visit(node.value, ast, context)
+
+    def visit_Str(self, node, ast, context):
+        pass
 
     def visit_StructDef(self, node, ast, context):
         self.visit(node.name, ast, context)

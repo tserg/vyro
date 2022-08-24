@@ -1,10 +1,8 @@
-from vyro.exceptions import UnsupportedNode
+from vyro.exceptions import UnsupportedFeature
 from vyro.transpiler.visitor import BaseVisitor
 
 
 class UnsupportedVisitor(BaseVisitor):
-    def visit_ImportFrom(self, node, ast, context):
-        raise UnsupportedNode(f"{type(node)} is not supported yet.", node)
-
-    def visit_BinOp(self, node, ast, context):
-        pass
+    def visit_VariableDecl(self, node, ast, context):
+        if node.is_immutable:
+            raise UnsupportedFeature("Immutables are not supported in Cairo", node)

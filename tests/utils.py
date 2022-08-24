@@ -1,9 +1,12 @@
+from typing import Any, List, Tuple, Union
+
+from vyper.utils import bytes_to_int, string_to_bytes
+
 from vyro.cairo.writer import write
 from vyro.transpiler.transpile import transpile
 from vyro.utils.output import write_cairo
+from vyro.utils.utils import CAIRO_PRIME
 from vyro.vyper.vyper_compile import get_vyper_ast
-
-CAIRO_PRIME = 2**251 + 17 * 2**192 + 1
 
 
 def transpile_to_cairo(path, output_file):
@@ -19,9 +22,34 @@ def transpile_to_cairo(path, output_file):
     write_cairo(output, output_file)
 
 
+def _replace_call_argument(args: Union[Any, List[Any]], old: Any, new: Any):
+    for idx, a in enumerate(args):
+        if a == old:
+            args[idx] = new
+
+
+def replace_args(args: Union[List[Any], Any], replacements: List[Tuple[Any, Any]]):
+    for r in replacements:
+        old = r[0]
+        new = r[1]
+
+        for idx, a in enumerate(args):
+            if isinstance(a, list):
+                _replace_call_argument(a, old, new)
+            else:
+                if a == old:
+                    args[idx] = new
+
+
 def signed_int_to_felt(i: int) -> int:
     """
     Convert negative python integer to its felt equivalent.
     """
     assert i < 0
     return CAIRO_PRIME + i
+
+
+def str_to_int(str_: str) -> int:
+    b, _ = string_to_bytes(str_)
+    ret = bytes_to_int(b)
+    return ret

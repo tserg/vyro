@@ -1,8 +1,20 @@
-from vyro.exceptions import FeltOverflowException, UnsupportedOperation
+from vyro.exceptions import (
+    FeltOverflowException,
+    UnsupportedFeature,
+    UnsupportedOperation,
+    UnsupportedType,
+)
 
 UNSUPPORTED = [
     # .vy filename, expected exception
-    ("pow_uint256", UnsupportedOperation),
-    ("uint256_constant", FeltOverflowException),
+    ("constants/bytes32_constant", FeltOverflowException),
+    ("constants/bytesarray32_constant", FeltOverflowException),
+    ("constants/string_constant", FeltOverflowException),
+    ("constants/uint256_constant", FeltOverflowException),
+    ("array", UnsupportedType),
+    ("convert", UnsupportedFeature),
+    ("decimal", UnsupportedType),
+    ("dynarray", UnsupportedType),
+    ("immutable", UnsupportedFeature),
     ("unary_not", UnsupportedOperation),
 ]

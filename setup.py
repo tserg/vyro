@@ -8,9 +8,9 @@ extras_require = {
     "test": [
         "pytest>=7.1.2",
         "pytest-order>=1.0.1",
-        "eth-ape==0.4.0",
+        "eth-ape==0.4.4",
         "ape-vyper==0.4.0",
-        "ape-starknet==0.4.0a0",
+        "ape-starknet==0.4.0a1",
         "ape-cairo==0.4.0a0",
     ],
     "lint": ["black==22.6.0", "flake8==4.0.1", "isort==5.10.1", "mypy==0.961"],

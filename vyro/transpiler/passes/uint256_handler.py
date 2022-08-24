@@ -1,5 +1,4 @@
 from vyper import ast as vy_ast
-from vyper.semantics.types import Uint256Definition
 from vyper.semantics.types.bases import DataLocation
 from vyper.semantics.types.utils import get_type_from_annotation
 
@@ -18,72 +17,27 @@ UINT256_BINOP_TABLE = {"addition": "add256", "subtraction": "sub256", "multiplic
 
 
 class Uint256HandlerVisitor(BaseVisitor):
-    def _wrap_literal_as_uint256(self, node, ast, context):
-        """
-        Replace literal node with wrapped `Uint256` `Call` node.
-        """
-        if isinstance(node, vy_ast.Int):
-            lo = node.value & ((1 << 128) - 1)
-            hi = node.value >> 128
-
-            # Cast literals as Uint256
-            keywords = [
-                vy_ast.keyword(
-                    node_id=context.reserve_id(),
-                    arg="low",
-                    value=vy_ast.Int(node_id=context.reserve_id(), value=lo, ast_type="Int"),
-                    ast_type="keyword",
-                ),
-                vy_ast.keyword(
-                    node_id=context.reserve_id(),
-                    arg="high",
-                    value=vy_ast.Int(node_id=context.reserve_id(), value=hi, ast_type="Int"),
-                    ast_typ="keyword",
-                ),
-            ]
-            wrapped_convert = wrap_operation_in_call(ast, context, "Uint256", keywords=keywords)
-
-            ast.replace_in_tree(node, wrapped_convert)
-            node._children.add(wrapped_convert)
-
-            # Set type
-            wrapped_convert._metadata["type"] = CairoUint256Definition()
-
-            # Add import
-            add_builtin_to_module(ast, "Uint256")
-        return
-
-    def _wrap_convert(self, node, ast, context):
-        value_node = node.value
-
-        if isinstance(value_node, vy_ast.Int):
-            self._wrap_literal_as_uint256(value_node, ast, context)
-            node.target._metadata["type"] = CairoUint256Definition()
-
-        elif isinstance(value_node, vy_ast.Name):
-            value_typ = value_node._metadata["type"]
-            if isinstance(value_typ, Uint256Definition):
-                # Set type
-                node.target._metadata["type"] = CairoUint256Definition()
-                node.value._metadata["type"] = CairoUint256Definition()
-
-        return
-
     def visit_arg(self, node, ast, context):
+        if "type" in node._metadata:
+            return
+
         vyper_typ = get_type_from_annotation(node.annotation, DataLocation.UNSET)
         cairo_typ = get_cairo_type(vyper_typ)
         node._metadata["type"] = cairo_typ
 
     def visit_AnnAssign(self, node, ast, context):
         type_ = node.value._metadata.get("type")
-        cairo_typ = get_cairo_type(type_)
-        if isinstance(cairo_typ, CairoUint256Definition):
-            value_node = node.value
-            if isinstance(value_node, (vy_ast.Int, vy_ast.Name)):
-                self._wrap_convert(node, ast, context)
 
-            elif isinstance(value_node, vy_ast.BinOp):
-                # Move `BinOp` (RHS) to standalone assign
+        if type_:
+            cairo_typ = get_cairo_type(type_)
+            node.target._metadata["type"] = cairo_typ
+            node._metadata["type"] = cairo_typ
+
+            if isinstance(node.value, vy_ast.BinOp) and isinstance(
+                cairo_typ, CairoUint256Definition
+            ):
+                value_node = node.value
+
                 temp_name_node = generate_name_node(context.reserve_id())
                 temp_name_node._metadata["type"] = cairo_typ
 
@@ -108,16 +62,20 @@ class Uint256HandlerVisitor(BaseVisitor):
                 temp_name_node_copy._metadata["type"] = cairo_typ
                 node.value = temp_name_node_copy
 
-                # Visit newly added assignment node and value node
+                # Visit newly added assignment node
                 self.visit(rhs_assignment_node, ast, context)
-                self.visit(node.value, ast, context)
+
+        super().visit_AnnAssign(node, ast, context)
 
     def visit_Assign(self, node, ast, context):
         type_ = node.value._metadata.get("type")
-        if isinstance(type_, Uint256Definition):
-            self._wrap_convert(node, ast, context)
 
-        self.visit(node.value, ast, context)
+        if type_:
+            cairo_typ = get_cairo_type(type_)
+            node.target._metadata["type"] = cairo_typ
+            node._metadata["type"] = cairo_typ
+
+        super().visit_Assign(node, ast, context)
 
     def visit_BinOp(self, node, ast, context):
         op_description = node.op._description
@@ -136,16 +94,11 @@ class Uint256HandlerVisitor(BaseVisitor):
 
         left = node.left
         right = node.right
-        # Wrap left and right in Uint256 if necessary
-        self._wrap_literal_as_uint256(node.left, ast, context)
-        self._wrap_literal_as_uint256(node.right, ast, context)
 
         # Wrap left and right in a function call
         wrapped_uint256_op = wrap_operation_in_call(ast, context, uint256_op, args=[left, right])
         set_parent(left, wrapped_uint256_op)
         set_parent(right, wrapped_uint256_op)
-        node._children.remove(left)
-        node._children.remove(right)
         wrapped_uint256_op._children.add(left)
         wrapped_uint256_op._children.add(right)
         wrapped_uint256_op._metadata["type"] = cairo_typ
@@ -155,3 +108,52 @@ class Uint256HandlerVisitor(BaseVisitor):
 
         # Add import
         add_builtin_to_module(ast, uint256_op)
+
+        # Visit wrapped call node
+        self.visit(wrapped_uint256_op, ast, context)
+
+    def visit_Int(self, node, ast, context):
+        typ = node._metadata.get("type")
+        if typ:
+            cairo_typ = get_cairo_type(typ)
+            if isinstance(cairo_typ, CairoUint256Definition):
+                lo = node.value & ((1 << 128) - 1)
+                hi = node.value >> 128
+
+                # Cast literals as Uint256
+                keywords = [
+                    vy_ast.keyword(
+                        node_id=context.reserve_id(),
+                        arg="low",
+                        value=vy_ast.Int(
+                            node_id=context.reserve_id(), value=lo, ast_type="Int"
+                        ),
+                        ast_type="keyword",
+                    ),
+                    vy_ast.keyword(
+                        node_id=context.reserve_id(),
+                        arg="high",
+                        value=vy_ast.Int(
+                            node_id=context.reserve_id(), value=hi, ast_type="Int"
+                        ),
+                        ast_typ="keyword",
+                    ),
+                ]
+                wrapped_convert = wrap_operation_in_call(
+                    ast, context, "Uint256", keywords=keywords
+                )
+
+                # Replace node with wrapped convert
+                ast.replace_in_tree(node, wrapped_convert)
+
+                # Set type
+                wrapped_convert._metadata["type"] = CairoUint256Definition()
+
+                # Add import
+                add_builtin_to_module(ast, "Uint256")
+
+    def visit_Module(self, node, ast, context):
+        # Skip contract vars
+        nodes = [i for i in node.body if not isinstance(i, vy_ast.VariableDecl)]
+        for n in nodes:
+            self.visit(n, ast, context)
