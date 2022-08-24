@@ -1,4 +1,4 @@
-name: Lint
+name: Lint Python files
 
 on:
   push:
@@ -21,11 +21,6 @@ jobs:
 
       - name: Install Dependencies
         run: pip install .[lint]
-
-      - name: Check Cairo formatting
-        uses: milancermak/cairo-format-action@v1
-        with:
-          target: vyrolib
 
       - name: Run Black
         run: black --check -C ./tests ./vyro ./setup.py

@@ -20,7 +20,7 @@ jobs:
           python-version: '3.9'
 
       - name: Install Dependencies
-        run: pip install .[dev]
+        run: pip install .[test]
 
       - name: Run tests
         run: ape test -s
