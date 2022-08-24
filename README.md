@@ -1,6 +1,6 @@
 # Vyro
 
-An experimental Vyper to Cairo transpiler, inspired by [Warp](https://github.com/NethermindEth/warp) from Nethermind, and with a dash of [Brownie](https://github.com/eth-brownie/brownie).
+An experimental [Vyper](https://github.com/vyperlang/vyper) to Cairo transpiler, inspired by [Warp](https://github.com/NethermindEth/warp) from Nethermind, and with a dash of [Brownie](https://github.com/eth-brownie/brownie).
 
 ## Installation
 
@@ -38,6 +38,13 @@ vyro transpile FILENAME.vy --print-output
 To write the output to a file, run:
 ```
 vyro transpile FILENAME.vy --output FILENAME.cairo
+```
+
+### Transform
+
+To compile a Vyper file and print the Vyper AST to console, run the following command in your console:
+```
+vyro transform FILENAME.vy
 ```
 
 ### Testing (using Ape Framework)
