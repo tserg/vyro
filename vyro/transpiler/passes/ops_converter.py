@@ -45,11 +45,7 @@ class OpsConverterVisitor(BaseVisitor):
 
         if isinstance(target, vy_ast.Name):
             binop = vy_ast.BinOp(
-                node_id=context.reserve_id(),
-                left=target,
-                op=op,
-                right=value,
-                ast_type="BinOp",
+                node_id=context.reserve_id(), left=target, op=op, right=value, ast_type="BinOp"
             )
             binop._children.add(target)
             binop._children.add(op)
@@ -65,10 +61,7 @@ class OpsConverterVisitor(BaseVisitor):
             target_copy._metadata["type"] = cairo_typ
 
             ann_assign = vy_ast.AnnAssign(
-                node_id=context.reserve_id(),
-                target=target_copy,
-                value=binop,
-                ast_type="AnnAssign",
+                node_id=context.reserve_id(), target=target_copy, value=binop, ast_type="AnnAssign"
             )
             ann_assign._children.add(target_copy)
             ann_assign._children.add(binop)
@@ -97,11 +90,7 @@ class OpsConverterVisitor(BaseVisitor):
         is_uint256 = isinstance(cairo_typ, CairoUint256Definition)
 
         # Derive the operation
-        vyro_op = (
-            BINOP_TABLE[op_description][1]
-            if is_uint256
-            else BINOP_TABLE[op_description][0]
-        )
+        vyro_op = BINOP_TABLE[op_description][1] if is_uint256 else BINOP_TABLE[op_description][0]
 
         if isinstance(op, vy_ast.Pow) and is_uint256:
             # Convert LHS and RHS to felt
@@ -111,9 +100,7 @@ class OpsConverterVisitor(BaseVisitor):
             temp_left._metadata["type"] = FeltDefinition()
             temp_right._metadata["type"] = FeltDefinition()
 
-            wrapped_left = wrap_operation_in_call(
-                ast, context, "uint256_to_felt", args=[node.left]
-            )
+            wrapped_left = wrap_operation_in_call(ast, context, "uint256_to_felt", args=[node.left])
             wrapped_left._metadata["type"] = FeltDefinition()
 
             wrapped_right = wrap_operation_in_call(
@@ -133,9 +120,7 @@ class OpsConverterVisitor(BaseVisitor):
 
             # Duplicate temp LHS and RHS nodes
             temp_left_dup = generate_name_node(context.reserve_id(), name=temp_left.id)
-            temp_right_dup = generate_name_node(
-                context.reserve_id(), name=temp_right.id
-            )
+            temp_right_dup = generate_name_node(context.reserve_id(), name=temp_right.id)
 
             temp_left_dup._metadata["type"] = FeltDefinition()
             temp_right_dup._metadata["type"] = FeltDefinition()
@@ -150,18 +135,14 @@ class OpsConverterVisitor(BaseVisitor):
             convert_ret_node._metadata["type"] = FeltDefinition()
 
             convert_assign_node = vy_ast.Assign(
-                node_id=context.reserve_id(),
-                targets=[convert_ret_node],
-                value=wrapped_op,
+                node_id=context.reserve_id(), targets=[convert_ret_node], value=wrapped_op
             )
 
             # Add import
             add_builtin_to_module(ast, vyro_op)
 
             # Convert back to Uint256
-            reconvert_arg_node = generate_name_node(
-                context.reserve_id(), name=convert_ret_node.id
-            )
+            reconvert_arg_node = generate_name_node(context.reserve_id(), name=convert_ret_node.id)
             reconvert_arg_node._metadata["type"] = FeltDefinition()
 
             wrapped_op = wrap_operation_in_call(
@@ -175,9 +156,7 @@ class OpsConverterVisitor(BaseVisitor):
             reconvert_target_node._metadata["type"] = CairoUint256Definition()
 
             reconvert_node = vy_ast.Assign(
-                node_id=context.reserve_id(),
-                targets=[reconvert_target_node],
-                value=wrapped_op,
+                node_id=context.reserve_id(), targets=[reconvert_target_node], value=wrapped_op
             )
 
             # Insert statements
@@ -201,9 +180,7 @@ class OpsConverterVisitor(BaseVisitor):
             add_builtin_to_module(ast, "BitwiseBuiltin")
 
         # Wrap operation in a function call
-        wrapped_op = wrap_operation_in_call(
-            ast, context, vyro_op, [node.left, node.right]
-        )
+        wrapped_op = wrap_operation_in_call(ast, context, vyro_op, [node.left, node.right])
         wrapped_op._metadata["type"] = cairo_typ
 
         # Assign to new variable
@@ -219,9 +196,7 @@ class OpsConverterVisitor(BaseVisitor):
         insert_statement_before(temp_assign_node, stmt_node, fn_node)
 
         # Replace `BinOp` node with wrapped call reference
-        temp_name_node_dup = generate_name_node(
-            context.reserve_id(), name=temp_name_node.id
-        )
+        temp_name_node_dup = generate_name_node(context.reserve_id(), name=temp_name_node.id)
         ast.replace_in_tree(node, temp_name_node_dup)
 
         # Add import
@@ -270,9 +245,7 @@ class OpsConverterVisitor(BaseVisitor):
 
         # Derive the operation
         vyro_op = (
-            UNARY_OP_TABLE[op_description][1]
-            if is_uint256
-            else UNARY_OP_TABLE[op_description][0]
+            UNARY_OP_TABLE[op_description][1] if is_uint256 else UNARY_OP_TABLE[op_description][0]
         )
 
         # Add implicits for bitwise ops

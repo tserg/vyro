@@ -10,9 +10,7 @@ class BaseVisitor:
         node_type = type(node).__name__
         visitor_fn = getattr(self, f"visit_{node_type}", None)
         if visitor_fn is None:
-            raise UnsupportedNode(
-                f"{node_type} node is not yet supported in visitor", node
-            )
+            raise UnsupportedNode(f"{node_type} node is not yet supported in visitor", node)
         visitor_fn(node, ast, context, *args)
 
     def visit_arg(self, node, ast, context):

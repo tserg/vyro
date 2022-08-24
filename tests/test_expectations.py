@@ -97,14 +97,7 @@ def test_transpile(code):
 # Perform tests in cairo
 @pytest.mark.usefixtures("starknet_devnet")
 @pytest.mark.parametrize("code", EXPECTATIONS)
-def test_cairo_code(
-    request,
-    project,
-    starknet_owner,
-    starknet_user,
-    starknet_guest,
-    code,
-):
+def test_cairo_code(request, project, starknet_owner, starknet_user, starknet_guest, code):
     """
     Test Cairo code against expectations.
     """

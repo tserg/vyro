@@ -1,0 +1,32 @@
+name: Lint Python files
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Python setup
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: pip install .[lint]
+
+      - name: Run Black
+        run: black --check -C ./tests ./vyro ./setup.py
+
+      - name: Run flake8
+        run: flake8 ./tests ./vyro ./setup.py
+
+      - name: Run isort
+        run: isort --check-only --diff ./tests ./vyro ./setup.py

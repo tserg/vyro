@@ -14,8 +14,7 @@ class ConstantHandlerVisitor(BaseVisitor):
     def _assert_valid_felt(self, node, int_value):
         if int_value > CAIRO_PRIME:
             raise FeltOverflowException(
-                f"Value of constant ({node.value}) exceeds maximum felt value ({CAIRO_PRIME})",
-                node,
+                f"Value of constant ({node.value}) exceeds maximum felt value ({CAIRO_PRIME})", node
             )
 
     def visit_Bytes(self, node, ast, context):
@@ -62,9 +61,7 @@ class ConstantHandlerVisitor(BaseVisitor):
     def visit_Module(self, node, ast, context):
         # Visit contract variable declarations and functions only
         contract_vars = [
-            i
-            for i in node.body
-            if isinstance(i, (vy_ast.FunctionDef, vy_ast.VariableDecl))
+            i for i in node.body if isinstance(i, (vy_ast.FunctionDef, vy_ast.VariableDecl))
         ]
         for c in contract_vars:
             self.visit(c, ast, context)
@@ -82,12 +79,8 @@ class ConstantHandlerVisitor(BaseVisitor):
         ast.replace_in_tree(node, replacement_node)
 
         # Search for folded nodes
-        for n in ast.get_descendants(
-            vy_ast.NameConstant, {"value": bool_value}, reverse=True
-        ):
-            new_replacement_node = generate_name_node(
-                context.reserve_id(), name=bool_str
-            )
+        for n in ast.get_descendants(vy_ast.NameConstant, {"value": bool_value}, reverse=True):
+            new_replacement_node = generate_name_node(context.reserve_id(), name=bool_str)
             ast.replace_in_tree(n, new_replacement_node)
 
     def visit_Str(self, node, ast, context):

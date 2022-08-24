@@ -13,12 +13,7 @@ extras_require = {
         "ape-starknet==0.4.0a1",
         "ape-cairo==0.4.0a0",
     ],
-    "lint": [
-        "black==22.6.0",
-        "flake8==4.0.1",
-        "isort==5.10.1",
-        "mypy==0.961",
-    ],
+    "lint": ["black==22.6.0", "flake8==4.0.1", "isort==5.10.1", "mypy==0.961"],
 }
 
 extras_require["dev"] = extras_require["test"] + extras_require["lint"]
@@ -34,16 +29,8 @@ setup(
     url="https://github.com/tserg/vyro",
     keywords=["ethereum", "starknet", "vyper", "cairo", "transpiler"],
     python_requires=">=3.7,<3.10",
-    packages=find_packages(
-        where=".",
-        include=["vyro*"],
-    ),
-    install_requires=[
-        "vyper==0.3.6",
-        "cairo-lang==0.9.1",
-    ],
+    packages=find_packages(where=".", include=["vyro*"]),
+    install_requires=["vyper==0.3.6", "cairo-lang==0.9.1"],
     extras_require=extras_require,
-    entry_points={
-        "console_scripts": ["vyro=vyro._cli.__main__:main"],
-    },
+    entry_points={"console_scripts": ["vyro=vyro._cli.__main__:main"]},
 )

@@ -76,10 +76,7 @@ EXPECTATIONS = [
             ("bool_or", [[False, False], False], [[0, 0], 0]),
         ),
     ),
-    (
-        "binop_nested_arithmetic_int128",
-        [("add_mul_int128", [[100, 9], 101], [[100, 9], 101])],
-    ),
+    ("binop_nested_arithmetic_int128", [("add_mul_int128", [[100, 9], 101], [[100, 9], 101])]),
     (
         "binop_nested_arithmetic_uint256",
         [("pow_mul_uint256", [[100, 18], 100 * 10**18], [[100, 18], 100 * 10**18])],
@@ -164,12 +161,7 @@ EXPECTATIONS = [
             (
                 "approve",
                 [["ETH_GUEST", ERC20_TRANSFER_AMT], None, "eth_owner"],
-                [
-                    ["STARKNET_GUEST", ERC20_TRANSFER_AMT],
-                    None,
-                    ["Approval"],
-                    "starknet_owner",
-                ],
+                [["STARKNET_GUEST", ERC20_TRANSFER_AMT], None, ["Approval"], "starknet_owner"],
             ),
             (
                 "allowance",

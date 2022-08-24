@@ -42,9 +42,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
                 temp_name_node._metadata["type"] = out_cairo_typ
 
                 temp_assign_node = vy_ast.Assign(
-                    node_id=context.reserve_id(),
-                    targets=[temp_name_node],
-                    value=wrapped_call_node,
+                    node_id=context.reserve_id(), targets=[temp_name_node], value=wrapped_call_node
                 )
 
                 # Insert statement
@@ -56,7 +54,9 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
                 add_builtin_to_module(ast, "felt_to_uint256")
 
                 # Replace call node with temporary name node
-                temp_name_node_dup = generate_name_node(context.reserve_id(), name=temp_name_node.id)
+                temp_name_node_dup = generate_name_node(
+                    context.reserve_id(), name=temp_name_node.id
+                )
                 ast.replace_in_tree(node, temp_name_node_dup)
 
             else:
@@ -94,8 +94,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
                         insert_statement_after(hi_clamper, stmt_node, fn_node)
         else:
             raise UnsupportedFeature(
-                f"Conversion of {in_vy_typ} to {out_vy_typ} is currently not supported",
-                node,
+                f"Conversion of {in_vy_typ} to {out_vy_typ} is currently not supported", node
             )
 
     def _handle_empty(self, node, ast, context):
@@ -125,7 +124,5 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
         if call_typ._id in VY_BUILTIN_FNS:
             handle_fn = getattr(self, f"_handle_{call_typ._id}", None)
             if handle_fn is None:
-                raise UnsupportedFeature(
-                    f"{call_typ._id} builtin function is not supported", node
-                )
+                raise UnsupportedFeature(f"{call_typ._id} builtin function is not supported", node)
             handle_fn(node, ast, context)

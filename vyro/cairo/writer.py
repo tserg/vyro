@@ -47,15 +47,7 @@ class CairoWriter:
             functions = "\n\n".join(self.functions)
 
         cairo = "\n".join(
-            [
-                self.header,
-                imports,
-                constants,
-                events,
-                storage_vars,
-                storage_vars_getters,
-                functions,
-            ]
+            [self.header, imports, constants, events, storage_vars, storage_vars_getters, functions]
         )
         return cairo
 
@@ -63,9 +55,7 @@ class CairoWriter:
         node_type = type(node).__name__
         write_fn = getattr(self, f"write_{node_type}", None)
         if write_fn is None:
-            raise UnsupportedNode(
-                f"{node_type} node is not yet supported in writer", node
-            )
+            raise UnsupportedNode(f"{node_type} node is not yet supported in writer", node)
         return write_fn(node, *args)
 
     def write_arg(self, node):
@@ -276,9 +266,7 @@ class CairoWriter:
                 return_typ = return_typ.value_type
             return_decl_str = f" -> ({node.name}_ret : {return_typ})"
 
-        fn_def_str = (
-            f"func {node.name}{{{implicits_str}}}({args_str}){return_decl_str}:"
-        )
+        fn_def_str = f"func {node.name}{{{implicits_str}}}({args_str}){return_decl_str}:"
 
         ret.append(fn_def_str)
 
