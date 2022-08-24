@@ -1,6 +1,6 @@
 # Vyro
 
-An experimental Vyper to Cairo transpiler, inspired by Warp from Nethermind, Brownie and Vyper.
+An experimental Vyper to Cairo transpiler, inspired by [Warp](https://github.com/NethermindEth/warp) from Nethermind, and with a dash of [Brownie](https://github.com/eth-brownie/brownie).
 
 ## Installation
 
