@@ -6,9 +6,7 @@ from vyro.transpiler.visitor import BaseVisitor
 
 
 class InitialisationVisitor(BaseVisitor):
-    def visit_AnnAssign(
-        self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext
-    ):
+    def visit_AnnAssign(self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext):
         typ = node.target._metadata.get("type") or node._metadata.get("type")
         if typ:
             cairo_typ = get_cairo_type(typ)

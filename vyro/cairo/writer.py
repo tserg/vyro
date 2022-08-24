@@ -47,15 +47,7 @@ class CairoWriter:
             functions = "\n\n".join(self.functions)
 
         cairo = "\n".join(
-            [
-                self.header,
-                imports,
-                constants,
-                events,
-                storage_vars,
-                storage_vars_getters,
-                functions,
-            ]
+            [self.header, imports, constants, events, storage_vars, storage_vars_getters, functions]
         )
         return cairo
 

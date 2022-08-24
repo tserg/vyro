@@ -8,17 +8,12 @@ from vyro.transpiler.visitor import BaseVisitor
 
 
 class EventHandlerVisitor(BaseVisitor):
-    def visit_EventDef(
-        self, node: vy_ast.EventDef, ast: vy_ast.Module, context: ASTContext
-    ):
+    def visit_EventDef(self, node: vy_ast.EventDef, ast: vy_ast.Module, context: ASTContext):
         # Iterate over event members
         for i in node.body:
 
             # Handle indexed members
-            if (
-                isinstance(i.annotation, vy_ast.Call)
-                and i.annotation.func.id == "indexed"
-            ):
+            if isinstance(i.annotation, vy_ast.Call) and i.annotation.func.id == "indexed":
                 annotation = i.annotation.args[0]
             else:
                 annotation = i.annotation

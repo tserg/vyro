@@ -20,9 +20,7 @@ from vyro.transpiler.visitor import BaseVisitor
 
 
 class StorageVarVisitor(BaseVisitor):
-    def _get_highest_subscript_parent_node(
-        self, node: vy_ast.VyperNode
-    ) -> vy_ast.VyperNode:
+    def _get_highest_subscript_parent_node(self, node: vy_ast.VyperNode) -> vy_ast.VyperNode:
         """
         Return the top level subscript node recursively, or the node itself.
         """
@@ -98,9 +96,7 @@ class StorageVarVisitor(BaseVisitor):
         insert_statement_before(storage_read_node, parent_node, fn_node)
 
         # Duplicate name node
-        temp_name_node_copy = generate_name_node(
-            context.reserve_id(), name=temp_name_node.id
-        )
+        temp_name_node_copy = generate_name_node(context.reserve_id(), name=temp_name_node.id)
         ast.replace_in_tree(contract_var_node, temp_name_node_copy)
 
     def visit_VariableDecl(
@@ -153,10 +149,7 @@ class StorageVarVisitor(BaseVisitor):
                 fn_args = extract_mapping_args(cairo_typ, context, include_type=True)
 
             fn_node_args = vy_ast.arguments(
-                node_id=context.reserve_id(),
-                args=fn_args,
-                defaults=[],
-                ast_type="arguments",
+                node_id=context.reserve_id(), args=fn_args, defaults=[], ast_type="arguments"
             )
 
             # Create return node
@@ -200,9 +193,7 @@ class StorageVarVisitor(BaseVisitor):
 
             ast.add_to_body(fn_node)
 
-    def visit_AnnAssign(
-        self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext
-    ):
+    def visit_AnnAssign(self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext):
         cairo_typ = convert_node_type_definition(node.target)
         # Handle storage variables on RHS of assignment
         rhs = node.value
@@ -215,13 +206,9 @@ class StorageVarVisitor(BaseVisitor):
             # Check for nested mappings
             contract_var = self._get_highest_subscript_parent_node(contract_var)
 
-            self._handle_rhs(
-                contract_var_name, contract_var, ast, context, node, cairo_typ
-            )
+            self._handle_rhs(contract_var_name, contract_var, ast, context, node, cairo_typ)
 
-    def visit_Assign(
-        self, node: vy_ast.Assign, ast: vy_ast.Module, context: ASTContext
-    ):
+    def visit_Assign(self, node: vy_ast.Assign, ast: vy_ast.Module, context: ASTContext):
 
         # Check for storage variable on LHS of assignment
         lhs = node.target
@@ -303,13 +290,9 @@ class StorageVarVisitor(BaseVisitor):
             # Check for nested mappings
             contract_var = self._get_highest_subscript_parent_node(contract_var)
 
-            self._handle_rhs(
-                contract_var_name, contract_var, ast, context, node, cairo_typ
-            )
+            self._handle_rhs(contract_var_name, contract_var, ast, context, node, cairo_typ)
 
-    def visit_AugAssign(
-        self, node: vy_ast.AugAssign, ast: vy_ast.Module, context: ASTContext
-    ):
+    def visit_AugAssign(self, node: vy_ast.AugAssign, ast: vy_ast.Module, context: ASTContext):
         # Check for storage variable on LHS of assignment
         lhs = node.target
         contract_vars = lhs.get_descendants(
@@ -328,9 +311,7 @@ class StorageVarVisitor(BaseVisitor):
             temp_name_node._metadata["type"] = cairo_typ
 
             value_node = vy_ast.Name(
-                node_id=context.reserve_id(),
-                id=f"{contract_var_name}_STORAGE",
-                ast_type="Name",
+                node_id=context.reserve_id(), id=f"{contract_var_name}_STORAGE", ast_type="Name"
             )
 
             # Retrieve mapping keys for writing
@@ -434,6 +415,4 @@ class StorageVarVisitor(BaseVisitor):
             # Check for nested mappings
             contract_var = self._get_highest_subscript_parent_node(contract_var)
 
-            self._handle_rhs(
-                contract_var_name, contract_var, ast, context, node, cairo_typ
-            )
+            self._handle_rhs(contract_var_name, contract_var, ast, context, node, cairo_typ)
