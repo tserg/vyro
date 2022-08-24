@@ -7,11 +7,8 @@ from vyro.transpiler.utils import (
     add_implicit_to_function,
     generate_name_node,
     get_cairo_type,
-<<<<<<< HEAD
-=======
     get_stmt_node,
     insert_statement_before,
->>>>>>> main
     set_parent,
     wrap_operation_in_call,
 )
@@ -46,17 +43,6 @@ class OpsConverterVisitor(BaseVisitor):
         typ = node._metadata.get("type")
         cairo_typ = get_cairo_type(typ)
 
-<<<<<<< HEAD
-        binop = vy_ast.BinOp(
-            node_id=context.reserve_id(), left=target, op=op, right=value, ast_type="BinOp"
-        )
-        binop._children.add(target)
-        binop._children.add(op)
-        binop._children.add(value)
-        set_parent(value, binop)
-        set_parent(target, binop)
-        set_parent(op, binop)
-=======
         if isinstance(target, vy_ast.Name):
             binop = vy_ast.BinOp(
                 node_id=context.reserve_id(),
@@ -71,7 +57,6 @@ class OpsConverterVisitor(BaseVisitor):
             set_parent(value, binop)
             set_parent(target, binop)
             set_parent(op, binop)
->>>>>>> main
 
             # Set to Vyper type for `uint256_handler` pass
             binop._metadata["type"] = cairo_typ
@@ -79,16 +64,6 @@ class OpsConverterVisitor(BaseVisitor):
             target_copy = generate_name_node(context.reserve_id(), name=target.id)
             target_copy._metadata["type"] = cairo_typ
 
-<<<<<<< HEAD
-        ann_assign = vy_ast.AnnAssign(
-            node_id=context.reserve_id(), target=target_copy, value=binop, ast_type="AnnAssign"
-        )
-        ann_assign._children.add(target_copy)
-        ann_assign._children.add(binop)
-        set_parent(binop, ann_assign)
-        set_parent(target_copy, ann_assign)
-        ann_assign._metadata["type"] = cairo_typ
-=======
             ann_assign = vy_ast.AnnAssign(
                 node_id=context.reserve_id(),
                 target=target_copy,
@@ -100,7 +75,6 @@ class OpsConverterVisitor(BaseVisitor):
             set_parent(binop, ann_assign)
             set_parent(target_copy, ann_assign)
             ann_assign._metadata["type"] = cairo_typ
->>>>>>> main
 
             # Replace `AugAssign` node with `AnnAssign`
             ast.replace_in_tree(node, ann_assign)
@@ -121,11 +95,6 @@ class OpsConverterVisitor(BaseVisitor):
             return
 
         is_uint256 = isinstance(cairo_typ, CairoUint256Definition)
-<<<<<<< HEAD
-        if isinstance(op, vy_ast.Pow) and is_uint256:
-            raise UnsupportedOperation("`pow` operations for Uint256 are not supported.", node)
-=======
->>>>>>> main
 
         # Derive the operation
         vyro_op = BINOP_TABLE[op_description][1] if is_uint256 else BINOP_TABLE[op_description][0]
