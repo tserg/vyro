@@ -23,7 +23,9 @@ jobs:
         run: pip install .[lint]
 
       - name: Check Cairo formatting
-        uses: milancermak/cairo-format-action@v1 --target vyrolib
+        uses: milancermak/cairo-format-action@v1
+        with:
+          target: vyrolib
 
       - name: Run Black
         run: black --check -C ./tests ./vyro ./setup.py
