@@ -8,7 +8,6 @@ from vyro.utils.output import write_cairo
 from vyro.utils.utils import CAIRO_PRIME
 from vyro.vyper.vyper_compile import get_vyper_ast
 
-
 # Constants
 TRUE = 1
 FALSE = 0
