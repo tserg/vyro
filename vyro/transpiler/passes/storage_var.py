@@ -89,8 +89,7 @@ class StorageVarVisitor(BaseVisitor):
             args=read_args,
         )
         set_parent(value_node, storage_read_node)
-        set_parent(temp_name_node, storage_read_node)\
-
+        set_parent(temp_name_node, storage_read_node)
         # Insert `CairoStorageRead` node before `Assign`
         fn_node = parent_node.get_ancestor(vy_ast.FunctionDef)
         insert_statement_before(storage_read_node, parent_node, fn_node)
