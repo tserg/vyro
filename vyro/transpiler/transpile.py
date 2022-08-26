@@ -46,5 +46,5 @@ def transpile(ast: vy_ast.Module, print_tree: bool = False):
 
         if print_tree is True:
             ast_dict = ast.to_dict()
-            print(f"\n\n=============== Transpiled AST - {type(v)} ===============\n\n")
+            print(f"\n\n=============== Transpiled AST - {v} ===============\n\n")
             print(json.dumps(ast_dict, sort_keys=True, indent=4))

@@ -4,7 +4,7 @@ from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.nodes import CairoAssert
 from vyro.cairo.types import FeltDefinition
 from vyro.transpiler.context import ASTContext
-from vyro.transpiler.utils import generate_name_node, insert_statement_before
+from vyro.transpiler.utils import generate_name_node, insert_statement_before, set_parent
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -18,28 +18,32 @@ class AssertHandlerVisitor(BaseVisitor):
         temp_name_node._metadata["type"] = FeltDefinition()
 
         assign_node = vy_ast.Assign(
-            node_id=context.reserve_id(), targets=[temp_name_node], value=condition
+            node_id=context.reserve_id(), targets=[temp_name_node], value=condition, ast_type="Assign"
         )
         assign_node._metadata["type"] = FeltDefinition()
+        set_parent(temp_name_node, assign_node)
+        set_parent(condition, assign_node)
 
         fn_node = node.get_ancestor(vy_ast.FunctionDef)
         insert_statement_before(assign_node, node, fn_node)
 
         # Generate a new `test` condition where we assert newly assigned name node is True
-        temp_name_node_dup = generate_name_node(context.reserve_id(), name=temp_name_node.id)
+        cairo_assert_target = generate_name_node(context.reserve_id(), name=temp_name_node.id)
         temp_name_node._metadata["type"] = FeltDefinition()
 
         # Generate nodes for `CairoAssert`
 
-        cairo_assert_target = temp_name_node_dup
         cairo_assert_value = generate_name_node(context.reserve_id(), name="TRUE")
         add_builtin_to_module(ast, "TRUE")
 
         assert_node = CairoAssert(
             node_id=context.reserve_id(), targets=[cairo_assert_target], value=cairo_assert_value
         )
+        set_parent(cairo_assert_target, assert_node)
+        set_parent(cairo_assert_value, assert_node)
 
         node.test = assert_node
+        set_parent(assert_node, node)
 
     def visit_FunctionDef(self, node: vy_ast.FunctionDef, ast: vy_ast.Module, context: ASTContext):
 

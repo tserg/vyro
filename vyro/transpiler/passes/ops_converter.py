@@ -269,8 +269,10 @@ class OpsConverterVisitor(BaseVisitor):
         wrapped_call = wrap_operation_in_call(ast, context, vyro_op, args=[left, right])
 
         temp_assign_node = vy_ast.Assign(
-            node_id=context.reserve_id(), targets=[temp_name_node], value=wrapped_call
+            node_id=context.reserve_id(), targets=[temp_name_node], value=wrapped_call, ast_type="Assign"
         )
+        set_parent(temp_name_node, temp_assign_node)
+        set_parent(wrapped_call, temp_assign_node)
 
         # Add wrapped operation before `Compare` node
         stmt_node = get_stmt_node(node)
