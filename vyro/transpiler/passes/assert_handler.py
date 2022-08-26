@@ -18,7 +18,10 @@ class AssertHandlerVisitor(BaseVisitor):
         temp_name_node._metadata["type"] = FeltDefinition()
 
         assign_node = vy_ast.Assign(
-            node_id=context.reserve_id(), targets=[temp_name_node], value=condition, ast_type="Assign"
+            node_id=context.reserve_id(),
+            targets=[temp_name_node],
+            value=condition,
+            ast_type="Assign",
         )
         assign_node._metadata["type"] = FeltDefinition()
         set_parent(temp_name_node, assign_node)

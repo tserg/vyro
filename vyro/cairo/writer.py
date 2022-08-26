@@ -95,7 +95,7 @@ class CairoWriter:
         # Replace single quote with double quote because Cairo treats the former
         # as short strings
         error_msg = '"' + error_msg[1:-1] + '"'
-        
+
         block = [f"with_attr error_message({error_msg}):"]
 
         # Get test condition
