@@ -56,9 +56,6 @@ class OpsConverterVisitor(BaseVisitor):
             binop = vy_ast.BinOp(
                 node_id=context.reserve_id(), left=target, op=op, right=value, ast_type="BinOp"
             )
-            binop._children.add(target)
-            binop._children.add(op)
-            binop._children.add(value)
             set_parent(value, binop)
             set_parent(target, binop)
             set_parent(op, binop)
@@ -72,8 +69,6 @@ class OpsConverterVisitor(BaseVisitor):
             ann_assign = vy_ast.AnnAssign(
                 node_id=context.reserve_id(), target=target_copy, value=binop, ast_type="AnnAssign"
             )
-            ann_assign._children.add(target_copy)
-            ann_assign._children.add(binop)
             set_parent(binop, ann_assign)
             set_parent(target_copy, ann_assign)
             ann_assign._metadata["type"] = cairo_typ

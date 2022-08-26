@@ -170,7 +170,7 @@ def wrap_operation_in_call(
     )
     for a in args:
         set_parent(a, wrapped_op)
-        wrapped_op._children.add(a)
+
     return wrapped_op
 
 

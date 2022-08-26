@@ -47,10 +47,9 @@ class Uint256HandlerVisitor(BaseVisitor):
                     value=value_node,
                     ast_type="Assign",
                 )
-                rhs_assignment_node._children.add(temp_name_node)
-                rhs_assignment_node._children.add(value_node)
-                rhs_assignment_node._metadata["type"] = cairo_typ
+                set_parent(temp_name_node, rhs_assignment_node)
                 set_parent(value_node, rhs_assignment_node)
+                rhs_assignment_node._metadata["type"] = cairo_typ
 
                 fn_node = node.get_ancestor(vy_ast.FunctionDef)
                 insert_statement_before(rhs_assignment_node, node, fn_node)
@@ -99,8 +98,6 @@ class Uint256HandlerVisitor(BaseVisitor):
         wrapped_uint256_op = wrap_operation_in_call(ast, context, uint256_op, args=[left, right])
         set_parent(left, wrapped_uint256_op)
         set_parent(right, wrapped_uint256_op)
-        wrapped_uint256_op._children.add(left)
-        wrapped_uint256_op._children.add(right)
         wrapped_uint256_op._metadata["type"] = cairo_typ
 
         # Replace `BinOp` node with wrapped call
