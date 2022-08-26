@@ -3,6 +3,14 @@ from typing import Optional
 from vyper import ast as vy_ast
 
 
+class CairoAssert(vy_ast.Assign):
+    """Wrapper class for Cairo assert"""
+
+    def __init__(self, parent: Optional[vy_ast.VyperNode] = None, **kwargs: dict):
+        self.ast_type = "CairoAssert"
+        super().__init__(parent, **kwargs)
+
+
 class CairoStorageWrite(vy_ast.Assign):
     """Wrapper class for Cairo write to storage"""
 

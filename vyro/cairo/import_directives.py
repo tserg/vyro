@@ -9,9 +9,6 @@ IMPORT_DIRECTIVES = {
     # Syscalls
     "get_caller_address": "starkware.starknet.common.syscalls",
     "get_block_timestamp": "starkware.starknet.common.syscalls",
-    # Constants
-    "TRUE": "starkware.cairo.common.bool",
-    "FALSE": "starkware.cairo.common.bool",
     # Bitwise
     "bitwise_and": "starkware.cairo.common.bitwise",
     "bitwise_not": "starkware.cairo.common.bitwise",

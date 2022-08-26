@@ -1,3 +1,4 @@
+from vyro.transpiler.passes.assert_handler import AssertHandlerVisitor
 from vyro.transpiler.passes.builtin_function_handler import BuiltinFunctionHandlerVisitor
 from vyro.transpiler.passes.cairo_importer import CairoImporterVisitor
 from vyro.transpiler.passes.constant_handler import ConstantHandlerVisitor

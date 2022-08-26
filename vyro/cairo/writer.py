@@ -6,7 +6,7 @@ from vyper.semantics.types.function import StateMutability
 
 from vyro.cairo.implicits import IMPLICITS
 from vyro.cairo.types import CairoMappingDefinition
-from vyro.cairo.utils import INDENT, generate_storage_var_stub
+from vyro.cairo.utils import INDENT, add_indent, generate_storage_var_stub
 from vyro.exceptions import TranspilerPanic, UnsupportedNode
 
 
@@ -89,7 +89,20 @@ class CairoWriter:
         return f"tempvar {target_str} : {typ} = {value_str}"
 
     def write_Assert(self, node):
-        self.write(node.test)
+        # Start of `with_attr` block
+        error_msg = self.write(node.msg)
+        block = [f"with_attr error_message({error_msg}):"]
+
+        # Get test condition
+        target_str = self.write(node.test)
+        block.append(INDENT + target_str)
+
+        # End `with_attr_block`
+        block.append("end")
+
+        # Concatenate block
+        ret = "\n".join(block)
+        return ret
 
     def write_Assign(self, node):
         target_str = self.write(node.target)
@@ -131,6 +144,11 @@ class CairoWriter:
 
     def write_Bytes(self, node):
         pass
+
+    def write_CairoAssert(self, node):
+        target_str = self.write(node.target)
+        value_str = self.write(node.value)
+        return f"assert {target_str} = {value_str}"
 
     def write_CairoStorageRead(self, node):
         target_str = self.write(node.target)
@@ -175,9 +193,10 @@ class CairoWriter:
         return f"{func_str}({args_str}{kwargs_str})"
 
     def write_Compare(self, node):
-        self.write(node.left)
-        self.write(node.op)
-        self.write(node.right)
+        left_str = self.write(node.left)
+        op_str = str("TODO")
+        right_str = self.write(node.right)
+        return f"{left_str} {op_str} {right_str}"
 
     def write_Continue(self, node):
         pass
@@ -277,8 +296,9 @@ class CairoWriter:
         for n in node.body:
             stmt_str = self.write(n)
             if not stmt_str:
-                raise TranspilerPanic("Unable to write statement in function body")
-            ret.append(INDENT + stmt_str)
+                raise TranspilerPanic(f"Unable to write statement for {type(n)} in function body")
+            stmt_str = add_indent(stmt_str)
+            ret.append(stmt_str)
 
         # Inject return if no return value
         if not node.returns:

@@ -74,6 +74,9 @@ class BaseVisitor:
     def visit_Bytes(self, node, ast, context):
         pass
 
+    def visit_CairoAssert(self, node, ast, context):
+        pass
+
     def visit_CairoStorageRead(self, node, ast, context):
         pass
 
