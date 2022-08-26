@@ -1,7 +1,7 @@
 from ape.exceptions import ContractLogicError
 from hexbytes import HexBytes
 
-from tests.utils import signed_int_to_felt, str_to_int
+from tests.utils import FALSE, TRUE, signed_int_to_felt, str_to_int
 
 ERC20_INITIAL_SUPPLY = 1_000 * 10**18
 ERC20_TRANSFER_AMT = 100 * 10**18
@@ -13,6 +13,76 @@ EXPECTATIONS = [
     #       ([vyper call_args], vyper expected, vyper caller),
     #       ([cairo call_args], cairo expected, [cairo event names], cairo_caller),
     # ]
+    (
+        "assert_int128",
+        [
+            ("assert_eq", [[5], ContractLogicError()], [[5], ContractLogicError()]),
+            ("assert_eq", [[-1], None], [[signed_int_to_felt(-1)], None]),
+            (
+                "assert_neq",
+                [[-1], ContractLogicError()],
+                [[signed_int_to_felt(-1)], ContractLogicError()],
+            ),
+            ("assert_neq", [[5], None], [[5], None]),
+            ("assert_ge", [[-1], None], [[signed_int_to_felt(-1)], None]),
+            ("assert_ge", [[-(2**8)], None], [[signed_int_to_felt(-(2**8))], None]),
+            (
+                "assert_ge",
+                [[-(2**9)], ContractLogicError()],
+                [[signed_int_to_felt(-(2**9))], ContractLogicError()],
+            ),
+            ("assert_gt", [[-1], None], [[signed_int_to_felt(-1)], None]),
+            (
+                "assert_gt",
+                [[-(2**8)], ContractLogicError()],
+                [[signed_int_to_felt(-(2**8))], ContractLogicError()],
+            ),
+            (
+                "assert_gt",
+                [[-(2**9)], ContractLogicError()],
+                [[signed_int_to_felt(-(2**9))], ContractLogicError()],
+            ),
+            (
+                "assert_le",
+                [[-1], ContractLogicError()],
+                [[signed_int_to_felt(-1)], ContractLogicError()],
+            ),
+            ("assert_le", [[-(2**8)], None], [[signed_int_to_felt(-(2**8))], None]),
+            ("assert_le", [[-(2**9)], None], [[signed_int_to_felt(-(2**9))], None]),
+            (
+                "assert_lt",
+                [[-1], ContractLogicError()],
+                [[signed_int_to_felt(-1)], ContractLogicError()],
+            ),
+            (
+                "assert_lt",
+                [[-(2**8)], ContractLogicError()],
+                [[signed_int_to_felt(-(2**8))], ContractLogicError()],
+            ),
+            ("assert_lt", [[-(2**9)], None], [[signed_int_to_felt(-(2**9))], None]),
+        ],
+    ),
+    (
+        "assert_uint256",
+        [
+            ("assert_eq", [[5], ContractLogicError()], [[5], ContractLogicError()]),
+            ("assert_eq", [[0], None], [[0], None]),
+            ("assert_neq", [[0], ContractLogicError()], [[0], ContractLogicError()]),
+            ("assert_neq", [[5], None], [[5], None]),
+            ("assert_ge", [[2**200], None], [[2**200], None]),
+            ("assert_ge", [[2**144], None], [[2**144], None]),
+            ("assert_ge", [[0], ContractLogicError()], [[0], ContractLogicError()]),
+            ("assert_gt", [[2**200], None], [[2**200], None]),
+            ("assert_gt", [[2**144], ContractLogicError()], [[2**144], ContractLogicError()]),
+            ("assert_gt", [[0], ContractLogicError()], [[0], ContractLogicError()]),
+            ("assert_le", [[2**200], ContractLogicError()], [[2**200], ContractLogicError()]),
+            ("assert_le", [[2**144], None], [[2**144], None]),
+            ("assert_le", [[0], None], [[0], None]),
+            ("assert_lt", [[2**200], ContractLogicError()], [[2**200], ContractLogicError()]),
+            ("assert_lt", [[2**144], ContractLogicError()], [[2**144], ContractLogicError()]),
+            ("assert_lt", [[0], None], [[0], None]),
+        ],
+    ),
     (
         "augassign",
         [
@@ -80,6 +150,48 @@ EXPECTATIONS = [
     (
         "binop_nested_arithmetic_uint256",
         [("pow_mul_uint256", [[100, 18], 100 * 10**18], [[100, 18], 100 * 10**18])],
+    ),
+    (
+        "compare_int128",
+        (
+            ("compare_eq", [[7, 7], True], [[7, 7], TRUE]),
+            ("compare_eq", [[7, 8], False], [[7, 8], FALSE]),
+            ("compare_neq", [[7, 8], True], [[7, 8], TRUE]),
+            ("compare_neq", [[7, 7], False], [[7, 7], FALSE]),
+            ("compare_ge", [[10, 1], True], [[10, 1], TRUE]),
+            ("compare_ge", [[1, 1], True], [[1, 1], TRUE]),
+            ("compare_ge", [[0, 1], False], [[0, 1], FALSE]),
+            ("compare_gt", [[10, 1], True], [[10, 1], TRUE]),
+            ("compare_gt", [[1, 1], False], [[1, 1], FALSE]),
+            ("compare_gt", [[0, 1], False], [[0, 1], FALSE]),
+            ("compare_le", [[10, 1], False], [[10, 1], FALSE]),
+            ("compare_le", [[1, 1], True], [[1, 1], TRUE]),
+            ("compare_le", [[0, 1], True], [[0, 1], TRUE]),
+            ("compare_lt", [[10, 1], False], [[10, 1], FALSE]),
+            ("compare_lt", [[1, 1], False], [[1, 1], FALSE]),
+            ("compare_lt", [[0, 1], True], [[0, 1], TRUE]),
+        ),
+    ),
+    (
+        "compare_uint256",
+        (
+            ("compare_eq", [[7, 7], True], [[7, 7], TRUE]),
+            ("compare_eq", [[7, 8], False], [[7, 8], FALSE]),
+            ("compare_neq", [[7, 8], True], [[7, 8], TRUE]),
+            ("compare_neq", [[7, 7], False], [[7, 7], FALSE]),
+            ("compare_ge", [[10, 1], True], [[10, 1], TRUE]),
+            ("compare_ge", [[1, 1], True], [[1, 1], TRUE]),
+            ("compare_ge", [[0, 1], False], [[0, 1], FALSE]),
+            ("compare_gt", [[10, 1], True], [[10, 1], TRUE]),
+            ("compare_gt", [[1, 1], False], [[1, 1], FALSE]),
+            ("compare_gt", [[0, 1], False], [[0, 1], FALSE]),
+            ("compare_le", [[10, 1], False], [[10, 1], FALSE]),
+            ("compare_le", [[1, 1], True], [[1, 1], TRUE]),
+            ("compare_le", [[0, 1], True], [[0, 1], TRUE]),
+            ("compare_lt", [[10, 1], False], [[10, 1], FALSE]),
+            ("compare_lt", [[1, 1], False], [[1, 1], FALSE]),
+            ("compare_lt", [[0, 1], True], [[0, 1], TRUE]),
+        ),
     ),
     (
         "constants",

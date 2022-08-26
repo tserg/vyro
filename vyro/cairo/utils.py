@@ -28,3 +28,18 @@ def generate_storage_var_stub(storage_var_name: str, typ: CairoTypeDefinition):
 func {modified_name}({args_str}) -> ({return_var_name} : {return_typ}):
 end
     """
+
+
+def add_indent(stub: str) -> str:
+    stub = INDENT + stub
+
+    idx = 0
+    while True:
+        idx = stub.find("\n", idx)
+
+        if idx == -1:
+            break
+
+        stub = stub[: idx + 1] + INDENT + stub[idx + 1 :]
+        idx += 1
+    return stub
