@@ -9,6 +9,11 @@ from vyro.utils.utils import CAIRO_PRIME
 from vyro.vyper.vyper_compile import get_vyper_ast
 
 
+# Constants
+TRUE = 1
+FALSE = 0
+
+
 def transpile_to_cairo(path, output_file):
     vyper_ast = get_vyper_ast(path)
 
