@@ -17,6 +17,13 @@ IMPORT_DIRECTIVES = {
     # Boolean
     "TRUE": "starkware.cairo.common.bool",
     "FALSE": "starkware.cairo.common.bool",
+    # Compare
+    "vyro_eq": "vyrolib.eq",
+    "vyro_neq": "vyrolib.neq",
+    "vyro_lt": "vyrolib.lt",
+    "is_le_felt": "starkware.cairo.common.math_cmp",
+    "vyro_ge": "vyrolib.ge",
+    "vyro_gt": "vyrolib.gt",
     # Math
     "assert_le": "starkware.cairo.common.math",
     "vyro_div": "vyrolib.div",
@@ -28,11 +35,17 @@ IMPORT_DIRECTIVES = {
     "mul256": "vyrolib.openzeppelin.mul",
     "sub256": "vyrolib.openzeppelin.sub",
     "div256": "vyrolib.openzeppelin.div",
+    "neq256": "vyrolib.openzeppelin.neq",
     "vyro_mod256": "vyrolib.mod",
     "uint256_and": "starkware.cairo.common.uint256",
     "uint256_or": "starkware.cairo.common.uint256",
     "uint256_not": "starkware.cairo.common.uint256",
     "uint256_xor": "starkware.cairo.common.uint256",
+    "uint256_eq": "starkware.cairo.common.uint256",
+    "uint256_lt": "starkware.cairo.common.uint256",
+    "uint256_le": "starkware.cairo.common.uint256",
+    "ge256": "vyrolib.ge",
+    "gt256": "vyrolib.gt",
     # Vyro lib
     "felt_to_uint256": "vyrolib.utils",
     "uint256_to_felt": "vyrolib.utils",

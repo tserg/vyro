@@ -72,14 +72,9 @@ def insert_statement_before(
         A vy_ast.VyperNode that contains `before` and has a `body` attribute which
         `node` is to be added to.
     """
-    print("insert_statement_before")
     assert hasattr(body_node, "body")
     body = body_node.body
     node_idx = body.index(before)
-    #if node_idx == 0:
-    #    print("idx is 0")
-    #    return
-    print("insert_statement_before - node idx: ", node_idx)
     body.insert(node_idx, node)
     set_parent(node, body_node)
 

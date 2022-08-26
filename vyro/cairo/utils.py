@@ -40,6 +40,6 @@ def add_indent(stub: str) -> str:
         if idx == -1:
             break
 
-        stub = stub[:idx + 1] + INDENT + stub[idx + 1:]
+        stub = stub[: idx + 1] + INDENT + stub[idx + 1 :]
         idx += 1
     return stub

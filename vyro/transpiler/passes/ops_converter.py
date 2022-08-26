@@ -24,6 +24,15 @@ BINOP_TABLE = {
     "bitwise xor": ["bitwise_xor", "uint256_xor"],
 }
 
+COMPARE_TABLE = {
+    "equality": ["vyro_eq", "uint256_eq"],
+    "non-equality": ["vyro_neq", "neq256"],
+    "less than": ["vyro_lt", "uint256_lt"],
+    "less-or-equal": ["is_le_felt", "uint256_le"],
+    "greater than": ["vyro_gt", "gt256"],
+    "greater-or-equal": ["vyro_ge", "ge256"],
+}
+
 # Note: Vyper only supports `bitwise_not` for uint256
 UNARY_OP_TABLE = {"bitwise not": ["bitwise_not", "uint256_not"]}
 
@@ -226,6 +235,50 @@ class OpsConverterVisitor(BaseVisitor):
 
         # Add import
         add_builtin_to_module(ast, vyro_op)
+
+    def visit_Compare(self, node, ast, context):
+        # Convert nested `Compare` nodes first
+        super().visit_Compare(node, ast, context)
+
+        op = node.op
+        op_description = node.op._description
+        left = node.left
+        right = node.right
+
+        output_typ = FeltDefinition()
+
+        if isinstance(op, (vy_ast.Eq, vy_ast.NotEq, vy_ast.Lt, vy_ast.LtE, vy_ast.Gt, vy_ast.GtE)):
+            typ = node.left._metadata.get("type") or node.right._metadata.get("type")
+            cairo_typ = get_cairo_type(typ)
+
+            is_uint256 = isinstance(cairo_typ, CairoUint256Definition)
+
+            # Assign `Compare` to a new name `Assign` node
+            temp_name_node = generate_name_node(context.reserve_id())
+            temp_name_node._metadata["type"] = output_typ
+
+            vyro_op = (
+                COMPARE_TABLE[op_description][1] if is_uint256 else COMPARE_TABLE[op_description][0]
+            )
+            add_builtin_to_module(ast, vyro_op)
+
+            # Wrap `Compare` operation in a `Call` node
+            wrapped_call = wrap_operation_in_call(ast, context, vyro_op, args=[left, right])
+
+            temp_assign_node = vy_ast.Assign(
+                node_id=context.reserve_id(), targets=[temp_name_node], value=wrapped_call
+            )
+
+            # Add wrapped operation before `Compare` node
+            stmt_node = get_stmt_node(node)
+            fn_node = node.get_ancestor(vy_ast.FunctionDef)
+            insert_statement_before(temp_assign_node, stmt_node, fn_node)
+
+            # Replace `Compare` node with referenced `Name` node
+            temp_name_node_dup = generate_name_node(context.reserve_id(), name=temp_name_node.id)
+            temp_name_node_dup._metadata["type"] = output_typ
+
+            ast.replace_in_tree(node, temp_name_node_dup)
 
     def visit_UnaryOp(self, node, ast, context):
         typ = node._metadata.get("type")
