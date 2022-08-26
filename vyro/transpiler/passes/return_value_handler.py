@@ -1,6 +1,6 @@
 from vyper import ast as vy_ast
 
-from vyro.transpiler.utils import generate_name_node, get_cairo_type, insert_statement_before
+from vyro.transpiler.utils import generate_name_node, get_cairo_type, insert_statement_before, set_parent
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -45,12 +45,12 @@ class ReturnValueHandler(BaseVisitor):
             )
 
             assign_return_value._metadata["type"] = return_cairo_typ
-            assign_return_value._children.add(temp_name_node)
-            assign_return_value._children.add(return_value_node)
+            set_parent(temp_name_node, assign_return_value)
+            set_parent(return_value_node, assign_return_value)
 
             # Add new `Assign` node to function body
             insert_statement_before(assign_return_value, return_node, node)
-            node._children.add(assign_return_value)
+            set_parent(assign_return_value, node)
 
             # Assign temporary variable as the return value
             return_name_node = vy_ast.Name(
@@ -58,4 +58,4 @@ class ReturnValueHandler(BaseVisitor):
             )
             return_name_node._metadata["type"] = return_cairo_typ
             return_node.value = return_name_node
-            return_node._children.add(return_name_node)
+            set_parent(return_name_node, return_node)

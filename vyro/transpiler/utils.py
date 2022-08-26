@@ -31,6 +31,7 @@ def set_parent(child: vy_ast.VyperNode, parent: vy_ast.VyperNode):
     """
     child._parent = parent
     child._depth = getattr(parent, "_depth", -1) + 1
+    parent._children.add(child)
 
 
 def insert_statement_after(
@@ -168,7 +169,7 @@ def wrap_operation_in_call(
     )
     for a in args:
         set_parent(a, wrapped_op)
-        wrapped_op._children.add(a)
+
     return wrapped_op
 
 

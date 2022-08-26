@@ -88,8 +88,8 @@ class StorageVarVisitor(BaseVisitor):
             value=value_node,
             args=read_args,
         )
-        storage_read_node._children.add(value_node)
-        storage_read_node._children.add(temp_name_node)
+        set_parent(value_node, storage_read_node)
+        set_parent(temp_name_node, storage_read_node)\
 
         # Insert `CairoStorageRead` node before `Assign`
         fn_node = parent_node.get_ancestor(vy_ast.FunctionDef)
@@ -135,8 +135,8 @@ class StorageVarVisitor(BaseVisitor):
                 value=value_node,
                 args=read_args,
             )
-            storage_read_node._children.add(value_node)
-            storage_read_node._children.add(temp_name_node)
+            set_parent(value_node, storage_read_node)
+            set_parent(temp_name_node, storage_read_node)
 
             return_value_node = vy_ast.Name(
                 node_id=context.reserve_id(), id=temp_name_node.id, ast_type="Name"
@@ -156,7 +156,7 @@ class StorageVarVisitor(BaseVisitor):
             return_node = vy_ast.Return(
                 node_id=context.reserve_id(), value=return_value_node, ast_type="Return"
             )
-            return_node._children.add(return_value_node)
+            set_parent(return_value_node, return_node)
 
             # Create return type node
             return_type_node = vy_ast.Name(
@@ -175,9 +175,9 @@ class StorageVarVisitor(BaseVisitor):
             )
             initialise_function_implicits(fn_node)
 
-            fn_node._children.add(storage_read_node)
-            fn_node._children.add(fn_node_args)
-            fn_node._children.add(return_node)
+            set_parent(storage_read_node, fn_node)
+            set_parent(fn_node_args, fn_node)
+            set_parent(return_node, fn_node)
 
             fn_node_typ = ContractFunction(
                 name=var_name,
@@ -229,10 +229,9 @@ class StorageVarVisitor(BaseVisitor):
                 value=node.value,
                 ast_type="Assign",
             )
-            rhs_assignment_node._children.add(rhs_name_node)
-            rhs_assignment_node._children.add(node.value)
-            rhs_assignment_node._metadata["type"] = cairo_typ
             set_parent(node.value, rhs_assignment_node)
+            set_parent(rhs_name_node, rhs_assignment_node)
+            rhs_assignment_node._metadata["type"] = cairo_typ
 
             # Add storage write node to body of function
 
@@ -261,7 +260,7 @@ class StorageVarVisitor(BaseVisitor):
                 ],
                 value=value_list,
             )
-            storage_write_node._children.add(value_node)
+            set_parent(value_node, storage_write_node)
 
             # Update type
             storage_write_node._metadata["type"] = cairo_typ
@@ -325,8 +324,8 @@ class StorageVarVisitor(BaseVisitor):
                 value=value_node,
                 args=value_list,
             )
-            storage_read_node._children.add(value_node)
-            storage_read_node._children.add(temp_name_node)
+            set_parent(value_node, storage_read_node)
+            set_parent(temp_name_node, storage_read_node)
 
             # Convert `AugAssign` operation to `BinOp`
             binop_node = vy_ast.BinOp(
@@ -336,9 +335,9 @@ class StorageVarVisitor(BaseVisitor):
                 right=node.value,
                 ast_type="BinOp",
             )
-            binop_node._children.add(node.op)
-            binop_node._children.add(temp_name_node)
-            binop_node._children.add(node.value)
+            set_parent(node.op, binop_node)
+            set_parent(temp_name_node, binop_node)
+            set_parent(node.value, binop_node)
             binop_node._metadata["type"] = cairo_typ
 
             # Create new variable and assign RHS
@@ -351,10 +350,9 @@ class StorageVarVisitor(BaseVisitor):
                 value=binop_node,
                 ast_type="Assign",
             )
-            rhs_assignment_node._children.add(rhs_name_node)
-            rhs_assignment_node._children.add(binop_node)
-            rhs_assignment_node._metadata["type"] = cairo_typ
+            set_parent(rhs_name_node, rhs_assignment_node)
             set_parent(binop_node, rhs_assignment_node)
+            rhs_assignment_node._metadata["type"] = cairo_typ
 
             # Add storage write node to body of function
 
@@ -385,7 +383,7 @@ class StorageVarVisitor(BaseVisitor):
                 ],
                 value=value_list,
             )
-            storage_write_node._children.add(value_node)
+            set_parent(value_node, storage_write_node)
 
             # Update type
             storage_write_node._metadata["type"] = cairo_typ
