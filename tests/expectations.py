@@ -103,6 +103,27 @@ EXPECTATIONS = [
         ),
     ),
     (
+        "compare_uint256",
+        (
+            ("compare_eq", [[7, 7], True], [[7, 7], TRUE]),
+            ("compare_eq", [[7, 8], False], [[7, 8], FALSE]),
+            ("compare_neq", [[7, 8], True], [[7, 8], TRUE]),
+            ("compare_neq", [[7, 7], False], [[7, 7], FALSE]),
+            ("compare_ge", [[10, 1], True], [[10, 1], TRUE]),
+            ("compare_ge", [[1, 1], True], [[1, 1], TRUE]),
+            ("compare_ge", [[0, 1], False], [[0, 1], FALSE]),
+            ("compare_gt", [[10, 1], True], [[10, 1], TRUE]),
+            ("compare_gt", [[1, 1], False], [[1, 1], FALSE]),
+            ("compare_gt", [[0, 1], False], [[0, 1], FALSE]),
+            ("compare_le", [[10, 1], False], [[10, 1], FALSE]),
+            ("compare_le", [[1, 1], True], [[1, 1], TRUE]),
+            ("compare_le", [[0, 1], True], [[0, 1], TRUE]),
+            ("compare_lt", [[10, 1], False], [[10, 1], FALSE]),
+            ("compare_lt", [[1, 1], False], [[1, 1], FALSE]),
+            ("compare_lt", [[0, 1], True], [[0, 1], TRUE]),
+        ),
+    ),
+    (
         "constants",
         (
             ("add_to_int128", [[101], -1899], [[101], signed_int_to_felt(-1899)]),

@@ -35,7 +35,7 @@ IMPORT_DIRECTIVES = {
     "mul256": "vyrolib.openzeppelin.mul",
     "sub256": "vyrolib.openzeppelin.sub",
     "div256": "vyrolib.openzeppelin.div",
-    "neq256": "vyrolib.openzeppelin.neq",
+    "neq256": "vyrolib.neq",
     "vyro_mod256": "vyrolib.mod",
     "uint256_and": "starkware.cairo.common.uint256",
     "uint256_or": "starkware.cairo.common.uint256",
