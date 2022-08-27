@@ -126,7 +126,3 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
             if handle_fn is None:
                 raise UnsupportedFeature(f"{call_typ._id} builtin function is not supported", node)
             handle_fn(node, ast, context)
-
-    def visit_Log(self, node, ast, context):
-        for i in node.value.args:
-            self.visit(i, ast, context)
