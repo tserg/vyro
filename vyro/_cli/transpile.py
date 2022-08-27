@@ -51,3 +51,5 @@ def main():
             ast_dict = vyper_ast.to_dict()
             print("\n\n=============== Transpiled AST ===============\n\n")
             print(json.dumps(ast_dict, sort_keys=True, indent=4))
+
+        print(f"\nSuccessfully transpiled {path}")
