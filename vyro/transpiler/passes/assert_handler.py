@@ -13,6 +13,7 @@ class AssertHandlerVisitor(BaseVisitor):
         # Assign `test` condition to the RHS of an `Assign` node, to be inserted
         # before the `with_attr` block.
         condition = node.test
+        node._children.remove(condition)
 
         temp_name_node = generate_name_node(context.reserve_id())
         temp_name_node._metadata["type"] = FeltDefinition()
