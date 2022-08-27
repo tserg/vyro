@@ -14,9 +14,10 @@ extras_require = {
         "ape-cairo==0.4.0a0",
     ],
     "lint": ["black==22.6.0", "flake8==4.0.1", "isort==5.10.1", "mypy==0.961"],
+    "dev": ["pre-commit"],
 }
 
-extras_require["dev"] = extras_require["test"] + extras_require["lint"]
+extras_require["dev"] = extras_require["test"] + extras_require["lint"] + extras_require["dev"]
 
 setup(
     name="vyro",
