@@ -77,6 +77,9 @@ class BaseVisitor:
     def visit_CairoAssert(self, node, ast, context):
         pass
 
+    def visit_CairoIfTest(self, node, ast, context):
+        pass
+
     def visit_CairoStorageRead(self, node, ast, context):
         pass
 
@@ -94,7 +97,6 @@ class BaseVisitor:
 
     def visit_Compare(self, node, ast, context):
         self.visit(node.left, ast, context)
-        self.visit(node.op, ast, context)
         self.visit(node.right, ast, context)
 
     def visit_Continue(self, node, ast, context):
@@ -154,8 +156,12 @@ class BaseVisitor:
 
     def visit_If(self, node, ast, context):
         self.visit(node.test, ast, context)
-        self.visit(node.body, ast, context)
-        self.visit(node.orelse, ast, context)
+
+        for i in node.body:
+            self.visit(i, ast, context)
+
+        for i in node.orelse:
+            self.visit(i, ast, context)
 
     def visit_Import(self, node, ast, context):
         self.visit(node.name, ast, context)
