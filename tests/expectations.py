@@ -300,10 +300,49 @@ EXPECTATIONS = [
                 [["ETH_USER"], ERC20_TRANSFER_AMT * 2],
                 [["STARKNET_USER"], ERC20_TRANSFER_AMT * 2],
             ),
+            # Successful mint
+            (
+                "mint",
+                [["ETH_OWNER", ERC20_TRANSFER_AMT * 2], None, "eth_owner"],
+                [["STARKNET_OWNER", ERC20_TRANSFER_AMT * 2], None, ["Transfer"], "starknet_owner"],
+            ),
+            (
+                "balanceOf",
+                [["ETH_OWNER"], ERC20_INITIAL_SUPPLY],
+                [["STARKNET_OWNER"], ERC20_INITIAL_SUPPLY],
+            ),
+            (
+                "totalSupply",
+                [[], ERC20_INITIAL_SUPPLY + ERC20_TRANSFER_AMT * 2],
+                [[], ERC20_INITIAL_SUPPLY + ERC20_TRANSFER_AMT * 2],
+            ),
+            # Unauthorised mint
+            (
+                "mint",
+                [["ETH_USER", ERC20_TRANSFER_AMT * 2], ContractLogicError(), "eth_user"],
+                [["STARKNET_USER", ERC20_TRANSFER_AMT], ContractLogicError(), [], "starknet_user"],
+            ),
+            (
+                "balanceOf",
+                [["ETH_USER"], ERC20_TRANSFER_AMT * 2],
+                [["STARKNET_USER"], ERC20_TRANSFER_AMT * 2],
+            ),
+            (
+                "totalSupply",
+                [[], ERC20_INITIAL_SUPPLY + ERC20_TRANSFER_AMT * 2],
+                [[], ERC20_INITIAL_SUPPLY + ERC20_TRANSFER_AMT * 2],
+            ),
         ),
         (
-            ["Dogecoin", "DOGE", 18, 1_000, "ETH_OWNER"],
-            [str_to_int("Dogecoin"), str_to_int("DOGE"), 18, 1_000, "STARKNET_OWNER"],
+            ["Dogecoin", "DOGE", 18, 1_000, "ETH_OWNER", "ETH_OWNER"],
+            [
+                str_to_int("Dogecoin"),
+                str_to_int("DOGE"),
+                18,
+                1_000,
+                "STARKNET_OWNER",
+                "STARKNET_OWNER",
+            ],
         ),
     ),
     ("event", [("foo", [[111], None], [[111], None, ["Trigger", "IndexedTrigger"]])]),
