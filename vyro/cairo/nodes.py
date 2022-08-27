@@ -11,6 +11,14 @@ class CairoAssert(vy_ast.Assign):
         super().__init__(parent, **kwargs)
 
 
+class CairoIfTest(vy_ast.Compare):
+    """Wrapper class for test condition of Cairo's `if`"""
+
+    def __init__(self, parent: Optional[vy_ast.VyperNode] = None, **kwargs: dict):
+        self.ast_type = "CairoIfTest"
+        super().__init__(parent, **kwargs)
+
+
 class CairoStorageWrite(vy_ast.Assign):
     """Wrapper class for Cairo write to storage"""
 
