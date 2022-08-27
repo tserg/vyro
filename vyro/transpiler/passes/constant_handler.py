@@ -22,34 +22,25 @@ class ConstantHandlerVisitor(BaseVisitor):
         byte_value = node.value
         int_value = bytes_to_int(byte_value)
 
-        # Replace with integer node
-        replacement_int = vy_ast.Int.from_node(node, value=int_value)
-
         self._assert_valid_felt(node, int_value)
-
-        ast.replace_in_tree(node, replacement_int)
 
         # Search for folded nodes
         for n in ast.get_descendants(vy_ast.Bytes, {"value": byte_value}, reverse=True):
-            new_replacement_int = vy_ast.Int.from_node(n, value=int_value)
-            ast.replace_in_tree(n, new_replacement_int)
+            replacement_int = vy_ast.Int.from_node(n, value=int_value)
+            ast.replace_in_tree(n, replacement_int)
 
     def visit_Hex(self, node, ast, context):
         # Get integer value
         hex_value = node.value
         int_value = hex_to_int(hex_value)
 
-        # Replace with integer node
-        replacement_int = vy_ast.Int.from_node(node, value=int_value)
-
         self._assert_valid_felt(node, int_value)
-
-        ast.replace_in_tree(node, replacement_int)
 
         # Search for folded nodes
         for n in ast.get_descendants(vy_ast.Hex, {"value": hex_value}, reverse=True):
-            new_replacement_int = vy_ast.Int.from_node(n, value=int_value)
-            ast.replace_in_tree(n, new_replacement_int)
+            # Replace with integer node
+            replacement_int = vy_ast.Int.from_node(node, value=int_value)
+            ast.replace_in_tree(n, replacement_int)
 
     def visit_Int(self, node, ast, context):
         int_value = node.value
@@ -75,13 +66,10 @@ class ConstantHandlerVisitor(BaseVisitor):
         # Add builtin
         add_builtin_to_module(ast, bool_str)
 
-        replacement_node = generate_name_node(context.reserve_id(), name=bool_str)
-        ast.replace_in_tree(node, replacement_node)
-
         # Search for folded nodes
         for n in ast.get_descendants(vy_ast.NameConstant, {"value": bool_value}, reverse=True):
-            new_replacement_node = generate_name_node(context.reserve_id(), name=bool_str)
-            ast.replace_in_tree(n, new_replacement_node)
+            replacement_node = generate_name_node(context.reserve_id(), name=bool_str)
+            ast.replace_in_tree(n, replacement_node)
 
     def visit_Str(self, node, ast, context):
         str_value = node.value
