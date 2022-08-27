@@ -39,7 +39,7 @@ class MsgSenderConverterVisitor(BaseVisitor):
 
             # Insert the wrapped call into the head of the function node body
             first_statement = node.body[0]
-            insert_statement_before(wrapped_call, first_statement, node)
+            insert_statement_before(wrapped_call, first_statement, node, node.body)
 
             # Replace `msg.sender` with the temp reference
             temp_name_node_ref = temp_name_node.id

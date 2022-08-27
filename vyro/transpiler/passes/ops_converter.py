@@ -7,6 +7,7 @@ from vyro.transpiler.utils import (
     add_implicit_to_function,
     generate_name_node,
     get_cairo_type,
+    get_scope,
     get_stmt_node,
     insert_statement_before,
     set_parent,
@@ -165,11 +166,17 @@ class OpsConverterVisitor(BaseVisitor):
 
             # Insert statements
             stmt_node = get_stmt_node(node)
-            fn_node = node.get_ancestor(vy_ast.FunctionDef)
-            insert_statement_before(reconvert_node, stmt_node, fn_node)
-            insert_statement_before(convert_assign_node, reconvert_node, fn_node)
-            insert_statement_before(right_conversion, convert_assign_node, fn_node)
-            insert_statement_before(left_conversion, convert_assign_node, fn_node)
+            scope_node, scope_node_body = get_scope(node)
+            insert_statement_before(reconvert_node, stmt_node, scope_node, scope_node_body)
+            insert_statement_before(
+                convert_assign_node, reconvert_node, scope_node, scope_node_body
+            )
+            insert_statement_before(
+                right_conversion, convert_assign_node, scope_node, scope_node_body
+            )
+            insert_statement_before(
+                left_conversion, convert_assign_node, scope_node, scope_node_body
+            )
 
             # Replace `BinOp` with reconverted node
             replacement_node = generate_name_node(
@@ -196,8 +203,8 @@ class OpsConverterVisitor(BaseVisitor):
         )
 
         stmt_node = get_stmt_node(node)
-        fn_node = node.get_ancestor(vy_ast.FunctionDef)
-        insert_statement_before(temp_assign_node, stmt_node, fn_node)
+        scope_node, scope_node_body = get_scope(node)
+        insert_statement_before(temp_assign_node, stmt_node, scope_node, scope_node_body)
 
         # Replace `BinOp` node with wrapped call reference
         temp_name_node_dup = generate_name_node(context.reserve_id(), name=temp_name_node.id)
@@ -234,6 +241,8 @@ class OpsConverterVisitor(BaseVisitor):
     def visit_Compare(self, node, ast, context):
         # Convert nested `Compare` nodes first
         super().visit_Compare(node, ast, context)
+
+        print("visit_Comapre - node_id: ", node.node_id)
 
         op = node.op
 
@@ -274,8 +283,8 @@ class OpsConverterVisitor(BaseVisitor):
 
         # Add wrapped operation before `Compare` node
         stmt_node = get_stmt_node(node)
-        fn_node = node.get_ancestor(vy_ast.FunctionDef)
-        insert_statement_before(temp_assign_node, stmt_node, fn_node)
+        scope_node, scope_node_body = get_scope(node)
+        insert_statement_before(temp_assign_node, stmt_node, scope_node, scope_node_body)
 
         # Replace `Compare` node with referenced `Name` node
         temp_name_node_dup = generate_name_node(context.reserve_id(), name=temp_name_node.id)

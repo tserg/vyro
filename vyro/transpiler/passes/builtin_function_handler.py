@@ -11,6 +11,7 @@ from vyro.exceptions import UnsupportedFeature
 from vyro.transpiler.utils import (
     generate_name_node,
     get_cairo_type,
+    get_scope,
     get_stmt_node,
     insert_statement_after,
     insert_statement_before,
@@ -47,8 +48,8 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
 
                 # Insert statement
                 stmt_node = get_stmt_node(node)
-                fn_node = node.get_ancestor(vy_ast.FunctionDef)
-                insert_statement_before(temp_assign_node, stmt_node, fn_node)
+                scope_node, scope_node_body = get_scope(node)
+                insert_statement_before(temp_assign_node, stmt_node, scope_node, scope_node_body)
 
                 # Add `felt_to_uint256` to imports
                 add_builtin_to_module(ast, "felt_to_uint256")
@@ -84,14 +85,14 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
 
                     # Insert statements after
                     stmt_node = get_stmt_node(node)
-                    fn_node = node.get_ancestor(vy_ast.FunctionDef)
+                    scope_node, scope_node_body = get_scope(node)
 
                     if isinstance(stmt_node, vy_ast.Return):
-                        insert_statement_before(lo_clamper, stmt_node, fn_node)
-                        insert_statement_before(hi_clamper, stmt_node, fn_node)
+                        insert_statement_before(lo_clamper, stmt_node, scope_node, scope_node_body)
+                        insert_statement_before(hi_clamper, stmt_node, scope_node, scope_node_body)
                     else:
-                        insert_statement_after(lo_clamper, stmt_node, fn_node)
-                        insert_statement_after(hi_clamper, stmt_node, fn_node)
+                        insert_statement_after(lo_clamper, stmt_node, scope_node, scope_node_body)
+                        insert_statement_after(hi_clamper, stmt_node, scope_node, scope_node_body)
         else:
             raise UnsupportedFeature(
                 f"Conversion of {in_vy_typ} to {out_vy_typ} is currently not supported", node

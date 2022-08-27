@@ -12,6 +12,7 @@ from vyro.transpiler.utils import (
     extract_mapping_args,
     generate_name_node,
     get_cairo_type,
+    get_scope,
     initialise_function_implicits,
     insert_statement_before,
     set_parent,
@@ -91,8 +92,8 @@ class StorageVarVisitor(BaseVisitor):
         set_parent(value_node, storage_read_node)
         set_parent(temp_name_node, storage_read_node)
         # Insert `CairoStorageRead` node before `Assign`
-        fn_node = parent_node.get_ancestor(vy_ast.FunctionDef)
-        insert_statement_before(storage_read_node, parent_node, fn_node)
+        scope_node, scope_node_body = get_scope(parent_node)
+        insert_statement_before(storage_read_node, parent_node, scope_node, scope_node_body)
 
         # Duplicate name node
         temp_name_node_copy = generate_name_node(context.reserve_id(), name=temp_name_node.id)
@@ -234,7 +235,7 @@ class StorageVarVisitor(BaseVisitor):
 
             # Add storage write node to body of function
 
-            fn_node = node.get_ancestor(vy_ast.FunctionDef)
+            scope_node, scope_node_body = get_scope(node)
 
             # Create storage write node
             contract_var = contract_vars.pop()
@@ -249,7 +250,7 @@ class StorageVarVisitor(BaseVisitor):
 
             storage_write_node = CairoStorageWrite(
                 node_id=context.reserve_id(),
-                parent=fn_node,
+                parent=scope_node,
                 targets=[  # type: ignore
                     vy_ast.Name(
                         node_id=context.reserve_id(),
@@ -268,7 +269,9 @@ class StorageVarVisitor(BaseVisitor):
             # Replace assign node with RHS
             ast.replace_in_tree(node, storage_write_node)
             # Add RHS node before storage write node
-            insert_statement_before(rhs_assignment_node, storage_write_node, fn_node)
+            insert_statement_before(
+                rhs_assignment_node, storage_write_node, scope_node, scope_node_body
+            )
 
             lhs_replaced = True
 
@@ -355,7 +358,7 @@ class StorageVarVisitor(BaseVisitor):
 
             # Add storage write node to body of function
 
-            fn_node = node.get_ancestor(vy_ast.FunctionDef)
+            scope_node, scope_node_body = get_scope(node)
 
             value_node = vy_ast.Name(
                 node_id=context.reserve_id(), id=rhs_name_node.id, ast_type="Name"
@@ -372,7 +375,7 @@ class StorageVarVisitor(BaseVisitor):
 
             storage_write_node = CairoStorageWrite(
                 node_id=context.reserve_id(),
-                parent=fn_node,
+                parent=scope_node,
                 targets=[  # type: ignore
                     vy_ast.Name(
                         node_id=context.reserve_id(),
@@ -391,8 +394,12 @@ class StorageVarVisitor(BaseVisitor):
             # Replace assign node with RHS
             ast.replace_in_tree(node, storage_write_node)
             # Add RHS node before storage write node
-            insert_statement_before(rhs_assignment_node, storage_write_node, fn_node)
-            insert_statement_before(storage_read_node, rhs_assignment_node, fn_node)
+            insert_statement_before(
+                rhs_assignment_node, storage_write_node, scope_node, scope_node_body
+            )
+            insert_statement_before(
+                storage_read_node, rhs_assignment_node, scope_node, scope_node_body
+            )
 
             lhs_replaced = True
 
