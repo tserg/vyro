@@ -226,7 +226,8 @@ def extract_mapping_args(
 
 def get_stmt_node(node: vy_ast.VyperNode) -> vy_ast.VyperNode:
     parent = node.get_ancestor()
-    if isinstance(parent, vy_ast.FunctionDef):
+
+    if isinstance(parent, (vy_ast.FunctionDef, vy_ast.If)):
         return node
     return get_stmt_node(parent)
 
@@ -244,13 +245,23 @@ def get_scope(node: vy_ast.VyperNode) -> Tuple[vy_ast.VyperNode, List[Optional[v
     scope_node = node.get_ancestor((vy_ast.FunctionDef, vy_ast.If))
 
     if isinstance(scope_node, vy_ast.If):
-        # `If` node has `body` and `orelse`
-        if node in scope_node.body:
+        # `If` node has `body` and `orelse`. We need to check if the node exists
+        # in either list of all descendant nodes.
+
+        body_nodes = []
+        for n in scope_node.body:
+            body_nodes.extend(n.get_descendants(include_self=True))
+
+        orelse_nodes = []
+        for n in scope_node.orelse:
+            orelse_nodes.extend(n.get_descendants(include_self=True))
+
+        if node in body_nodes:
             return (scope_node, scope_node.body)
-        elif node in scope_node.orelse:
+        elif node in orelse_nodes:
             return (scope_node, scope_node.orelse)
         else:
             # Get `FunctionDef` node instead (e.g. node is in `vy_ast.If.test`)
-            scope_node = scope_node.get_ancestor((vy_ast.FunctionDef, vy_ast.If))
+            return get_scope(scope_node)
 
     return (scope_node, scope_node.body)

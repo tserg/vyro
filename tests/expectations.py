@@ -369,6 +369,14 @@ EXPECTATIONS = [
         ],
     ),
     (
+        "if_nested",
+        [
+            ("if_only", [[10], 7], [[10], 7]),
+            ("if_only", [[15], 14], [[15], 14]),
+            ("if_only", [[4], 21], [[4], 21]),
+        ],
+    ),
+    (
         "msg_sender",
         [
             ("set_msg_sender", [[], None], [[], None]),
