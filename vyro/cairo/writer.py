@@ -340,7 +340,7 @@ class CairoWriter:
         block = []
 
         test_str = self.write(node.test)
-        print("test_str: ", test_str)
+
         block.append(f"if {test_str}:")
 
         if_body = []

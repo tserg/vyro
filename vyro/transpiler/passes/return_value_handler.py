@@ -30,7 +30,7 @@ class ReturnValueHandler(BaseVisitor):
         return_nodes = node.get_descendants(vy_ast.Return)
         if len(return_nodes) == 0:
             return
-        print("return nodes: ", [n.node_id for n in return_nodes])
+
         for return_node in return_nodes:
             if not isinstance(return_node.value, vy_ast.Name):
                 # Store return value node

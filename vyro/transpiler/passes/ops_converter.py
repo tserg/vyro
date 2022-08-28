@@ -242,8 +242,6 @@ class OpsConverterVisitor(BaseVisitor):
         # Convert nested `Compare` nodes first
         super().visit_Compare(node, ast, context)
 
-        print("visit_Comapre - node_id: ", node.node_id)
-
         op = node.op
 
         if isinstance(op, (vy_ast.In, vy_ast.NotIn)):
