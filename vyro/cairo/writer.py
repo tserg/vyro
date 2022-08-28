@@ -351,15 +351,16 @@ class CairoWriter:
         if_body_str = add_indent(if_body_str)
         block.append(if_body_str)
 
-        block.append("else:")
+        if len(node.orelse) > 0:
+            block.append("else:")
 
-        else_body = []
-        for i in node.orelse:
-            stmt_str = self.write(i)
-            else_body.append(stmt_str)
-        else_body_str = "\n".join(else_body)
-        else_body_str = add_indent(else_body_str)
-        block.append(else_body_str)
+            else_body = []
+            for i in node.orelse:
+                stmt_str = self.write(i)
+                else_body.append(stmt_str)
+            else_body_str = "\n".join(else_body)
+            else_body_str = add_indent(else_body_str)
+            block.append(else_body_str)
 
         block.append("end")
 
