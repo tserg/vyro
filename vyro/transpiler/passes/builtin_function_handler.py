@@ -2,7 +2,7 @@ import copy
 
 from vyper import ast as vy_ast
 from vyper.builtin_functions.functions import get_builtin_functions
-from vyper.semantics.types.abstract import IntegerAbstractType
+from vyper.semantics.types.abstract import IntegerAbstractType, SignedIntegerAbstractType
 from vyper.utils import int_bounds
 
 from vyro.cairo.import_directives import add_builtin_to_module
@@ -15,6 +15,7 @@ from vyro.transpiler.utils import (
     get_stmt_node,
     insert_statement_after,
     insert_statement_before,
+    set_parent,
     wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
@@ -115,6 +116,37 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
 
         # Replace `Call` node
         ast.replace_in_tree(node, replacement_node)
+
+    def _handle_max(self, node, ast, context):
+        self._handle_minmax(node, ast, context, "max")
+
+    def _handle_minmax(self, node, ast, context, fn_str):
+        # Get Vyper type
+        vy_typ = node._metadata["type"]
+
+        # Get Cairo type
+        cairo_typ = get_cairo_type(vy_typ)
+
+        if isinstance(vy_typ, SignedIntegerAbstractType):
+            raise UnsupportedFeature(f"`{fn_str}` is not supported for signed integers", node)
+
+        if isinstance(cairo_typ, FeltDefinition):
+            wrapped_op_str = f"vyro_{fn_str}"
+        elif isinstance(cairo_typ, CairoUint256Definition):
+            wrapped_op_str = f"{fn_str}256"
+
+        add_builtin_to_module(ast, wrapped_op_str)
+
+        wrapped_call_node = wrap_operation_in_call(ast, context, wrapped_op_str, args=node.args)
+        wrapped_call_node._metadata["type"] = cairo_typ
+
+        for a in node.args:
+            set_parent(a, wrapped_call_node)
+
+        ast.replace_in_tree(node, wrapped_call_node)
+
+    def _handle_min(self, node, ast, context):
+        self._handle_minmax(node, ast, context, "min")
 
     def visit_Call(self, node, ast, context):
         call_typ = node.func._metadata.get("type")
