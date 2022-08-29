@@ -23,10 +23,7 @@ class InitialisationVisitor(BaseVisitor):
         node._children.remove(node.value)
 
         temp_assign_node = vy_ast.Assign(
-            node_id=context.reserve_id(),
-            targets=[temp_name_node],
-            value=rhs,
-            ast_type="Assign",
+            node_id=context.reserve_id(), targets=[temp_name_node], value=rhs, ast_type="Assign"
         )
         set_parent(rhs, temp_assign_node)
         set_parent(temp_name_node, temp_assign_node)
