@@ -157,6 +157,15 @@ class CairoWriter:
         value_str = self.write(node.value)
         return f"assert {target_str} = {value_str}"
 
+    def write_CairoIfTest(self, node):
+        left_str = self.write(node.left)
+
+        if isinstance(node.op, vy_ast.Eq):
+            op_str = "=="
+
+        right_str = self.write(node.right)
+        return f"{left_str} {op_str} {right_str}"
+
     def write_CairoStorageRead(self, node):
         target_str = self.write(node.target)
         target_typ = node.target._metadata.get("type")
@@ -328,9 +337,34 @@ class CairoWriter:
         return str(node.value)
 
     def write_If(self, node):
-        self.write(node.test)
-        self.write(node.body)
-        self.write(node.orelse)
+        block = []
+
+        test_str = self.write(node.test)
+
+        block.append(f"if {test_str}:")
+
+        if_body = []
+        for i in node.body:
+            stmt_str = self.write(i)
+            if_body.append(stmt_str)
+        if_body_str = "\n".join(if_body)
+        if_body_str = add_indent(if_body_str)
+        block.append(if_body_str)
+
+        if len(node.orelse) > 0:
+            block.append("else:")
+
+            else_body = []
+            for i in node.orelse:
+                stmt_str = self.write(i)
+                else_body.append(stmt_str)
+            else_body_str = "\n".join(else_body)
+            else_body_str = add_indent(else_body_str)
+            block.append(else_body_str)
+
+        block.append("end")
+
+        return "\n".join(block)
 
     def write_Import(self, node):
         self.write(node.name)

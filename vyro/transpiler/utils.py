@@ -1,5 +1,5 @@
 from string import ascii_lowercase as alc
-from typing import List
+from typing import List, Optional, Tuple
 
 from vyper import ast as vy_ast
 from vyper.semantics.types import AddressDefinition
@@ -35,7 +35,10 @@ def set_parent(child: vy_ast.VyperNode, parent: vy_ast.VyperNode):
 
 
 def insert_statement_after(
-    node: vy_ast.VyperNode, after: vy_ast.VyperNode, body_node: vy_ast.VyperNode
+    node: vy_ast.VyperNode,
+    after: vy_ast.VyperNode,
+    body_node: vy_ast.VyperNode,
+    body: List[Optional[vy_ast.VyperNode]],
 ):
     """
     Helper function to insert a new node before a given node in a list.
@@ -47,18 +50,22 @@ def insert_statement_after(
     after : vy_ast.VyperNode
         Node to insert after.
     body_node: vy_ast.VyperNode
-        A vy_ast.VyperNode that contains `before` and has a `body` attribute which
+        A vy_ast.VyperNode that contains `after` and has a `body` attribute which
         `node` is to be added to.
+    body: List[Optional[vy_ast.VyperNode]]
+        The list to add `node` to.
     """
     assert hasattr(body_node, "body")
-    body = body_node.body
     node_idx = body.index(after)
     body.insert(node_idx + 1, node)
     set_parent(node, body_node)
 
 
 def insert_statement_before(
-    node: vy_ast.VyperNode, before: vy_ast.VyperNode, body_node: vy_ast.VyperNode
+    node: vy_ast.VyperNode,
+    before: vy_ast.VyperNode,
+    body_node: vy_ast.VyperNode,
+    body: List[Optional[vy_ast.VyperNode]],
 ):
     """
     Helper function to insert a new node before a given node in a list.
@@ -72,9 +79,10 @@ def insert_statement_before(
     body_node: vy_ast.VyperNode
         A vy_ast.VyperNode that contains `before` and has a `body` attribute which
         `node` is to be added to.
+    body: List[Optional[vy_ast.VyperNode]]
+        The list to add `node` to.
     """
     assert hasattr(body_node, "body")
-    body = body_node.body
     node_idx = body.index(before)
     body.insert(node_idx, node)
     set_parent(node, body_node)
@@ -218,6 +226,42 @@ def extract_mapping_args(
 
 def get_stmt_node(node: vy_ast.VyperNode) -> vy_ast.VyperNode:
     parent = node.get_ancestor()
-    if isinstance(parent, vy_ast.FunctionDef):
+
+    if isinstance(parent, (vy_ast.FunctionDef, vy_ast.If)):
         return node
     return get_stmt_node(parent)
+
+
+def get_scope(node: vy_ast.VyperNode) -> Tuple[vy_ast.VyperNode, List[Optional[vy_ast.VyperNode]]]:
+    """
+    Returns a tuple of the first ancestor node with a list with a list for an attribute,
+    and the list itself.
+
+    Example of nodes with a list of nodes for an attribute:
+        vy_ast.FunctionDef.body
+        vy_ast.If.body
+        vy_ast.If.orelse
+    """
+    scope_node = node.get_ancestor((vy_ast.FunctionDef, vy_ast.If))
+
+    if isinstance(scope_node, vy_ast.If):
+        # `If` node has `body` and `orelse`. We need to check if the node exists
+        # in either list of all descendant nodes.
+
+        body_nodes = []
+        for n in scope_node.body:
+            body_nodes.extend(n.get_descendants(include_self=True))
+
+        orelse_nodes = []
+        for n in scope_node.orelse:
+            orelse_nodes.extend(n.get_descendants(include_self=True))
+
+        if node in body_nodes:
+            return (scope_node, scope_node.body)
+        elif node in orelse_nodes:
+            return (scope_node, scope_node.orelse)
+        else:
+            # Get `FunctionDef` node instead (e.g. node is in `vy_ast.If.test`)
+            return get_scope(scope_node)
+
+    return (scope_node, scope_node.body)

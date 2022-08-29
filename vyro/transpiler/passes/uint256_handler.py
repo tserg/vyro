@@ -7,6 +7,7 @@ from vyro.cairo.types import CairoUint256Definition
 from vyro.transpiler.utils import (
     generate_name_node,
     get_cairo_type,
+    get_scope,
     insert_statement_before,
     set_parent,
     wrap_operation_in_call,
@@ -51,8 +52,8 @@ class Uint256HandlerVisitor(BaseVisitor):
                 set_parent(value_node, rhs_assignment_node)
                 rhs_assignment_node._metadata["type"] = cairo_typ
 
-                fn_node = node.get_ancestor(vy_ast.FunctionDef)
-                insert_statement_before(rhs_assignment_node, node, fn_node)
+                scope_node, scope_node_body = get_scope(node)
+                insert_statement_before(rhs_assignment_node, node, scope_node, scope_node_body)
 
                 # Replace `BinOp` with temporary name node
                 temp_name_node_copy = generate_name_node(
