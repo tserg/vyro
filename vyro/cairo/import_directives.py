@@ -49,6 +49,12 @@ IMPORT_DIRECTIVES = {
     # Vyro lib
     "felt_to_uint256": "vyrolib.utils",
     "uint256_to_felt": "vyrolib.utils",
+    "vyro_max": "vyrolib.max",
+    "max256": "vyrolib.max",
+    "max256_signed": "vyrolib.max",
+    "vyro_min": "vyrolib.min",
+    "min256": "vyrolib.min",
+    "min256_signed": "vyrolib.min",
 }
 
 
