@@ -12,6 +12,7 @@ extras_require = {
         "ape-vyper==0.4.0",
         "ape-starknet==0.4.0a1",
         "ape-cairo==0.4.0a0",
+        "starknet.py==0.4.6a0",
     ],
     "lint": ["black==22.6.0", "flake8==4.0.1", "isort==5.10.1", "mypy==0.961"],
     "dev": ["pre-commit"],
