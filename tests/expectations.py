@@ -384,6 +384,20 @@ EXPECTATIONS = [
         ],
     ),
     (
+        "immutable",
+        [
+            ("get_A", [[], -7], [[], signed_int_to_felt(-7)]),
+            ("get_B", [[], 12345], [[], 12345]),
+            ("get_C", [[], True], [[], 1]),
+            ("get_D", [[], "0x0000000000000000000000000000000000012345"], [[], 74565]),
+            ("get_E", [[], "vyper"], [[], str_to_int("vyper")]),
+        ],
+        (
+            [-7, 12345, True, "0x0000000000000000000000000000000000012345", "vyper"],
+            [signed_int_to_felt(-7), 12345, 1, 74565, str_to_int("vyper")],
+        ),
+    ),
+    (
         "msg_sender",
         [
             ("set_msg_sender", [[], None], [[], None]),
