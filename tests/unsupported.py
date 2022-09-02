@@ -17,7 +17,7 @@ UNSUPPORTED = [
     ("convert", UnsupportedFeature),
     ("decimal", UnsupportedType),
     ("dynarray", UnsupportedType),
-    ("enum", UnsupportedNode),
+    ("enum", UnsupportedType),
     ("for", UnsupportedNode),
     ("max_signed", UnsupportedFeature),
     ("min_signed", UnsupportedFeature),
