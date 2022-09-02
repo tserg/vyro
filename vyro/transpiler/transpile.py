@@ -22,8 +22,8 @@ from vyro.transpiler.passes import (
 )
 
 PASSES = {
-    "I": InitialisationVisitor,
     "Fc": UnsupportedVisitor,
+    "I": InitialisationVisitor,
     "IfH": IfHandlerVisitor,
     "Ms": MsgSenderConverterVisitor,
     "Bf": BuiltinFunctionHandlerVisitor,

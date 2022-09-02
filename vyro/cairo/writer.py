@@ -234,8 +234,7 @@ class CairoWriter:
         self.write(node.value)
 
     def write_EnumDef(self, node):
-        self.write(node.name)
-        self.write(node.body)
+        pass
 
     def write_Eq(self, node):
         pass
@@ -263,9 +262,7 @@ class CairoWriter:
         return self.write(node.value)
 
     def write_For(self, node):
-        self.write(node.iter)
-        self.write(node.target)
-        self.write(node.body)
+        pass
 
     def write_FunctionDef(self, node):
         ret = []
