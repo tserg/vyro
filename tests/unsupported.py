@@ -1,6 +1,7 @@
 from vyro.exceptions import (
     FeltOverflowException,
     UnsupportedFeature,
+    UnsupportedNode,
     UnsupportedOperation,
     UnsupportedType,
 )
@@ -16,7 +17,11 @@ UNSUPPORTED = [
     ("convert", UnsupportedFeature),
     ("decimal", UnsupportedType),
     ("dynarray", UnsupportedType),
+    ("enum", UnsupportedNode),
+    ("for", UnsupportedNode),
     ("max_signed", UnsupportedFeature),
     ("min_signed", UnsupportedFeature),
+    ("raise", UnsupportedNode),
+    ("structs", UnsupportedType),
     ("unary_not", UnsupportedOperation),
 ]
