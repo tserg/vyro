@@ -116,11 +116,11 @@ class BaseVisitor:
         pass
 
     def visit_DocStr(self, node, ast, context):
-        self.visit(node.value, ast, context)
+        pass
 
     def visit_EnumDef(self, node, ast, context):
-        self.visit(node.name, ast, context)
-        self.visit(node.body, ast, context)
+        for i in node.body:
+            self.visit(i, ast, context)
 
     def visit_Eq(self, node, ast, context):
         pass
@@ -134,7 +134,9 @@ class BaseVisitor:
     def visit_For(self, node, ast, context):
         self.visit(node.iter, ast, context)
         self.visit(node.target, ast, context)
-        self.visit(node.body, ast, context)
+
+        for i in node.body:
+            self.visit(i, ast, context)
 
     def visit_FunctionDef(self, node, ast, context):
         self.visit(node.args, ast, context)
@@ -243,8 +245,8 @@ class BaseVisitor:
         pass
 
     def visit_StructDef(self, node, ast, context):
-        self.visit(node.name, ast, context)
-        self.visit(node.body, ast, context)
+        for i in node.body:
+            self.visit(i, ast, context)
 
     def visit_Sub(self, node, ast, context):
         pass
