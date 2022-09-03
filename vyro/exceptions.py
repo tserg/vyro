@@ -17,7 +17,7 @@ class VyroException(Exception):
             Vyper ast node(s) indicating where the exception occured.
             Source annotations are generated in the order the nodes are given.
         """
-        if node:
+        if node is not None:
             self.message += "\n" + str(node) + "\n"
 
         self.message += message
