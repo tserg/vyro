@@ -12,8 +12,5 @@ class UnsupportedVisitor(BaseVisitor):
     def visit_For(self, node, ast, context):
         self._visit_unsupported_node(node)
 
-    def visit_Raise(self, node, ast, context):
-        self._visit_unsupported_node(node)
-
     def visit_StructDef(self, node, ast, context):
         raise UnsupportedType("Structs are not supported.", node)
