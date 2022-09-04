@@ -15,6 +15,10 @@ EXPECTATIONS = [
     #    ),
     # ]
     (
+        "as_wei_value",
+        (("get_gwei", [[17], 17 * 10**9], [[17], 17 * 10**9]),),
+    ),
+    (
         "assert_int128",
         (
             ("assert_eq", [[5], ContractLogicError()], [[5], ContractLogicError()]),
