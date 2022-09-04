@@ -1,10 +1,11 @@
 from vyper import ast as vy_ast
 
+from vyro.transpiler.context import ASTContext
 from vyro.transpiler.visitor import BaseVisitor
 
 
 class InternalFunctionsHandler(BaseVisitor):
-    def visit_Call(self, node, ast, context):
+    def visit_Call(self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext):
         fn_typ = node.func._metadata.get("type")
 
         if hasattr(fn_typ, "is_internal") and fn_typ.is_internal:

@@ -8,6 +8,7 @@ from vyper.utils import int_bounds
 from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.exceptions import UnsupportedFeature
+from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     generate_name_node,
     get_cairo_type,
@@ -148,7 +149,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
     def _handle_min(self, node, ast, context):
         self._handle_minmax(node, ast, context, "min")
 
-    def visit_Call(self, node, ast, context):
+    def visit_Call(self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext):
         call_typ = node.func._metadata.get("type")
 
         if not hasattr(call_typ, "_id"):

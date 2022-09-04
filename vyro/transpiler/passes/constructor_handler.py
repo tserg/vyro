@@ -1,12 +1,13 @@
 from vyper import ast as vy_ast
 
 from vyro.cairo.types import FeltDefinition
+from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import generate_name_node, get_cairo_type, set_parent
 from vyro.transpiler.visitor import BaseVisitor
 
 
 class ConstructorHandler(BaseVisitor):
-    def visit_FunctionDef(self, node, ast, context):
+    def visit_FunctionDef(self, node: vy_ast.FunctionDef, ast: vy_ast.Module, context: ASTContext):
         fn_typ = node._metadata.get("type")
 
         # Early termination if function is not constructor
@@ -24,7 +25,7 @@ class ConstructorHandler(BaseVisitor):
         for c in assign_children:
             self.visit(c, ast, context)
 
-    def visit_Assign(self, node, ast, context):
+    def visit_Assign(self, node: vy_ast.Assign, ast: vy_ast.Module, context: ASTContext):
         # Check if it is an immutable
         varname = node.target.id
         is_immutable = ast.get_descendants(

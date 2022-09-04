@@ -4,6 +4,7 @@ from vyper.semantics.types.utils import get_type_from_annotation
 
 from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition
+from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     generate_name_node,
     get_cairo_type,
@@ -18,7 +19,7 @@ UINT256_BINOP_TABLE = {"addition": "add256", "subtraction": "sub256", "multiplic
 
 
 class Uint256HandlerVisitor(BaseVisitor):
-    def visit_arg(self, node, ast, context):
+    def visit_arg(self, node: vy_ast.arg, ast: vy_ast.Module, context: ASTContext):
         if "type" in node._metadata:
             return
 
@@ -26,7 +27,7 @@ class Uint256HandlerVisitor(BaseVisitor):
         cairo_typ = get_cairo_type(vyper_typ)
         node._metadata["type"] = cairo_typ
 
-    def visit_AnnAssign(self, node, ast, context):
+    def visit_AnnAssign(self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext):
         type_ = node.value._metadata.get("type")
 
         if type_:
@@ -67,7 +68,7 @@ class Uint256HandlerVisitor(BaseVisitor):
 
         super().visit_AnnAssign(node, ast, context)
 
-    def visit_Assign(self, node, ast, context):
+    def visit_Assign(self, node: vy_ast.Assign, ast: vy_ast.Module, context: ASTContext):
         type_ = node.value._metadata.get("type")
 
         if type_:
@@ -77,7 +78,7 @@ class Uint256HandlerVisitor(BaseVisitor):
 
         super().visit_Assign(node, ast, context)
 
-    def visit_BinOp(self, node, ast, context):
+    def visit_BinOp(self, node: vy_ast.BinOp, ast: vy_ast.Module, context: ASTContext):
         op_description = node.op._description
         if op_description not in UINT256_BINOP_TABLE:
             return
@@ -110,7 +111,7 @@ class Uint256HandlerVisitor(BaseVisitor):
         # Visit wrapped call node
         self.visit(wrapped_uint256_op, ast, context)
 
-    def visit_Int(self, node, ast, context):
+    def visit_Int(self, node: vy_ast.Int, ast: vy_ast.Module, context: ASTContext):
         typ = node._metadata.get("type")
         if typ:
             cairo_typ = get_cairo_type(typ)
@@ -144,7 +145,7 @@ class Uint256HandlerVisitor(BaseVisitor):
                 # Add import
                 add_builtin_to_module(ast, "Uint256")
 
-    def visit_Module(self, node, ast, context):
+    def visit_Module(self, node: vy_ast.Module, ast: vy_ast.Module, context: ASTContext):
         # Skip contract vars
         nodes = [i for i in node.body if not isinstance(i, vy_ast.VariableDecl)]
         for n in nodes:

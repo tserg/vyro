@@ -1,5 +1,6 @@
 from vyper import ast as vy_ast
 
+from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     generate_name_node,
     get_cairo_type,
@@ -15,7 +16,7 @@ class ReturnValueHandler(BaseVisitor):
     Replaces the return value with a local variable if it is an expression.
     """
 
-    def visit_FunctionDef(self, node, ast, context):
+    def visit_FunctionDef(self, node: vy_ast.FunctionDef, ast: vy_ast.Module, context: ASTContext):
         fn_typ = node._metadata["type"]
 
         return_type = fn_typ.return_type
