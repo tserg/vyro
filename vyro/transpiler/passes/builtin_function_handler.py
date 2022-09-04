@@ -57,12 +57,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
             ),
         ]
 
-        denom_node = wrap_operation_in_call(
-            ast,
-            context,
-            "Uint256",
-            keywords=keywords,
-        )
+        denom_node = wrap_operation_in_call(ast, context, "Uint256", keywords=keywords)
 
         denom_str_node = node.args[1]
         ast.replace_in_tree(denom_str_node, denom_node)

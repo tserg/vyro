@@ -5,6 +5,7 @@ from vyper import ast as vy_ast
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.passes import (
     AssertHandlerVisitor,
+    BuiltinConstantHandlerVisitor,
     BuiltinFunctionHandlerVisitor,
     CairoImporterVisitor,
     ConstantHandlerVisitor,
@@ -26,6 +27,7 @@ PASSES = {
     "I": InitialisationVisitor,
     "IfH": IfHandlerVisitor,
     "Ms": MsgSenderConverterVisitor,
+    "BC": BuiltinConstantHandlerVisitor,
     "Bf": BuiltinFunctionHandlerVisitor,
     "Ch": ConstructorHandler,
     "Ev": EventHandlerVisitor,
