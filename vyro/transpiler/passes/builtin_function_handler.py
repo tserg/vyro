@@ -10,6 +10,7 @@ from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.exceptions import UnsupportedFeature
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
+    convert_node_type_definition,
     generate_name_node,
     get_cairo_type,
     get_scope,
@@ -25,6 +26,47 @@ VY_BUILTIN_FNS = get_builtin_functions()
 
 
 class BuiltinFunctionHandlerVisitor(BaseVisitor):
+    def _handle_as_wei_value(self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext):
+        # Get denomination
+        call_typ = node.func._metadata["type"]
+        denom = call_typ.get_denomination(node)
+
+        # Update to Cairo type
+        convert_node_type_definition(node)
+
+        # Replace `Call` with `mul256`
+        node.func.id = "mul256"
+        add_builtin_to_module(ast, "mul256")
+
+        # Cast denom as Uint256
+        lo = denom & ((1 << 128) - 1)
+        hi = denom >> 128
+
+        keywords = [
+            vy_ast.keyword(
+                node_id=context.reserve_id(),
+                arg="low",
+                value=vy_ast.Int(node_id=context.reserve_id(), value=lo, ast_type="Int"),
+                ast_type="keyword",
+            ),
+            vy_ast.keyword(
+                node_id=context.reserve_id(),
+                arg="high",
+                value=vy_ast.Int(node_id=context.reserve_id(), value=hi, ast_type="Int"),
+                ast_typ="keyword",
+            ),
+        ]
+
+        denom_node = wrap_operation_in_call(
+            ast,
+            context,
+            "Uint256",
+            keywords=keywords,
+        )
+
+        denom_str_node = node.args[1]
+        ast.replace_in_tree(denom_str_node, denom_node)
+
     def _handle_convert(self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext):
         in_vy_typ = node.args[0]._metadata.get("type")
         # Cast to Uint256 if out type is `uint256`
@@ -160,5 +202,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
         if call_typ._id in VY_BUILTIN_FNS:
             handle_fn = getattr(self, f"_handle_{call_typ._id}", None)
             if handle_fn is None:
-                raise UnsupportedFeature(f"{call_typ._id} builtin function is not supported", node)
+                raise UnsupportedFeature(
+                    f"`{call_typ._id}` builtin function is not supported", node
+                )
             handle_fn(node, ast, context)
