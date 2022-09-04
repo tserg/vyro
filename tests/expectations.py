@@ -12,10 +12,11 @@ EXPECTATIONS = [
     #       method_name,
     #       ([vyper call_args], vyper expected, vyper caller),
     #       ([cairo call_args], cairo expected, [cairo event names], cairo_caller),
+    #    ),
     # ]
     (
         "assert_int128",
-        [
+        (
             ("assert_eq", [[5], ContractLogicError()], [[5], ContractLogicError()]),
             ("assert_eq", [[-1], None], [[signed_int_to_felt(-1)], None]),
             (
@@ -60,11 +61,11 @@ EXPECTATIONS = [
                 [[signed_int_to_felt(-(2**8))], ContractLogicError()],
             ),
             ("assert_lt", [[-(2**9)], None], [[signed_int_to_felt(-(2**9))], None]),
-        ],
+        ),
     ),
     (
         "assert_uint256",
-        [
+        (
             ("assert_eq", [[5], ContractLogicError()], [[5], ContractLogicError()]),
             ("assert_eq", [[0], None], [[0], None]),
             ("assert_neq", [[0], ContractLogicError()], [[0], ContractLogicError()]),
@@ -81,11 +82,11 @@ EXPECTATIONS = [
             ("assert_lt", [[2**200], ContractLogicError()], [[2**200], ContractLogicError()]),
             ("assert_lt", [[2**144], ContractLogicError()], [[2**144], ContractLogicError()]),
             ("assert_lt", [[0], None], [[0], None]),
-        ],
+        ),
     ),
     (
         "augassign",
-        [
+        (
             ("aug_int128", [[5], None], [[5], None]),
             ("a", [[], 5], [[], 5]),
             ("aug_int128_rhs", [[5], 10], [[5], 10]),
@@ -94,45 +95,45 @@ EXPECTATIONS = [
             ("b", [[], 5], [[], 5]),
             ("aug_int128_local", [[5], 15], [[5], 15]),
             ("aug_uint256_local", [[5], 15], [[5], 15]),
-        ],
+        ),
     ),
     (
         "binop_arithmetic_int128",
-        [
+        (
             ("add_int128", [[1, 1], 2], [[1, 1], 2]),
             ("sub_int128", [[2, 1], 1], [[2, 1], 1]),
             ("mul_int128", [[2, 2], 4], [[2, 2], 4]),
             ("div_int128", [[4, 2], 2], [[4, 2], 2]),
             ("mod_int128", [[7, 3], 1], [[7, 3], 1]),
             ("pow_int128", [[3], 2187], [[3], 2187]),
-        ],
+        ),
     ),
     (
         "binop_arithmetic_uint256",
-        [
+        (
             ("add_uint256", [[1, 1], 2], [[1, 1], 2]),
             ("sub_uint256", [[2, 1], 1], [[2, 1], 1]),
             ("mul_uint256", [[2, 2], 4], [[2, 2], 4]),
             ("div_uint256", [[4, 2], 2], [[4, 2], 2]),
             ("mod_uint256", [[7, 3], 1], [[7, 3], 1]),
             ("pow_uint256", [[18], 10**18], [[18], 10**18]),
-        ],
+        ),
     ),
     (
         "binop_bitwise_int128",
-        [
+        (
             ("and_int128", [[200, 231], 192], [[200, 231], 192]),
             ("or_int128", [[150, 200], 222], [[150, 200], 222]),
             ("xor_int128", [[150, 200], 94], [[150, 200], 94]),
-        ],
+        ),
     ),
     (
         "binop_bitwise_uint256",
-        [
+        (
             ("and_uint256", [[200, 231], 192], [[200, 231], 192]),
             ("or_uint256", [[150, 200], 222], [[150, 200], 222]),
             ("xor_uint256", [[150, 200], 94], [[150, 200], 94]),
-        ],
+        ),
     ),
     (
         "boolop",
@@ -146,10 +147,10 @@ EXPECTATIONS = [
             ("bool_or", [[False, False], False], [[0, 0], 0]),
         ),
     ),
-    ("binop_nested_arithmetic_int128", [("add_mul_int128", [[100, 9], 101], [[100, 9], 101])]),
+    ("binop_nested_arithmetic_int128", (("add_mul_int128", [[100, 9], 101], [[100, 9], 101]))),
     (
         "binop_nested_arithmetic_uint256",
-        [("pow_mul_uint256", [[100, 18], 100 * 10**18], [[100, 18], 100 * 10**18])],
+        (("pow_mul_uint256", [[100, 18], 100 * 10**18], [[100, 18], 100 * 10**18])),
     ),
     (
         "compare_int128",
@@ -229,7 +230,7 @@ EXPECTATIONS = [
     ),
     (
         "convert",
-        [
+        (
             ("uint8_to_uint256", [[255], 255], [[255], 255]),
             ("uint8_to_uint128", [[246], 246], [[246], 246]),
             ("uint128_to_uint8", [[255], 255], [[255], 255]),
@@ -238,14 +239,14 @@ EXPECTATIONS = [
                 [[256], ContractLogicError()],
                 [[256], ContractLogicError()],
             ),
-        ],
+        ),
     ),
     (
         "empty",
-        [
+        (
             ("get_addr", [[], "0x0000000000000000000000000000000000000000"], [[], 0]),
             ("get_uint256", [[], 0], [[], 0]),
-        ],
+        ),
     ),
     (
         "ERC20",
@@ -348,29 +349,29 @@ EXPECTATIONS = [
     ("event", [("foo", [[111], None], [[111], None, ["Trigger", "IndexedTrigger"]])]),
     (
         "internal_fns",
-        [
+        (
             ("get_abc", [[], 0], [[], 0]),
             ("foo", [[77], None], [[77], None]),
             ("get_abc", [[], 154], [[], 154]),
             ("get_xyz", [[], 1], [[], 1]),
             ("baz", [[77], None], [[77], None]),
             ("get_xyz", [[], 155], [[], 155]),
-        ],
+        ),
     ),
     (
         "if",
-        [
+        (
             ("if_only", [[5], 7], [[5], 7]),
             ("if_only", [[6], 14], [[6], 14]),
             ("if_else", [[5], 7], [[5], 7]),
             ("if_else", [[6], 14], [[6], 14]),
             ("if_else_2", [[101], 108], [[101], 108]),
             ("if_else_2", [[99], 92], [[99], 92]),
-        ],
+        ),
     ),
     (
         "if_nested",
-        [
+        (
             ("if_only", [[10], 7], [[10], 7]),
             ("if_only", [[15], 14], [[15], 14]),
             ("if_only", [[4], 21], [[4], 21]),
@@ -381,23 +382,23 @@ EXPECTATIONS = [
             ("if_else_2", [[110], 217], [[110], 217]),
             ("if_else_2", [[99], 92], [[99], 92]),
             ("if_else_2", [[89], 81], [[89], 81]),
-        ],
+        ),
     ),
     (
         "immutable",
-        [
+        (
             ("get_A", [[], -7], [[], signed_int_to_felt(-7)]),
             ("get_B", [[], 12345], [[], 12345]),
             ("get_C", [[], True], [[], 1]),
             ("get_D", [[], "0x0000000000000000000000000000000000012345"], [[], 74565]),
             ("get_E", [[], "vyper"], [[], str_to_int("vyper")]),
-        ],
+        ),
         (
             [-7, 12345, True, "0x0000000000000000000000000000000000012345", "vyper"],
             [signed_int_to_felt(-7), 12345, 1, 74565, str_to_int("vyper")],
         ),
         "minmax",
-        [
+        (
             ("get_min_uint128", [[1, 2], 1], [[1, 2], 1]),
             ("get_min_uint128", [[1, 1], 1], [[1, 1], 1]),
             ("get_max_uint128", [[1, 2], 2], [[1, 2], 2]),
@@ -406,75 +407,75 @@ EXPECTATIONS = [
             ("get_min_uint256", [[1, 1], 1], [[1, 1], 1]),
             ("get_max_uint256", [[1, 2], 2], [[1, 2], 2]),
             ("get_max_uint256", [[1, 1], 1], [[1, 1], 1]),
-        ],
+        ),
     ),
     (
         "msg_sender",
-        [
+        (
             ("set_msg_sender", [[], None], [[], None]),
             ("a", [[], "ETH_OWNER"], [[], "STARKNET_OWNER"]),  # Dummy value
-        ],
+        ),
     ),
     (
         "msg_sender_duplicate",
-        [
+        (
             ("set_msg_sender", [[], None], [[], None]),
             ("a", [[], "ETH_OWNER"], [[], "STARKNET_OWNER"]),  # Dummy value
             ("b", [[], "ETH_OWNER"], [[], "STARKNET_OWNER"]),  # Dummy value
-        ],
+        ),
     ),
     (
         "raise",
-        [
+        (
             ("conditional_raise", [[5], None], [[5], None]),
             ("conditional_raise", [[15], ContractLogicError()], [[15], ContractLogicError()]),
             ("unconditional_raise", [[], ContractLogicError()], [[], ContractLogicError()]),
-        ],
+        ),
     ),
     (
         "state_variable_int128",
-        [
+        (
             ("set_a", [[-10], None], [[signed_int_to_felt(-10)], None]),
             ("a", [[], -10], [[], signed_int_to_felt(-10)]),
             ("set_b", [[100], None], [[100], None]),
             ("b", [[], 100], [[], 100]),
             ("set_c", [[], None], [[], None]),
             ("c", [[], 90], [[], 90]),
-        ],
+        ),
     ),
     (
         "state_variable_mapping",
-        [
+        (
             ("b", [[10], 0], [[10], 0]),
             ("set_b", [[10, 77], None], [[10, 77], None]),
             ("b", [[10], 77], [[10], 77]),
-        ],
+        ),
     ),
     (
         "state_variable_nested_mapping",
-        [
+        (
             ("set_a", [[123, 123, 456], None], [[123, 123, 456], None]),
             ("a", [[123, 123], 456], [[123, 123], 456]),
             ("set_a_augassign", [[123, 123, 44], None], [[123, 123, 44], None]),
             ("a", [[123, 123], 500], [[123, 123], 500]),
             ("set_a", [[123, 246, 1234], None], [[123, 246, 1234], None]),
             ("view_a_assign", [[123, 123], 1234], [[123, 123], 1234]),
-        ],
+        ),
     ),
     (
         "state_variable_uint256",
-        [
+        (
             ("foo", [[], None], [[], None]),
             ("a", [[], 7], [[], 7]),
             ("set_a", [[100], None], [[100], None]),
             ("a", [[], 100], [[], 100]),
             ("set_a", [[2**256 - 1], None], [[2**256 - 1], None]),
             ("a", [[], 2**256 - 1], [[], 2**256 - 1]),
-        ],
+        ),
     ),
     (
         "unary",
-        [
+        (
             ("usub_constant", [[], -1], [[], signed_int_to_felt(-1)]),
             ("usub_arg", [[75], -75], [[75], signed_int_to_felt(-75)]),
             (
@@ -488,6 +489,6 @@ EXPECTATIONS = [
                     115792089237316193816632940749697632311307892324477961517254590225120294338559,
                 ],
             ),
-        ],
+        ),
     ),
 ]
