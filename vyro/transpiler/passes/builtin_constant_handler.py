@@ -17,14 +17,14 @@ from vyro.transpiler.visitor import BaseVisitor
 
 class BuiltinConstantHandlerVisitor(BaseVisitor):
     def visit_Attribute(self, node: vy_ast.Attribute, ast: vy_ast.Module, context: ASTContext):
-        vy_typ = node._metadata["type"]
-        cairo_typ = get_cairo_type(vy_typ)
-
         if not isinstance(node.value, vy_ast.Name):
             return
 
         if node.value.id != "block":
             return
+
+        vy_typ = node._metadata["type"]
+        cairo_typ = get_cairo_type(vy_typ)
 
         attr = node.attr
         val = node.value.id
@@ -61,6 +61,8 @@ class BuiltinConstantHandlerVisitor(BaseVisitor):
             convert_node = wrap_operation_in_call(
                 ast, context, "felt_to_uint256", args=[temp_name_node]
             )
+            add_builtin_to_module(ast, "felt_to_uint256")
+
             assign_node = vy_ast.Assign(
                 node_id=context.reserve_id(), targets=[convert_name_node], value=convert_node
             )
@@ -71,5 +73,3 @@ class BuiltinConstantHandlerVisitor(BaseVisitor):
         # Replace builtin constant with `Name` node
         temp_name_node_dup = generate_name_node(context.reserve_id(), name=temp_name_node.id)
         ast.replace_in_tree(node, temp_name_node_dup)
-
-        print("node id: ", node.value.id)
