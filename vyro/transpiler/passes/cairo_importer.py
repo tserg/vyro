@@ -7,7 +7,7 @@ from vyro.transpiler.visitor import BaseVisitor
 
 
 class CairoImporterVisitor(BaseVisitor):
-    def visit(self, node: vy_ast.VyperNode, ast: vy_ast.Module, context: ASTContext):
+    def visit(self, node, ast, context):
         type_ = node._metadata.get("type")
         if isinstance(type_, CairoUint256Definition):
             add_builtin_to_module(ast, "Uint256")
