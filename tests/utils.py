@@ -13,7 +13,7 @@ TRUE = 1
 FALSE = 0
 
 
-def transpile_to_cairo(path, output_file):
+def transpile_to_cairo(path: str, output_file: str):
     vyper_ast = get_vyper_ast(path)
 
     # Transpile

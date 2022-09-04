@@ -3,6 +3,7 @@ from vyper import ast as vy_ast
 from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.exceptions import UnsupportedOperation
+from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     add_implicit_to_function,
     generate_name_node,
@@ -44,7 +45,7 @@ class OpsConverterVisitor(BaseVisitor):
     and AugAssign nodes.
     """
 
-    def visit_AugAssign(self, node, ast, context):
+    def visit_AugAssign(self, node: vy_ast.AugAssign, ast: vy_ast.Module, context: ASTContext):
         # Replace AugAssign with Assign
         target = node.target
         op = node.op
@@ -77,7 +78,7 @@ class OpsConverterVisitor(BaseVisitor):
             # Replace `AugAssign` node with `AnnAssign`
             ast.replace_in_tree(node, ann_assign)
 
-    def visit_BinOp(self, node, ast, context):
+    def visit_BinOp(self, node: vy_ast.BinOp, ast: vy_ast.Module, context: ASTContext):
 
         # Convert nested `BinOp` nodes first
         super().visit_BinOp(node, ast, context)
@@ -213,7 +214,7 @@ class OpsConverterVisitor(BaseVisitor):
         # Add import
         add_builtin_to_module(ast, vyro_op)
 
-    def visit_BoolOp(self, node, ast, context):
+    def visit_BoolOp(self, node: vy_ast.BoolOp, ast: vy_ast.Module, context: ASTContext):
         # Convert nested `BoolOp` nodes first
         super().visit_BoolOp(node, ast, context)
 
@@ -238,7 +239,7 @@ class OpsConverterVisitor(BaseVisitor):
         # Add import
         add_builtin_to_module(ast, vyro_op)
 
-    def visit_Compare(self, node, ast, context):
+    def visit_Compare(self, node: vy_ast.Compare, ast: vy_ast.Module, context: ASTContext):
         # Convert nested `Compare` nodes first
         super().visit_Compare(node, ast, context)
 
@@ -290,7 +291,7 @@ class OpsConverterVisitor(BaseVisitor):
 
         ast.replace_in_tree(node, temp_name_node_dup)
 
-    def visit_UnaryOp(self, node, ast, context):
+    def visit_UnaryOp(self, node: vy_ast.UnaryOp, ast: vy_ast.Module, context: ASTContext):
         typ = node._metadata.get("type")
         cairo_typ = get_cairo_type(typ)
 

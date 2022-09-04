@@ -2,6 +2,7 @@ from vyper import ast as vy_ast
 
 from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import FeltDefinition
+from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     generate_name_node,
     insert_statement_before,
@@ -15,7 +16,7 @@ class MsgSenderConverterVisitor(BaseVisitor):
     Extract `msg.sender` into a call to `get_caller_address` as a preceding statement.
     """
 
-    def visit_FunctionDef(self, node, ast, context):
+    def visit_FunctionDef(self, node: vy_ast.FunctionDef, ast: vy_ast.Module, context: ASTContext):
         # Search for `msg.sender`
         nodes_to_replace = node.get_descendants(
             vy_ast.Attribute, {"attr": "sender", "value.id": "msg"}, reverse=True

@@ -184,9 +184,9 @@ def wrap_operation_in_call(
 
 def get_hashmap_types(
     typ: BaseTypeDefinition, keys: List[BaseTypeDefinition] = None
-) -> (List[BaseTypeDefinition], BaseTypeDefinition):
+) -> Tuple[Optional[List[BaseTypeDefinition]], BaseTypeDefinition]:
     if not isinstance(typ, MappingDefinition):
-        return keys
+        return keys, typ
 
     cairo_typ = get_cairo_type(typ.key_type)
 

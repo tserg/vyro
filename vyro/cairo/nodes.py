@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from vyper import ast as vy_ast
 
@@ -30,7 +30,7 @@ class CairoStorageWrite(vy_ast.Assign):
 class CairoStorageRead(vy_ast.Assign):
     """Wrapper class for Cairo read from storage"""
 
-    args = []
+    args: List[vy_ast.VyperNode] = []
 
     def __init__(self, parent: Optional[vy_ast.VyperNode] = None, **kwargs: dict):
         self.ast_type = "CairoStorageRead"
