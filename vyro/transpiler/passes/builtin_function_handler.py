@@ -25,7 +25,7 @@ VY_BUILTIN_FNS = get_builtin_functions()
 
 
 class BuiltinFunctionHandlerVisitor(BaseVisitor):
-    def _handle_convert(self, node, ast, context):
+    def _handle_convert(self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext):
         in_vy_typ = node.args[0]._metadata.get("type")
         # Cast to Uint256 if out type is `uint256`
         out_vy_typ = node.args[1]._metadata["type"].typedef
@@ -100,7 +100,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
                 f"Conversion of {in_vy_typ} to {out_vy_typ} is currently not supported", node
             )
 
-    def _handle_empty(self, node, ast, context):
+    def _handle_empty(self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext):
         # Get Vyper type
         vy_typ = node.args[0]._metadata["type"].typedef
 
@@ -118,10 +118,12 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
         # Replace `Call` node
         ast.replace_in_tree(node, replacement_node)
 
-    def _handle_max(self, node, ast, context):
+    def _handle_max(self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext):
         self._handle_minmax(node, ast, context, "max")
 
-    def _handle_minmax(self, node, ast, context, fn_str):
+    def _handle_minmax(
+        self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext, fn_str: str
+    ):
         # Get Vyper type
         vy_typ = node._metadata["type"]
 
@@ -146,7 +148,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
 
         ast.replace_in_tree(node, wrapped_call_node)
 
-    def _handle_min(self, node, ast, context):
+    def _handle_min(self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext):
         self._handle_minmax(node, ast, context, "min")
 
     def visit_Call(self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext):

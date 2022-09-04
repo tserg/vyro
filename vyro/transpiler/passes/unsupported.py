@@ -6,7 +6,7 @@ from vyro.transpiler.visitor import BaseVisitor
 
 
 class UnsupportedVisitor(BaseVisitor):
-    def _visit_unsupported_node(self, node):
+    def _visit_unsupported_node(self, node: vy_ast.VyperNode):
         raise UnsupportedNode(f"{type(node)} is not supported.", node)
 
     def visit_EnumDef(self, node: vy_ast.EnumDef, ast: vy_ast.Module, context: ASTContext):

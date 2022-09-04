@@ -12,7 +12,7 @@ STR_LIMIT = 31
 
 
 class ConstantHandlerVisitor(BaseVisitor):
-    def _assert_valid_felt(self, node, int_value):
+    def _assert_valid_felt(self, node: vy_ast.Constant, int_value: int):
         if int_value > CAIRO_PRIME:
             raise FeltOverflowException(
                 f"Value of constant ({node.value}) exceeds maximum felt value ({CAIRO_PRIME})", node
