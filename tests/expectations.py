@@ -424,6 +424,14 @@ EXPECTATIONS = [
         ],
     ),
     (
+        "raise",
+        [
+            ("conditional_raise", [[5], None], [[5], None]),
+            ("conditional_raise", [[15], ContractLogicError()], [[15], ContractLogicError()]),
+            ("unconditional_raise", [[], ContractLogicError()], [[], ContractLogicError()]),
+        ],
+    ),
+    (
         "state_variable_int128",
         [
             ("set_a", [[-10], None], [[signed_int_to_felt(-10)], None]),

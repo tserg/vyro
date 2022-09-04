@@ -452,7 +452,7 @@ class CairoWriter:
         pass
 
     def write_Raise(self, node):
-        pass
+        return "assert 1 = 0"
 
     def write_Return(self, node):
         value_str = self.write(node.value)

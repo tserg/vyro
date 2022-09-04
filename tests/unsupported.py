@@ -21,7 +21,6 @@ UNSUPPORTED = [
     ("for", UnsupportedNode),
     ("max_signed", UnsupportedFeature),
     ("min_signed", UnsupportedFeature),
-    ("raise", UnsupportedNode),
     ("structs", UnsupportedType),
     ("unary_not", UnsupportedOperation),
 ]
