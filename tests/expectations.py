@@ -14,10 +14,7 @@ EXPECTATIONS = [
     #       ([cairo call_args], cairo expected, [cairo event names], cairo_caller),
     #    ),
     # ]
-    (
-        "as_wei_value",
-        (("get_gwei", [[17], 17 * 10**9], [[17], 17 * 10**9]),),
-    ),
+    ("as_wei_value", (("get_gwei", [[17], 17 * 10**9], [[17], 17 * 10**9]),)),
     (
         "assert_int128",
         (
@@ -156,14 +153,8 @@ EXPECTATIONS = [
             ("bool_or", [[False, False], False], [[0, 0], 0]),
         ),
     ),
-    (
-        "block_number",
-        (("get_block_no", [[], None], [[], None]),),
-    ),
-    (
-        "block_timestamp",
-        (("get_timestamp", [[], None], [[], None]),),
-    ),
+    ("block_number", (("get_block_no", [[], None], [[], None]),)),
+    ("block_timestamp", (("get_timestamp", [[], None], [[], None]),)),
     (
         "compare_int128",
         (
