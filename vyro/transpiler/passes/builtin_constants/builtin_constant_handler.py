@@ -7,10 +7,7 @@ from vyro.transpiler.passes.builtin_constants.block_constant_handler import (
 from vyro.transpiler.passes.builtin_constants.msg_sender_converter import MsgSenderConverterVisitor
 from vyro.transpiler.visitor import BaseVisitor
 
-PASSES = [
-    MsgSenderConverterVisitor(),
-    BlockConstantHandlerVisitor(),
-]
+PASSES = [MsgSenderConverterVisitor(), BlockConstantHandlerVisitor()]
 
 
 class BuiltinConstantHandlerVisitor(BaseVisitor):
