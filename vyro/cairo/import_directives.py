@@ -8,6 +8,7 @@ IMPORT_DIRECTIVES = {
     "BitwiseBuiltin": "starkware.cairo.common.cairo_builtins",
     # Syscalls
     "get_caller_address": "starkware.starknet.common.syscalls",
+    "get_block_number": "starkware.starknet.common.syscalls",
     "get_block_timestamp": "starkware.starknet.common.syscalls",
     # Bitwise
     "bitwise_and": "starkware.cairo.common.bitwise",
