@@ -3,6 +3,7 @@ from vyro.transpiler.passes.builtin_function_handler import BuiltinFunctionHandl
 from vyro.transpiler.passes.cairo_importer import CairoImporterVisitor
 from vyro.transpiler.passes.constant_handler import ConstantHandlerVisitor
 from vyro.transpiler.passes.constructor_handler import ConstructorHandler
+from vyro.transpiler.passes.enum_converter import EnumConverterVisitor
 from vyro.transpiler.passes.event_handler import EventHandlerVisitor
 from vyro.transpiler.passes.if_handler import IfHandlerVisitor
 from vyro.transpiler.passes.initialisation import InitialisationVisitor

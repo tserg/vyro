@@ -23,9 +23,12 @@ class Uint256HandlerVisitor(BaseVisitor):
         if "type" in node._metadata:
             return
 
-        vyper_typ = get_type_from_annotation(node.annotation, DataLocation.UNSET)
-        cairo_typ = get_cairo_type(vyper_typ)
-        node._metadata["type"] = cairo_typ
+        if isinstance(node.annotation, vy_ast.Name) and node.annotation.id == "uint256":
+            node._metadata["type"] = CairoUint256Definition()
+        else:
+            vyper_typ = get_type_from_annotation(node.annotation, DataLocation.UNSET)
+            cairo_typ = get_cairo_type(vyper_typ)
+            node._metadata["type"] = cairo_typ
 
     def visit_AnnAssign(self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext):
         type_ = node.value._metadata.get("type")
