@@ -253,6 +253,15 @@ EXPECTATIONS = [
         ),
     ),
     (
+        "enum",
+        (
+            ("is_staff", [[1], True], [[1], TRUE]),
+            ("is_staff", [[2], True], [[2], TRUE]),
+            ("is_staff", [[3], True], [[3], TRUE]),
+            ("is_staff", [[4], False], [[4], FALSE]),
+        ),
+    ),
+    (
         "ERC20",
         (
             (
