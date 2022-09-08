@@ -5,6 +5,7 @@ from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
+    add_implicit_to_function,
     generate_name_node,
     get_scope,
     get_stmt_node,
@@ -17,8 +18,11 @@ from vyro.transpiler.visitor import BaseVisitor
 
 class EnumConverterVisitor(BaseVisitor):
     def visit_Compare(self, node: vy_ast.EnumDef, ast: vy_ast.Module, context: ASTContext):
-        left_typ = node.left._metadata["type"]
+        op = node.op
+        if not isinstance(op, (vy_ast.In, vy_ast.NotIn)):
+            return
 
+        left_typ = node.left._metadata["type"]
         if isinstance(left_typ, EnumDefinition):
             members_len = len(left_typ.members)
             if members_len <= 251:
@@ -29,6 +33,7 @@ class EnumConverterVisitor(BaseVisitor):
                 is_zero_op = "vyro_uint256_is_zero"
 
             add_builtin_to_module(ast, bitwise_and_op)
+            add_implicit_to_function(node, "bitwise_ptr")
             add_builtin_to_module(ast, is_zero_op)
 
             out_cairo_typ = FeltDefinition()
@@ -93,7 +98,6 @@ class EnumConverterVisitor(BaseVisitor):
             insert_statement_before(is_zero_assign, stmt_node, scope_node, scope_node_body)
 
             # perform additional is zero check for `In`
-            op = node.op
             if isinstance(op, vy_ast.In):
                 is_zero_name_node_dup = generate_name_node(
                     context.reserve_id(), name=is_zero_name_node.id
@@ -160,7 +164,8 @@ class EnumConverterVisitor(BaseVisitor):
                 t._metadata["type"] = cairo_typ
 
     def visit_Module(self, node: vy_ast.Module, ast: vy_ast.Module, context: ASTContext):
-        # visit `Compare` nodes first
+        # visit `Compare` nodes first to convert membership comparisons to bitwise ops
+        # before the Vyper enum type definition is changed to the Cairo equivalent
         compares = node.get_descendants(vy_ast.Compare)
 
         for c in compares:
