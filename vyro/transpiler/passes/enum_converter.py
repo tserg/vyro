@@ -17,6 +17,11 @@ from vyro.transpiler.visitor import BaseVisitor
 
 
 class EnumConverterVisitor(BaseVisitor):
+    """
+    This pass converts enums into integers, and transforms membership comparisons
+    of enums into bitwise operations.
+    """
+
     def visit_Compare(self, node: vy_ast.EnumDef, ast: vy_ast.Module, context: ASTContext):
         op = node.op
         if not isinstance(op, (vy_ast.In, vy_ast.NotIn)):
