@@ -7,6 +7,7 @@ from vyper.semantics.types.abstract import FixedAbstractType, IntegerAbstractTyp
 from vyper.semantics.types.bases import BaseTypeDefinition
 from vyper.semantics.types.indexable.mapping import MappingDefinition
 from vyper.semantics.types.indexable.sequence import ArrayDefinition, DynamicArrayDefinition
+from vyper.semantics.types.user.enum import EnumDefinition
 
 from vyro.cairo.types import (
     CairoMappingDefinition,
@@ -143,6 +144,16 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
         return CairoMappingDefinition(
             typ.is_constant, typ.is_public, typ.is_immutable, key_types, value_type
         )
+
+    elif isinstance(typ, EnumDefinition):
+        if len(typ.members) <= 251:
+            return FeltDefinition(
+                is_constant=typ.is_constant, is_public=typ.is_public, is_immutable=typ.is_immutable
+            )
+        else:
+            return CairoUint256Definition(
+                is_constant=typ.is_constant, is_public=typ.is_public, is_immutable=typ.is_immutable
+            )
 
     return FeltDefinition(typ.is_constant, typ.is_public, typ.is_immutable)
 

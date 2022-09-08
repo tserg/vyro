@@ -20,28 +20,43 @@ class EnumConverterVisitor(BaseVisitor):
     """
     This pass converts enums into integers, and transforms membership comparisons
     of enums into bitwise operations.
+
+    Enums with 251 or less members are converted to felts. Otherwise, they are
+    converted to Uint256.
     """
+
+    def visit(self, node: vy_ast.VyperNode, ast: vy_ast.Module, context: ASTContext):
+        vyper_typ = node._metadata.get("type")
+        if isinstance(vyper_typ, EnumDefinition):
+            members_len = len(vyper_typ.members)
+            if members_len <= 251:
+                node._metadata["type"] = FeltDefinition()
+            else:
+                node._metadata["type"] = CairoUint256Definition()
+
+        super().visit(node, ast, context)
 
     def visit_Compare(self, node: vy_ast.EnumDef, ast: vy_ast.Module, context: ASTContext):
         op = node.op
         if not isinstance(op, (vy_ast.In, vy_ast.NotIn)):
             return
 
-        left_typ = node.left._metadata["type"]
+        left_typ = node.left._metadata.get("type")
         if isinstance(left_typ, EnumDefinition):
             members_len = len(left_typ.members)
             if members_len <= 251:
                 bitwise_and_op = "bitwise_and"
                 is_zero_op = "vyro_is_zero"
+                out_cairo_typ = FeltDefinition()
+
             else:
                 bitwise_and_op = "uint256_and"
                 is_zero_op = "vyro_uint256_is_zero"
+                out_cairo_typ = CairoUint256Definition()
 
             add_builtin_to_module(ast, bitwise_and_op)
             add_implicit_to_function(node, "bitwise_ptr")
             add_builtin_to_module(ast, is_zero_op)
-
-            out_cairo_typ = FeltDefinition()
 
             # perform bitwise and
             bitwise_and_name_node = generate_name_node(context.reserve_id())
@@ -76,13 +91,13 @@ class EnumConverterVisitor(BaseVisitor):
             )
 
             is_zero_name_node = generate_name_node(context.reserve_id())
-            is_zero_name_node._metadata["type"] = out_cairo_typ
+            is_zero_name_node._metadata["type"] = FeltDefinition()
 
             wrapped_is_zero_call = wrap_operation_in_call(
                 ast, context, is_zero_op, args=[bitwise_and_name_node_dup]
             )
             set_parent(bitwise_and_name_node_dup, wrapped_is_zero_call)
-            wrapped_is_zero_call._metadata["type"] = out_cairo_typ
+            wrapped_is_zero_call._metadata["type"] = FeltDefinition()
 
             is_zero_assign = vy_ast.Assign(
                 node_id=context.reserve_id(),
@@ -90,7 +105,7 @@ class EnumConverterVisitor(BaseVisitor):
                 value=wrapped_is_zero_call,
                 ast_type="Assign",
             )
-            is_zero_assign._metadata["type"] = out_cairo_typ
+            is_zero_assign._metadata["type"] = FeltDefinition()
             set_parent(is_zero_name_node, is_zero_assign)
             set_parent(wrapped_is_zero_call, is_zero_assign)
 
@@ -103,13 +118,14 @@ class EnumConverterVisitor(BaseVisitor):
                 )
 
                 is_zero_name_node = generate_name_node(context.reserve_id())
-                is_zero_name_node._metadata["type"] = out_cairo_typ
+                is_zero_name_node._metadata["type"] = FeltDefinition()
 
                 wrapped_is_zero_call = wrap_operation_in_call(
-                    ast, context, is_zero_op, args=[is_zero_name_node_dup]
+                    ast, context, "vyro_is_zero", args=[is_zero_name_node_dup]
                 )
+                add_builtin_to_module(ast, "vyro_is_zero")
                 set_parent(is_zero_name_node_dup, wrapped_is_zero_call)
-                wrapped_is_zero_call._metadata["type"] = out_cairo_typ
+                wrapped_is_zero_call._metadata["type"] = FeltDefinition()
 
                 is_zero_assign = vy_ast.Assign(
                     node_id=context.reserve_id(),
@@ -117,7 +133,7 @@ class EnumConverterVisitor(BaseVisitor):
                     value=wrapped_is_zero_call,
                     ast_type="Assign",
                 )
-                is_zero_assign._metadata["type"] = out_cairo_typ
+                is_zero_assign._metadata["type"] = FeltDefinition()
                 set_parent(is_zero_name_node, is_zero_assign)
                 set_parent(wrapped_is_zero_call, is_zero_assign)
 
@@ -126,7 +142,7 @@ class EnumConverterVisitor(BaseVisitor):
             replacement_name_node = generate_name_node(
                 context.reserve_id(), name=is_zero_name_node.id
             )
-            replacement_name_node._metadata["type"] = out_cairo_typ
+            replacement_name_node._metadata["type"] = FeltDefinition()
 
             ast.replace_in_tree(node, replacement_name_node)
 
@@ -135,10 +151,13 @@ class EnumConverterVisitor(BaseVisitor):
         members_len = len(node.body)
         cairo_typ = FeltDefinition() if members_len <= 251 else CairoUint256Definition()
 
+        is_uint256 = False if members_len <= 251 else True
+
         count = 0
         for member in node.body:
             member_name = member.value.id
             int_value = 2**count
+
             count += 1
 
             # Replace enum with integer values
@@ -147,8 +166,37 @@ class EnumConverterVisitor(BaseVisitor):
             )
 
             for r in member_references:
-                replacement_int = vy_ast.Int(node_id=context.reserve_id(), value=int_value)
-                replacement_int._metadata["type"] = cairo_typ
+                if not is_uint256:
+                    replacement_int = vy_ast.Int(node_id=context.reserve_id(), value=int_value)
+                    replacement_int._metadata["type"] = cairo_typ
+                else:
+                    lo = int_value & ((1 << 128) - 1)
+                    hi = int_value >> 128
+
+                    # Cast literals as Uint256
+                    keywords = [
+                        vy_ast.keyword(
+                            node_id=context.reserve_id(),
+                            arg="low",
+                            value=vy_ast.Int(
+                                node_id=context.reserve_id(), value=lo, ast_type="Int"
+                            ),
+                            ast_type="keyword",
+                        ),
+                        vy_ast.keyword(
+                            node_id=context.reserve_id(),
+                            arg="high",
+                            value=vy_ast.Int(
+                                node_id=context.reserve_id(), value=hi, ast_type="Int"
+                            ),
+                            ast_typ="keyword",
+                        ),
+                    ]
+                    replacement_int = wrap_operation_in_call(
+                        ast, context, "Uint256", keywords=keywords
+                    )
+                    replacement_int._metadata["type"] = cairo_typ
+
                 ast.replace_in_tree(r, replacement_int)
 
             type_references = ast.get_descendants(vy_ast.arg, {"annotation.id": enum_name})
@@ -160,7 +208,6 @@ class EnumConverterVisitor(BaseVisitor):
         # visit `Compare` nodes first to convert membership comparisons to bitwise ops
         # before the Vyper enum type definition is changed to the Cairo equivalent
         compares = node.get_descendants(vy_ast.Compare)
-
         for c in compares:
             self.visit(c, ast, context)
 
