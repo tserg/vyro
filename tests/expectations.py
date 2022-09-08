@@ -258,6 +258,13 @@ EXPECTATIONS = [
             ("is_staff", [[2], True], [[2], TRUE]),
             ("is_staff", [[3], True], [[3], TRUE]),
             ("is_staff", [[4], False], [[4], FALSE]),
+            ("is_user", [[1], False], [[1], FALSE]),
+            ("is_user", [[2], False], [[2], FALSE]),
+            ("is_user", [[3], False], [[3], FALSE]),
+            ("is_user", [[4], True], [[4], TRUE]),
+            ("r_is_staff", [[], False], [[], FALSE]),
+            ("set_r", [[5], None], [[5], None]),
+            ("r_is_staff", [[], True], [[], TRUE]),
         ),
     ),
     (
