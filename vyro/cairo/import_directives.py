@@ -25,6 +25,7 @@ IMPORT_DIRECTIVES = {
     "is_le_felt": "starkware.cairo.common.math_cmp",
     "vyro_ge": "vyrolib.ge",
     "vyro_gt": "vyrolib.gt",
+    "vyro_is_zero": "vyrolib.is_zero",
     # Math
     "assert_le": "starkware.cairo.common.math",
     "vyro_div": "vyrolib.div",
@@ -47,6 +48,7 @@ IMPORT_DIRECTIVES = {
     "uint256_le": "starkware.cairo.common.uint256",
     "ge256": "vyrolib.ge",
     "gt256": "vyrolib.gt",
+    "vyro_uint256_is_zero": "vyrolib.is_zero",
     # Vyro lib
     "felt_to_uint256": "vyrolib.utils",
     "uint256_to_felt": "vyrolib.utils",
