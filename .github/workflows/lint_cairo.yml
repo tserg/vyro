@@ -16,3 +16,4 @@ jobs:
         uses: milancermak/cairo-format-action@v1
         with:
           target: vyrolib
+          cairo-version: 0.9.1
