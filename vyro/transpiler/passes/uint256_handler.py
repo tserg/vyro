@@ -1,6 +1,4 @@
 from vyper import ast as vy_ast
-from vyper.semantics.types.bases import DataLocation
-from vyper.semantics.types.utils import get_type_from_annotation
 
 from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition
@@ -19,14 +17,6 @@ UINT256_BINOP_TABLE = {"addition": "add256", "subtraction": "sub256", "multiplic
 
 
 class Uint256HandlerVisitor(BaseVisitor):
-    def visit_arg(self, node: vy_ast.arg, ast: vy_ast.Module, context: ASTContext):
-        if "type" in node._metadata:
-            return
-
-        vyper_typ = get_type_from_annotation(node.annotation, DataLocation.UNSET)
-        cairo_typ = get_cairo_type(vyper_typ)
-        node._metadata["type"] = cairo_typ
-
     def visit_AnnAssign(self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext):
         type_ = node.value._metadata.get("type")
 
