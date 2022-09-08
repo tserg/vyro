@@ -2,15 +2,12 @@ from string import ascii_lowercase as alc
 from typing import List
 
 from vyper import ast as vy_ast
-from vyper.semantics.types.bases import DataLocation
 from vyper.semantics.types.function import StateMutability
-from vyper.semantics.types.utils import get_type_from_annotation
 
 from vyro.cairo.implicits import IMPLICITS
 from vyro.cairo.types import CairoMappingDefinition
 from vyro.cairo.utils import INDENT, add_indent, generate_storage_var_stub
 from vyro.exceptions import TranspilerPanic, UnsupportedNode
-from vyro.transpiler.utils import get_cairo_type
 
 
 class CairoWriter:
@@ -63,10 +60,6 @@ class CairoWriter:
 
     def write_arg(self, node):
         typ = node._metadata.get("type")
-        if typ is None:
-            vyper_typ = get_type_from_annotation(node.annotation, DataLocation.UNSET)
-            typ = get_cairo_type(vyper_typ)
-
         return f"{node.arg} : {typ}"
 
     def write_arguments(self, node):
