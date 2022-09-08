@@ -268,6 +268,19 @@ EXPECTATIONS = [
         ),
     ),
     (
+        "enum_256",
+        (
+            ("is_bound", [[1], True], [[1], TRUE]),
+            ("is_bound", [[2**255], True], [[2**255], TRUE]),
+            ("is_bound", [[2**128], False], [[2**128], FALSE]),
+            ("is_ttt", [[2**71], True], [[2**71], TRUE]),
+            ("is_ttt", [[2**72], False], [[2**72], FALSE]),
+            ("r_is_member", [[], False], [[], FALSE]),
+            ("set_r", [[2**51], None], [[2**51], None]),
+            ("r_is_member", [[], True], [[], TRUE]),
+        ),
+    ),
+    (
         "ERC20",
         (
             (
