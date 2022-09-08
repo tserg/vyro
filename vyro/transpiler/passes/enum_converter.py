@@ -43,10 +43,7 @@ class EnumConverterVisitor(BaseVisitor):
             bitwise_and_name_node._metadata["type"] = out_cairo_typ
 
             wrapped_bitwise_and_call = wrap_operation_in_call(
-                ast,
-                context,
-                bitwise_and_op,
-                args=[node.left, node.right],
+                ast, context, bitwise_and_op, args=[node.left, node.right]
             )
             wrapped_bitwise_and_call._metadata["type"] = out_cairo_typ
             node._children.remove(node.left)
@@ -77,10 +74,7 @@ class EnumConverterVisitor(BaseVisitor):
             is_zero_name_node._metadata["type"] = out_cairo_typ
 
             wrapped_is_zero_call = wrap_operation_in_call(
-                ast,
-                context,
-                is_zero_op,
-                args=[bitwise_and_name_node_dup],
+                ast, context, is_zero_op, args=[bitwise_and_name_node_dup]
             )
             set_parent(bitwise_and_name_node_dup, wrapped_is_zero_call)
             wrapped_is_zero_call._metadata["type"] = out_cairo_typ
@@ -107,10 +101,7 @@ class EnumConverterVisitor(BaseVisitor):
                 is_zero_name_node._metadata["type"] = out_cairo_typ
 
                 wrapped_is_zero_call = wrap_operation_in_call(
-                    ast,
-                    context,
-                    is_zero_op,
-                    args=[is_zero_name_node_dup],
+                    ast, context, is_zero_op, args=[is_zero_name_node_dup]
                 )
                 set_parent(is_zero_name_node_dup, wrapped_is_zero_call)
                 wrapped_is_zero_call._metadata["type"] = out_cairo_typ
@@ -151,10 +142,7 @@ class EnumConverterVisitor(BaseVisitor):
             )
 
             for r in member_references:
-                replacement_int = vy_ast.Int(
-                    node_id=context.reserve_id(),
-                    value=int_value,
-                )
+                replacement_int = vy_ast.Int(node_id=context.reserve_id(), value=int_value)
                 replacement_int._metadata["type"] = cairo_typ
                 ast.replace_in_tree(r, replacement_int)
 
