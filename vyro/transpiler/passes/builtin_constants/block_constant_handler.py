@@ -5,8 +5,8 @@ from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.exceptions import UnsupportedFeature
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
+    convert_node_type_definition,
     generate_name_node,
-    get_cairo_type,
     get_scope,
     get_stmt_node,
     insert_statement_before,
@@ -23,8 +23,7 @@ class BlockConstantHandlerVisitor(BaseVisitor):
         if node.value.id != "block":
             return
 
-        vy_typ = node._metadata.get("type")
-        cairo_typ = get_cairo_type(vy_typ)
+        cairo_typ = convert_node_type_definition(node)
 
         attr = node.attr
         val = node.value.id

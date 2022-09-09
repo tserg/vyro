@@ -6,6 +6,7 @@ from vyro.exceptions import UnsupportedOperation
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     add_implicit_to_function,
+    convert_node_type_definition,
     generate_name_node,
     get_cairo_type,
     get_scope,
@@ -51,8 +52,7 @@ class OpsConverterVisitor(BaseVisitor):
         op = node.op
         value = node.value
 
-        typ = node._metadata.get("type")
-        cairo_typ = get_cairo_type(typ)
+        cairo_typ = convert_node_type_definition(node)
 
         if isinstance(target, vy_ast.Name):
             binop = vy_ast.BinOp(
@@ -83,8 +83,7 @@ class OpsConverterVisitor(BaseVisitor):
         # Convert nested `BinOp` nodes first
         super().visit_BinOp(node, ast, context)
 
-        typ = node._metadata.get("type")
-        cairo_typ = get_cairo_type(typ)
+        cairo_typ = convert_node_type_definition(node)
 
         op = node.op
         op_description = node.op._description
@@ -292,8 +291,7 @@ class OpsConverterVisitor(BaseVisitor):
         ast.replace_in_tree(node, temp_name_node_dup)
 
     def visit_UnaryOp(self, node: vy_ast.UnaryOp, ast: vy_ast.Module, context: ASTContext):
-        typ = node._metadata.get("type")
-        cairo_typ = get_cairo_type(typ)
+        cairo_typ = convert_node_type_definition(node)
 
         op = node.op
         if isinstance(op, vy_ast.Not):

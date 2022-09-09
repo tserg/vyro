@@ -11,7 +11,6 @@ from vyro.transpiler.utils import (
     convert_node_type_definition,
     extract_mapping_args,
     generate_name_node,
-    get_cairo_type,
     get_scope,
     initialise_function_implicits,
     insert_statement_before,
@@ -109,8 +108,7 @@ class StorageVarVisitor(BaseVisitor):
         var_name = node.target.id
 
         # Update type
-        vy_typ = node._metadata.get("type")
-        cairo_typ = get_cairo_type(vy_typ)
+        cairo_typ = convert_node_type_definition(node)
         node._metadata["type"] = cairo_typ
 
         if node.is_public is True:

@@ -4,6 +4,7 @@ from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
+    convert_node_type_definition,
     generate_name_node,
     get_cairo_type,
     get_scope,
@@ -73,8 +74,7 @@ class Uint256HandlerVisitor(BaseVisitor):
         if op_description not in UINT256_BINOP_TABLE:
             return
 
-        typ = node._metadata.get("type")
-        cairo_typ = get_cairo_type(typ)
+        cairo_typ = convert_node_type_definition(node)
 
         # Early termination if `BinOp` is not of Uint256 type
         if not isinstance(cairo_typ, CairoUint256Definition):
