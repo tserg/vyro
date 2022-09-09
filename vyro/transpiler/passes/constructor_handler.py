@@ -46,7 +46,7 @@ class ConstructorHandler(BaseVisitor):
         # Transform LHS of assignment to immutable variable into `self.varname`
         node._children.remove(node.target)
 
-        self_node = generate_name_node(context.reserve_id(), name="self")
+        self_node = generate_name_node(context, name="self")
         self_node._metadata["type"] = FeltDefinition()
 
         attribute_node = vy_ast.Attribute(
@@ -74,7 +74,7 @@ class ConstructorHandler(BaseVisitor):
             immutable_references = fn.get_descendants(vy_ast.Name, {"id": varname})
 
             for i in immutable_references:
-                self_node = generate_name_node(context.reserve_id(), name="self")
+                self_node = generate_name_node(context, name="self")
                 self_node._metadata["type"] = FeltDefinition()
 
                 attribute_node = vy_ast.Attribute(

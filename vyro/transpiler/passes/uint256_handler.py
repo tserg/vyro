@@ -32,7 +32,7 @@ class Uint256HandlerVisitor(BaseVisitor):
             ):
                 value_node = node.value
 
-                temp_name_node = generate_name_node(context.reserve_id())
+                temp_name_node = generate_name_node(context)
                 temp_name_node._metadata["type"] = cairo_typ
 
                 rhs_assignment_node = create_assign_node(context, [temp_name_node], value_node)
@@ -42,9 +42,7 @@ class Uint256HandlerVisitor(BaseVisitor):
                 insert_statement_before(rhs_assignment_node, node, scope_node, scope_node_body)
 
                 # Replace `BinOp` with temporary name node
-                temp_name_node_copy = generate_name_node(
-                    context.reserve_id(), name=temp_name_node.id
-                )
+                temp_name_node_copy = generate_name_node(context, name=temp_name_node.id)
                 temp_name_node_copy._metadata["type"] = cairo_typ
                 node.value = temp_name_node_copy
 

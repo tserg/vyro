@@ -19,7 +19,8 @@ from vyro.exceptions import TranspilerPanic, UnsupportedType
 from vyro.transpiler.context import ASTContext
 
 
-def generate_name_node(node_id: int, name: str = None) -> vy_ast.Name:
+def generate_name_node(context: ASTContext, name: str = None) -> vy_ast.Name:
+    node_id = context.reserve_id()
     if name is None:
         name = f"VYRO_VAR_{node_id}"
     ret = vy_ast.Name(id=name, node_id=node_id, ast_type="Name")
@@ -257,7 +258,7 @@ def extract_mapping_args(
                 annotation=vy_ast.Name(node_id=context.reserve_id(), id=str(key_type)),
             )
         else:
-            arg_node = generate_name_node(context.reserve_id(), arg_name)
+            arg_node = generate_name_node(context, arg_name)
 
         arg_node._metadata["type"] = key_type
         ret.append(arg_node)

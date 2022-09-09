@@ -71,7 +71,7 @@ class ConstantHandlerVisitor(BaseVisitor):
 
         # Search for folded nodes
         for n in ast.get_descendants(vy_ast.NameConstant, {"value": bool_value}, reverse=True):
-            replacement_node = generate_name_node(context.reserve_id(), name=bool_str)
+            replacement_node = generate_name_node(context, name=bool_str)
             ast.replace_in_tree(n, replacement_node)
 
     def visit_Str(self, node: vy_ast.Str, ast: vy_ast.Module, context: ASTContext):

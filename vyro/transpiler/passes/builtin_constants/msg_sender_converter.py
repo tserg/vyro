@@ -25,7 +25,7 @@ class MsgSenderConverterVisitor(BaseVisitor):
 
         # If found, create a new `Assign` statement to `get_caller_address`
         if len(nodes_to_replace) > 0:
-            temp_name_node = generate_name_node(context.reserve_id())
+            temp_name_node = generate_name_node(context)
             temp_name_node._metadata["type"] = FeltDefinition()
 
             syscall_node = create_call_node(context, "get_caller_address")
@@ -43,9 +43,7 @@ class MsgSenderConverterVisitor(BaseVisitor):
 
             # Replace `msg.sender` with the temp reference
             temp_name_node_ref = temp_name_node.id
-            temp_name_reference_node = generate_name_node(
-                context.reserve_id(), name=temp_name_node_ref
-            )
+            temp_name_reference_node = generate_name_node(context, name=temp_name_node_ref)
 
             first_call_node = nodes_to_replace.pop()
             ast.replace_in_tree(first_call_node, temp_name_node)
@@ -53,7 +51,5 @@ class MsgSenderConverterVisitor(BaseVisitor):
             # Replace all descendants of the FunctionDef node with the replace variable
 
             for n in nodes_to_replace:
-                temp_name_reference_node = generate_name_node(
-                    context.reserve_id(), name=temp_name_node_ref
-                )
+                temp_name_reference_node = generate_name_node(context, name=temp_name_node_ref)
                 ast.replace_in_tree(n, temp_name_reference_node)

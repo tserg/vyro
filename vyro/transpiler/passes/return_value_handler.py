@@ -42,7 +42,7 @@ class ReturnValueHandler(BaseVisitor):
                 return_node._children.remove(return_value_node)
 
                 # Assign return value to a temporary variable
-                temp_name_node = generate_name_node(context.reserve_id())
+                temp_name_node = generate_name_node(context)
                 temp_name_node._metadata["type"] = return_cairo_typ
 
                 assign_return_value = create_assign_node(
