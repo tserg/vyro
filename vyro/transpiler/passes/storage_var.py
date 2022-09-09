@@ -91,6 +91,7 @@ class StorageVarVisitor(BaseVisitor):
         )
         set_parent(value_node, storage_read_node)
         set_parent(temp_name_node, storage_read_node)
+
         # Insert `CairoStorageRead` node before `Assign`
         scope_node, scope_node_body = get_scope(parent_node)
         insert_statement_before(storage_read_node, parent_node, scope_node, scope_node_body)
@@ -226,7 +227,6 @@ class StorageVarVisitor(BaseVisitor):
             rhs_assignment_node._metadata["type"] = cairo_typ
 
             # Add storage write node to body of function
-
             scope_node, scope_node_body = get_scope(node)
 
             # Create storage write node

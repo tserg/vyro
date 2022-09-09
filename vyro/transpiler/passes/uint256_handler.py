@@ -87,7 +87,6 @@ class Uint256HandlerVisitor(BaseVisitor):
         # Replace `BinOp` node with wrapped call
         ast.replace_in_tree(node, wrapped_uint256_op)
 
-        # Add import
         add_builtin_to_module(ast, uint256_op)
 
         # Visit wrapped call node
@@ -117,15 +116,11 @@ class Uint256HandlerVisitor(BaseVisitor):
                     ),
                 ]
                 wrapped_convert = create_call_node(context, "Uint256", keywords=keywords)
+                wrapped_convert._metadata["type"] = cairo_typ
 
-                # Replace node with wrapped convert
-                ast.replace_in_tree(node, wrapped_convert)
-
-                # Set type
-                wrapped_convert._metadata["type"] = CairoUint256Definition()
-
-                # Add import
                 add_builtin_to_module(ast, "Uint256")
+
+                ast.replace_in_tree(node, wrapped_convert)
 
     def visit_Module(self, node: vy_ast.Module, ast: vy_ast.Module, context: ASTContext):
         # Skip contract vars

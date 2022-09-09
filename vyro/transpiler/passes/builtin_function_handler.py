@@ -32,7 +32,6 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
         call_typ = node.func._metadata["type"]
         denom = call_typ.get_denomination(node)
 
-        # Update to Cairo type
         convert_node_type_definition(node)
 
         # Replace `Call` with `mul256`
@@ -89,7 +88,6 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
                 scope_node, scope_node_body = get_scope(node)
                 insert_statement_before(temp_assign_node, stmt_node, scope_node, scope_node_body)
 
-                # Add `felt_to_uint256` to imports
                 add_builtin_to_module(ast, "felt_to_uint256")
 
                 # Replace call node with temporary name node
@@ -112,7 +110,6 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
                     lo_int = vy_ast.Int(node_id=context.reserve_id(), value=lo)
                     lo_clamper = create_call_node(context, "assert_le", args=[lo_int, src])
 
-                    # Add `assert_le` builtin
                     add_builtin_to_module(ast, "assert_le")
 
                     # Insert statements after
@@ -154,10 +151,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
     def _handle_minmax(
         self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext, fn_str: str
     ):
-        # Get Vyper type
         vy_typ = node._metadata.get("type")
-
-        # Get Cairo type
         cairo_typ = get_cairo_type(vy_typ)
 
         if isinstance(vy_typ, SignedIntegerAbstractType):

@@ -133,7 +133,6 @@ class OpsConverterVisitor(BaseVisitor):
 
             convert_assign_node = create_assign_node(context, [convert_ret_node], wrapped_op)
 
-            # Add import
             add_builtin_to_module(ast, vyro_op)
 
             # Convert back to Uint256
@@ -169,7 +168,6 @@ class OpsConverterVisitor(BaseVisitor):
             ast.replace_in_tree(node, replacement_node)
             return
 
-        # Add implicits for bitwise ops
         if isinstance(op, (vy_ast.BitAnd, vy_ast.BitOr, vy_ast.BitXor)):
             add_implicit_to_function(node, "bitwise_ptr")
             add_builtin_to_module(ast, "BitwiseBuiltin")
@@ -192,15 +190,11 @@ class OpsConverterVisitor(BaseVisitor):
         temp_name_node_dup = create_name_node(context, name=temp_name_node.id)
         ast.replace_in_tree(node, temp_name_node_dup)
 
-        # Add import
         add_builtin_to_module(ast, vyro_op)
 
     def visit_BoolOp(self, node: vy_ast.BoolOp, ast: vy_ast.Module, context: ASTContext):
         # Convert nested `BoolOp` nodes first
         super().visit_BoolOp(node, ast, context)
-
-        # Assign felt type directly
-        cairo_typ = FeltDefinition()
 
         if isinstance(node.op, vy_ast.And):
             vyro_op = "bitwise_and"
@@ -212,12 +206,11 @@ class OpsConverterVisitor(BaseVisitor):
 
         # Wrap operation in a function call
         wrapped_op = create_call_node(context, vyro_op, args=node.values)
-        wrapped_op._metadata["type"] = cairo_typ
+        wrapped_op._metadata["type"] = FeltDefinition()
 
         # Replace `BoolOp` node with wrapped call
         ast.replace_in_tree(node, wrapped_op)
 
-        # Add import
         add_builtin_to_module(ast, vyro_op)
 
     def visit_Compare(self, node: vy_ast.Compare, ast: vy_ast.Module, context: ASTContext):
@@ -285,7 +278,6 @@ class OpsConverterVisitor(BaseVisitor):
             UNARY_OP_TABLE[op_description][1] if is_uint256 else UNARY_OP_TABLE[op_description][0]
         )
 
-        # Add implicits for bitwise ops
         if isinstance(op, (vy_ast.Invert,)):
             add_implicit_to_function(node, "bitwise_ptr")
             add_builtin_to_module(ast, "BitwiseBuiltin")
@@ -297,5 +289,4 @@ class OpsConverterVisitor(BaseVisitor):
         # Replace `BinOp` node with wrapped call
         ast.replace_in_tree(node, wrapped_op)
 
-        # Add import
         add_builtin_to_module(ast, vyro_op)

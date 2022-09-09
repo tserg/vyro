@@ -35,7 +35,6 @@ class AssertHandlerVisitor(BaseVisitor):
         temp_name_node._metadata["type"] = FeltDefinition()
 
         # Generate nodes for `CairoAssert`
-
         cairo_assert_value = create_name_node(context, name="TRUE")
         add_builtin_to_module(ast, "TRUE")
 

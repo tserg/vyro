@@ -34,7 +34,6 @@ class MsgSenderConverterVisitor(BaseVisitor):
             wrapped_call = create_assign_node(context, [temp_name_node], syscall_node)
             wrapped_call._metadata["type"] = FeltDefinition()
 
-            # Add builtin
             add_builtin_to_module(ast, "get_caller_address")
 
             # Insert the wrapped call into the head of the function node body

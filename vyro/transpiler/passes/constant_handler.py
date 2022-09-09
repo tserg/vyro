@@ -12,6 +12,10 @@ STR_LIMIT = 31
 
 
 class ConstantHandlerVisitor(BaseVisitor):
+    """
+    Convert constant values to their integer equivalent.
+    """
+
     def _assert_valid_felt(self, node: vy_ast.Constant, int_value: int):
         if int_value > CAIRO_PRIME:
             raise FeltOverflowException(
@@ -19,7 +23,6 @@ class ConstantHandlerVisitor(BaseVisitor):
             )
 
     def visit_Bytes(self, node: vy_ast.Bytes, ast: vy_ast.Module, context: ASTContext):
-        # Get integer value
         byte_value = node.value
         int_value = bytes_to_int(byte_value)
 
@@ -31,7 +34,6 @@ class ConstantHandlerVisitor(BaseVisitor):
             ast.replace_in_tree(n, replacement_int)
 
     def visit_Hex(self, node: vy_ast.Hex, ast: vy_ast.Module, context: ASTContext):
-        # Get integer value
         hex_value = node.value
         int_value = hex_to_int(hex_value)
 
@@ -39,7 +41,6 @@ class ConstantHandlerVisitor(BaseVisitor):
 
         # Search for folded nodes
         for n in ast.get_descendants(vy_ast.Hex, {"value": hex_value}, reverse=True):
-            # Replace with integer node
             replacement_int = vy_ast.Int.from_node(node, value=int_value)
             ast.replace_in_tree(n, replacement_int)
 
@@ -66,7 +67,6 @@ class ConstantHandlerVisitor(BaseVisitor):
         # Convert boolean value to string
         bool_str = str(bool_value).upper()
 
-        # Add builtin
         add_builtin_to_module(ast, bool_str)
 
         # Search for folded nodes
