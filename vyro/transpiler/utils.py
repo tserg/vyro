@@ -174,12 +174,17 @@ def initialise_function_implicits(node: vy_ast.FunctionDef):
 
 
 def create_call_node(
-    ast: vy_ast.Module,
     context: ASTContext,
     call_id: str,
-    args: List[vy_ast.VyperNode] = [],
-    keywords: List[vy_ast.keyword] = [],
+    args: List[vy_ast.VyperNode] = None,
+    keywords: List[vy_ast.keyword] = None,
 ) -> vy_ast.Call:
+    if args is None:
+        args = []
+
+    if keywords is None:
+        keywords = []
+
     wrapped_op = vy_ast.Call(
         node_id=context.reserve_id(),
         func=vy_ast.Name(node_id=context.reserve_id(), id=call_id, ast_type="Name"),

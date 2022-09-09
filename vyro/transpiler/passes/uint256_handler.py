@@ -87,7 +87,7 @@ class Uint256HandlerVisitor(BaseVisitor):
         right = node.right
 
         # Wrap left and right in a function call
-        wrapped_uint256_op = create_call_node(ast, context, uint256_op, args=[left, right])
+        wrapped_uint256_op = create_call_node(context, uint256_op, args=[left, right])
         set_parent(left, wrapped_uint256_op)
         set_parent(right, wrapped_uint256_op)
         wrapped_uint256_op._metadata["type"] = cairo_typ
@@ -124,7 +124,7 @@ class Uint256HandlerVisitor(BaseVisitor):
                         ast_typ="keyword",
                     ),
                 ]
-                wrapped_convert = create_call_node(ast, context, "Uint256", keywords=keywords)
+                wrapped_convert = create_call_node(context, "Uint256", keywords=keywords)
 
                 # Replace node with wrapped convert
                 ast.replace_in_tree(node, wrapped_convert)

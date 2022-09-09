@@ -60,7 +60,7 @@ class EnumConverterVisitor(BaseVisitor):
         bitwise_and_name_node._metadata["type"] = out_cairo_typ
 
         wrapped_bitwise_and_call = create_call_node(
-            ast, context, bitwise_and_op, args=[node.left, node.right]
+            context, bitwise_and_op, args=[node.left, node.right]
         )
         wrapped_bitwise_and_call._metadata["type"] = out_cairo_typ
         node._children.remove(node.left)
@@ -91,7 +91,7 @@ class EnumConverterVisitor(BaseVisitor):
         is_zero_name_node._metadata["type"] = FeltDefinition()
 
         wrapped_is_zero_call = create_call_node(
-            ast, context, is_zero_op, args=[bitwise_and_name_node_dup]
+            context, is_zero_op, args=[bitwise_and_name_node_dup]
         )
         set_parent(bitwise_and_name_node_dup, wrapped_is_zero_call)
         wrapped_is_zero_call._metadata["type"] = FeltDefinition()
@@ -118,7 +118,7 @@ class EnumConverterVisitor(BaseVisitor):
             is_zero_name_node._metadata["type"] = FeltDefinition()
 
             wrapped_is_zero_call = create_call_node(
-                ast, context, "vyro_is_zero", args=[is_zero_name_node_dup]
+                context, "vyro_is_zero", args=[is_zero_name_node_dup]
             )
             add_builtin_to_module(ast, "vyro_is_zero")
             set_parent(is_zero_name_node_dup, wrapped_is_zero_call)
@@ -187,7 +187,7 @@ class EnumConverterVisitor(BaseVisitor):
                             ast_typ="keyword",
                         ),
                     ]
-                    replacement_int = create_call_node(ast, context, "Uint256", keywords=keywords)
+                    replacement_int = create_call_node(context, "Uint256", keywords=keywords)
                     replacement_int._metadata["type"] = cairo_typ
 
                 ast.replace_in_tree(r, replacement_int)

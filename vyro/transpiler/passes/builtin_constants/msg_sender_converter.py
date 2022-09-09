@@ -23,7 +23,7 @@ class MsgSenderConverterVisitor(BaseVisitor):
             temp_name_node = generate_name_node(context.reserve_id())
             temp_name_node._metadata["type"] = FeltDefinition()
 
-            syscall_node = create_call_node(ast, context, "get_caller_address")
+            syscall_node = create_call_node(context, "get_caller_address")
             syscall_node.func._metadata["type"] = FeltDefinition()
 
             wrapped_call = vy_ast.Assign(
