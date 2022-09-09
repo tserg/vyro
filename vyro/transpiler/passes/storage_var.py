@@ -109,7 +109,7 @@ class StorageVarVisitor(BaseVisitor):
         var_name = node.target.id
 
         # Update type
-        vy_typ = node._metadata["type"]
+        vy_typ = node._metadata.get("type")
         cairo_typ = get_cairo_type(vy_typ)
         node._metadata["type"] = cairo_typ
 

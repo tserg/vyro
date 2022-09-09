@@ -17,7 +17,7 @@ class ReturnValueHandler(BaseVisitor):
     """
 
     def visit_FunctionDef(self, node: vy_ast.FunctionDef, ast: vy_ast.Module, context: ASTContext):
-        fn_typ = node._metadata["type"]
+        fn_typ = node._metadata.get("type")
 
         return_type = fn_typ.return_type
         if return_type is None:

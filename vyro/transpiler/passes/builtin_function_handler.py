@@ -162,7 +162,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
         self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext, fn_str: str
     ):
         # Get Vyper type
-        vy_typ = node._metadata["type"]
+        vy_typ = node._metadata.get("type")
 
         # Get Cairo type
         cairo_typ = get_cairo_type(vy_typ)

@@ -23,7 +23,7 @@ class BlockConstantHandlerVisitor(BaseVisitor):
         if node.value.id != "block":
             return
 
-        vy_typ = node._metadata["type"]
+        vy_typ = node._metadata.get("type")
         cairo_typ = get_cairo_type(vy_typ)
 
         attr = node.attr
