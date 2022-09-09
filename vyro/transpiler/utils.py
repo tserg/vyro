@@ -19,14 +19,6 @@ from vyro.exceptions import TranspilerPanic, UnsupportedType
 from vyro.transpiler.context import ASTContext
 
 
-def generate_name_node(context: ASTContext, name: str = None) -> vy_ast.Name:
-    node_id = context.reserve_id()
-    if name is None:
-        name = f"VYRO_VAR_{node_id}"
-    ret = vy_ast.Name(id=name, node_id=node_id, ast_type="Name")
-    return ret
-
-
 def set_parent(child: vy_ast.VyperNode, parent: vy_ast.VyperNode):
     """
     Replica of `set_parent` in `vyper/ast/nodes.py`
@@ -174,6 +166,14 @@ def initialise_function_implicits(node: vy_ast.FunctionDef):
     node._metadata["implicits"] = set({"syscall_ptr", "pedersen_ptr", "range_check_ptr"})
 
 
+def create_name_node(context: ASTContext, name: str = None) -> vy_ast.Name:
+    node_id = context.reserve_id()
+    if name is None:
+        name = f"VYRO_VAR_{node_id}"
+    ret = vy_ast.Name(id=name, node_id=node_id, ast_type="Name")
+    return ret
+
+
 def create_call_node(
     context: ASTContext,
     call_id: str,
@@ -258,7 +258,7 @@ def extract_mapping_args(
                 annotation=vy_ast.Name(node_id=context.reserve_id(), id=str(key_type)),
             )
         else:
-            arg_node = generate_name_node(context, arg_name)
+            arg_node = create_name_node(context, arg_name)
 
         arg_node._metadata["type"] = key_type
         ret.append(arg_node)

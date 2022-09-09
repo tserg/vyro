@@ -4,7 +4,7 @@ from vyper.utils import bytes_to_int, hex_to_int
 from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.exceptions import FeltOverflowException
 from vyro.transpiler.context import ASTContext
-from vyro.transpiler.utils import convert_node_type_definition, generate_name_node
+from vyro.transpiler.utils import convert_node_type_definition, create_name_node
 from vyro.transpiler.visitor import BaseVisitor
 from vyro.utils.utils import CAIRO_PRIME
 
@@ -71,7 +71,7 @@ class ConstantHandlerVisitor(BaseVisitor):
 
         # Search for folded nodes
         for n in ast.get_descendants(vy_ast.NameConstant, {"value": bool_value}, reverse=True):
-            replacement_node = generate_name_node(context, name=bool_str)
+            replacement_node = create_name_node(context, name=bool_str)
             ast.replace_in_tree(n, replacement_node)
 
     def visit_Str(self, node: vy_ast.Str, ast: vy_ast.Module, context: ASTContext):

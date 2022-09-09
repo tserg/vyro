@@ -8,7 +8,7 @@ from vyro.transpiler.utils import (
     convert_node_type_definition,
     create_assign_node,
     create_call_node,
-    generate_name_node,
+    create_name_node,
     get_scope,
     get_stmt_node,
     insert_statement_before,
@@ -40,7 +40,7 @@ class BlockConstantHandlerVisitor(BaseVisitor):
                 raise UnsupportedFeature(f"`block.{val}` is not supported.", node)
 
         # Insert syscall statement before current statement
-        temp_name_node = generate_name_node(context)
+        temp_name_node = create_name_node(context)
         temp_name_node._metadata["type"] = FeltDefinition()
 
         syscall_node = create_call_node(context, syscall_name)
@@ -53,7 +53,7 @@ class BlockConstantHandlerVisitor(BaseVisitor):
 
         # Convert to Uint256
         if isinstance(cairo_typ, CairoUint256Definition):
-            convert_name_node = generate_name_node(context)
+            convert_name_node = create_name_node(context)
             convert_name_node._metadata["type"] = cairo_typ
 
             convert_node = create_call_node(context, "felt_to_uint256", args=[temp_name_node])
@@ -65,5 +65,5 @@ class BlockConstantHandlerVisitor(BaseVisitor):
             temp_name_node = convert_name_node
 
         # Replace builtin constant with `Name` node
-        temp_name_node_dup = generate_name_node(context, name=temp_name_node.id)
+        temp_name_node_dup = create_name_node(context, name=temp_name_node.id)
         ast.replace_in_tree(node, temp_name_node_dup)

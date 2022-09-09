@@ -6,7 +6,7 @@ from vyro.cairo.types import FeltDefinition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     create_assign_node,
-    generate_name_node,
+    create_name_node,
     get_scope,
     insert_statement_before,
     set_parent,
@@ -28,7 +28,7 @@ class IfHandlerVisitor(BaseVisitor):
         condition = node.test
         node._children.remove(node.test)
 
-        temp_name_node = generate_name_node(context)
+        temp_name_node = create_name_node(context)
         temp_name_node._metadata["type"] = FeltDefinition()
 
         assign_condition_node = create_assign_node(
@@ -41,10 +41,10 @@ class IfHandlerVisitor(BaseVisitor):
         insert_statement_before(assign_condition_node, node, scope_node, scope_node_body)
 
         # Replace 'test' for `If` node with `CairoIfTest` of temporary variable to TRUE
-        temp_name_node_dup = generate_name_node(context, name=temp_name_node.id)
+        temp_name_node_dup = create_name_node(context, name=temp_name_node.id)
         temp_name_node_dup._metadata["type"] = FeltDefinition()
 
-        true_constant_node = generate_name_node(context, name="TRUE")
+        true_constant_node = create_name_node(context, name="TRUE")
         true_constant_node._metadata["type"] = FeltDefinition()
         add_builtin_to_module(ast, "TRUE")
 

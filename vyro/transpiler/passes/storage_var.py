@@ -10,8 +10,8 @@ from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     convert_node_type_definition,
     create_assign_node,
+    create_name_node,
     extract_mapping_args,
-    generate_name_node,
     get_scope,
     initialise_function_implicits,
     insert_statement_before,
@@ -46,7 +46,7 @@ class StorageVarVisitor(BaseVisitor):
         # Add current key to start of list
         key_name = node.slice.value.id
 
-        name_node = generate_name_node(context, name=key_name)
+        name_node = create_name_node(context, name=key_name)
         keys_.insert(0, name_node)
 
         # Nested mapping
@@ -71,7 +71,7 @@ class StorageVarVisitor(BaseVisitor):
         `Name` node.
         """
         # Create temporary variable for assignment of storage read value
-        temp_name_node = generate_name_node(context)
+        temp_name_node = create_name_node(context)
         temp_name_node._metadata["type"] = cairo_typ
 
         value_node = vy_ast.Name(
@@ -96,7 +96,7 @@ class StorageVarVisitor(BaseVisitor):
         insert_statement_before(storage_read_node, parent_node, scope_node, scope_node_body)
 
         # Duplicate name node
-        temp_name_node_copy = generate_name_node(context, name=temp_name_node.id)
+        temp_name_node_copy = create_name_node(context, name=temp_name_node.id)
         ast.replace_in_tree(contract_var_node, temp_name_node_copy)
 
     def visit_VariableDecl(
@@ -114,7 +114,7 @@ class StorageVarVisitor(BaseVisitor):
 
         if node.is_public is True:
             # Create temporary variable for assignment of storage read value
-            temp_name_node = generate_name_node(context)
+            temp_name_node = create_name_node(context)
             temp_name_node._metadata["type"] = cairo_typ
 
             value_node = vy_ast.Name(
@@ -219,7 +219,7 @@ class StorageVarVisitor(BaseVisitor):
         lhs_replaced = False
         if contract_vars:
             # Create new variable and assign RHS
-            rhs_name_node = generate_name_node(context)
+            rhs_name_node = create_name_node(context)
             rhs_name_node._metadata["type"] = cairo_typ
 
             rhs_assignment_node = create_assign_node(context, [rhs_name_node], node.value)
@@ -300,7 +300,7 @@ class StorageVarVisitor(BaseVisitor):
             contract_var_name = contract_var.attr
 
             # Create temporary variable for assignment of storage read value
-            temp_name_node = generate_name_node(context)
+            temp_name_node = create_name_node(context)
             temp_name_node._metadata["type"] = cairo_typ
 
             value_node = vy_ast.Name(
@@ -335,7 +335,7 @@ class StorageVarVisitor(BaseVisitor):
             binop_node._metadata["type"] = cairo_typ
 
             # Create new variable and assign RHS
-            rhs_name_node = generate_name_node(context)
+            rhs_name_node = create_name_node(context)
             rhs_name_node._metadata["type"] = cairo_typ
 
             rhs_assignment_node = create_assign_node(context, [rhs_name_node], binop_node)

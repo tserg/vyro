@@ -8,7 +8,7 @@ from vyro.transpiler.utils import (
     add_implicit_to_function,
     create_assign_node,
     create_call_node,
-    generate_name_node,
+    create_name_node,
     get_cairo_type,
     get_scope,
     get_stmt_node,
@@ -57,7 +57,7 @@ class EnumConverterVisitor(BaseVisitor):
         add_builtin_to_module(ast, is_zero_op)
 
         # perform bitwise and
-        bitwise_and_name_node = generate_name_node(context)
+        bitwise_and_name_node = create_name_node(context)
         bitwise_and_name_node._metadata["type"] = out_cairo_typ
 
         wrapped_bitwise_and_call = create_call_node(
@@ -81,9 +81,9 @@ class EnumConverterVisitor(BaseVisitor):
         insert_statement_before(bitwise_assign, stmt_node, scope_node, scope_node_body)
 
         # perform is zero
-        bitwise_and_name_node_dup = generate_name_node(context, name=bitwise_and_name_node.id)
+        bitwise_and_name_node_dup = create_name_node(context, name=bitwise_and_name_node.id)
 
-        is_zero_name_node = generate_name_node(context)
+        is_zero_name_node = create_name_node(context)
         is_zero_name_node._metadata["type"] = FeltDefinition()
 
         wrapped_is_zero_call = create_call_node(
@@ -103,9 +103,9 @@ class EnumConverterVisitor(BaseVisitor):
 
         # perform additional is zero check for `In`
         if isinstance(op, vy_ast.In):
-            is_zero_name_node_dup = generate_name_node(context, name=is_zero_name_node.id)
+            is_zero_name_node_dup = create_name_node(context, name=is_zero_name_node.id)
 
-            is_zero_name_node = generate_name_node(context)
+            is_zero_name_node = create_name_node(context)
             is_zero_name_node._metadata["type"] = FeltDefinition()
 
             wrapped_is_zero_call = create_call_node(
@@ -124,7 +124,7 @@ class EnumConverterVisitor(BaseVisitor):
 
             insert_statement_before(is_zero_assign, stmt_node, scope_node, scope_node_body)
 
-        replacement_name_node = generate_name_node(context, name=is_zero_name_node.id)
+        replacement_name_node = create_name_node(context, name=is_zero_name_node.id)
         replacement_name_node._metadata["type"] = FeltDefinition()
 
         ast.replace_in_tree(node, replacement_name_node)

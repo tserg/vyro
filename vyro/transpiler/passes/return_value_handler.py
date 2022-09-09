@@ -3,7 +3,7 @@ from vyper import ast as vy_ast
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     create_assign_node,
-    generate_name_node,
+    create_name_node,
     get_cairo_type,
     get_scope,
     insert_statement_before,
@@ -42,7 +42,7 @@ class ReturnValueHandler(BaseVisitor):
                 return_node._children.remove(return_value_node)
 
                 # Assign return value to a temporary variable
-                temp_name_node = generate_name_node(context)
+                temp_name_node = create_name_node(context)
                 temp_name_node._metadata["type"] = return_cairo_typ
 
                 assign_return_value = create_assign_node(

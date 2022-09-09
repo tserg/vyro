@@ -2,7 +2,7 @@ from vyper import ast as vy_ast
 
 from vyro.cairo.types import FeltDefinition
 from vyro.transpiler.context import ASTContext
-from vyro.transpiler.utils import generate_name_node, get_cairo_type, set_parent
+from vyro.transpiler.utils import create_name_node, get_cairo_type, set_parent
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -46,7 +46,7 @@ class ConstructorHandler(BaseVisitor):
         # Transform LHS of assignment to immutable variable into `self.varname`
         node._children.remove(node.target)
 
-        self_node = generate_name_node(context, name="self")
+        self_node = create_name_node(context, name="self")
         self_node._metadata["type"] = FeltDefinition()
 
         attribute_node = vy_ast.Attribute(
@@ -74,7 +74,7 @@ class ConstructorHandler(BaseVisitor):
             immutable_references = fn.get_descendants(vy_ast.Name, {"id": varname})
 
             for i in immutable_references:
-                self_node = generate_name_node(context, name="self")
+                self_node = create_name_node(context, name="self")
                 self_node._metadata["type"] = FeltDefinition()
 
                 attribute_node = vy_ast.Attribute(
