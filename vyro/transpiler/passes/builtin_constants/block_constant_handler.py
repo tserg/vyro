@@ -6,11 +6,11 @@ from vyro.exceptions import UnsupportedFeature
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     convert_node_type_definition,
+    create_call_node,
     generate_name_node,
     get_scope,
     get_stmt_node,
     insert_statement_before,
-    wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
 
@@ -42,7 +42,7 @@ class BlockConstantHandlerVisitor(BaseVisitor):
         temp_name_node = generate_name_node(context.reserve_id())
         temp_name_node._metadata["type"] = FeltDefinition()
 
-        syscall_node = wrap_operation_in_call(ast, context, syscall_name)
+        syscall_node = create_call_node(ast, context, syscall_name)
         assign_node = vy_ast.Assign(
             node_id=context.reserve_id(), targets=[temp_name_node], value=syscall_node
         )
@@ -57,9 +57,7 @@ class BlockConstantHandlerVisitor(BaseVisitor):
             convert_name_node = generate_name_node(context.reserve_id())
             convert_name_node._metadata["type"] = cairo_typ
 
-            convert_node = wrap_operation_in_call(
-                ast, context, "felt_to_uint256", args=[temp_name_node]
-            )
+            convert_node = create_call_node(ast, context, "felt_to_uint256", args=[temp_name_node])
             add_builtin_to_module(ast, "felt_to_uint256")
 
             assign_node = vy_ast.Assign(

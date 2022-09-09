@@ -173,7 +173,7 @@ def initialise_function_implicits(node: vy_ast.FunctionDef):
     node._metadata["implicits"] = set({"syscall_ptr", "pedersen_ptr", "range_check_ptr"})
 
 
-def wrap_operation_in_call(
+def create_call_node(
     ast: vy_ast.Module,
     context: ASTContext,
     call_id: str,

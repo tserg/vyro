@@ -6,13 +6,13 @@ from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     add_implicit_to_function,
+    create_call_node,
     generate_name_node,
     get_cairo_type,
     get_scope,
     get_stmt_node,
     insert_statement_before,
     set_parent,
-    wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
 
@@ -59,7 +59,7 @@ class EnumConverterVisitor(BaseVisitor):
         bitwise_and_name_node = generate_name_node(context.reserve_id())
         bitwise_and_name_node._metadata["type"] = out_cairo_typ
 
-        wrapped_bitwise_and_call = wrap_operation_in_call(
+        wrapped_bitwise_and_call = create_call_node(
             ast, context, bitwise_and_op, args=[node.left, node.right]
         )
         wrapped_bitwise_and_call._metadata["type"] = out_cairo_typ
@@ -90,7 +90,7 @@ class EnumConverterVisitor(BaseVisitor):
         is_zero_name_node = generate_name_node(context.reserve_id())
         is_zero_name_node._metadata["type"] = FeltDefinition()
 
-        wrapped_is_zero_call = wrap_operation_in_call(
+        wrapped_is_zero_call = create_call_node(
             ast, context, is_zero_op, args=[bitwise_and_name_node_dup]
         )
         set_parent(bitwise_and_name_node_dup, wrapped_is_zero_call)
@@ -117,7 +117,7 @@ class EnumConverterVisitor(BaseVisitor):
             is_zero_name_node = generate_name_node(context.reserve_id())
             is_zero_name_node._metadata["type"] = FeltDefinition()
 
-            wrapped_is_zero_call = wrap_operation_in_call(
+            wrapped_is_zero_call = create_call_node(
                 ast, context, "vyro_is_zero", args=[is_zero_name_node_dup]
             )
             add_builtin_to_module(ast, "vyro_is_zero")
@@ -144,7 +144,6 @@ class EnumConverterVisitor(BaseVisitor):
     def visit_EnumDef(self, node: vy_ast.EnumDef, ast: vy_ast.Module, context: ASTContext):
         enum_name = node.name
         members_len = len(node.body)
-        print("visit_EnumDef type: ", node._metadata.get("type"))
         cairo_typ = FeltDefinition() if members_len <= 251 else CairoUint256Definition()
 
         is_uint256 = False if members_len <= 251 else True
@@ -188,9 +187,7 @@ class EnumConverterVisitor(BaseVisitor):
                             ast_typ="keyword",
                         ),
                     ]
-                    replacement_int = wrap_operation_in_call(
-                        ast, context, "Uint256", keywords=keywords
-                    )
+                    replacement_int = create_call_node(ast, context, "Uint256", keywords=keywords)
                     replacement_int._metadata["type"] = cairo_typ
 
                 ast.replace_in_tree(r, replacement_int)

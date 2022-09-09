@@ -5,12 +5,12 @@ from vyro.cairo.types import CairoUint256Definition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     convert_node_type_definition,
+    create_call_node,
     generate_name_node,
     get_cairo_type,
     get_scope,
     insert_statement_before,
     set_parent,
-    wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
 
@@ -87,7 +87,7 @@ class Uint256HandlerVisitor(BaseVisitor):
         right = node.right
 
         # Wrap left and right in a function call
-        wrapped_uint256_op = wrap_operation_in_call(ast, context, uint256_op, args=[left, right])
+        wrapped_uint256_op = create_call_node(ast, context, uint256_op, args=[left, right])
         set_parent(left, wrapped_uint256_op)
         set_parent(right, wrapped_uint256_op)
         wrapped_uint256_op._metadata["type"] = cairo_typ
@@ -124,7 +124,7 @@ class Uint256HandlerVisitor(BaseVisitor):
                         ast_typ="keyword",
                     ),
                 ]
-                wrapped_convert = wrap_operation_in_call(ast, context, "Uint256", keywords=keywords)
+                wrapped_convert = create_call_node(ast, context, "Uint256", keywords=keywords)
 
                 # Replace node with wrapped convert
                 ast.replace_in_tree(node, wrapped_convert)

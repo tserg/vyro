@@ -11,6 +11,7 @@ from vyro.exceptions import UnsupportedFeature
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     convert_node_type_definition,
+    create_call_node,
     generate_name_node,
     get_cairo_type,
     get_scope,
@@ -18,7 +19,6 @@ from vyro.transpiler.utils import (
     insert_statement_after,
     insert_statement_before,
     set_parent,
-    wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
 
@@ -57,7 +57,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
             ),
         ]
 
-        denom_node = wrap_operation_in_call(ast, context, "Uint256", keywords=keywords)
+        denom_node = create_call_node(ast, context, "Uint256", keywords=keywords)
 
         denom_str_node = node.args[1]
         ast.replace_in_tree(denom_str_node, denom_node)
@@ -73,7 +73,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
         ):
             if isinstance(out_cairo_typ, CairoUint256Definition):
                 # Wrap source value in a `felt_to_uint256` call
-                wrapped_call_node = wrap_operation_in_call(
+                wrapped_call_node = create_call_node(
                     ast, context, "felt_to_uint256", args=[node.args[0]]
                 )
 
@@ -110,14 +110,10 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
 
                     # Add clampers
                     hi_int = vy_ast.Int(node_id=context.reserve_id(), value=hi)
-                    hi_clamper = wrap_operation_in_call(
-                        ast, context, "assert_le", args=[src, hi_int]
-                    )
+                    hi_clamper = create_call_node(ast, context, "assert_le", args=[src, hi_int])
 
                     lo_int = vy_ast.Int(node_id=context.reserve_id(), value=lo)
-                    lo_clamper = wrap_operation_in_call(
-                        ast, context, "assert_le", args=[lo_int, src]
-                    )
+                    lo_clamper = create_call_node(ast, context, "assert_le", args=[lo_int, src])
 
                     # Add `assert_le` builtin
                     add_builtin_to_module(ast, "assert_le")
@@ -177,7 +173,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
 
         add_builtin_to_module(ast, wrapped_op_str)
 
-        wrapped_call_node = wrap_operation_in_call(ast, context, wrapped_op_str, args=node.args)
+        wrapped_call_node = create_call_node(ast, context, wrapped_op_str, args=node.args)
         wrapped_call_node._metadata["type"] = cairo_typ
 
         for a in node.args:

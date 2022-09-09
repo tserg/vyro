@@ -7,13 +7,13 @@ from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     add_implicit_to_function,
     convert_node_type_definition,
+    create_call_node,
     generate_name_node,
     get_cairo_type,
     get_scope,
     get_stmt_node,
     insert_statement_before,
     set_parent,
-    wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
 
@@ -105,12 +105,10 @@ class OpsConverterVisitor(BaseVisitor):
             temp_left._metadata["type"] = FeltDefinition()
             temp_right._metadata["type"] = FeltDefinition()
 
-            wrapped_left = wrap_operation_in_call(ast, context, "uint256_to_felt", args=[node.left])
+            wrapped_left = create_call_node(ast, context, "uint256_to_felt", args=[node.left])
             wrapped_left._metadata["type"] = FeltDefinition()
 
-            wrapped_right = wrap_operation_in_call(
-                ast, context, "uint256_to_felt", args=[node.right]
-            )
+            wrapped_right = create_call_node(ast, context, "uint256_to_felt", args=[node.right])
             wrapped_right._metadata["type"] = FeltDefinition()
 
             add_builtin_to_module(ast, "uint256_to_felt")
@@ -131,9 +129,7 @@ class OpsConverterVisitor(BaseVisitor):
             temp_right_dup._metadata["type"] = FeltDefinition()
 
             # Exponentiate
-            wrapped_op = wrap_operation_in_call(
-                ast, context, vyro_op, [temp_left_dup, temp_right_dup]
-            )
+            wrapped_op = create_call_node(ast, context, vyro_op, [temp_left_dup, temp_right_dup])
             wrapped_op._metadata["type"] = FeltDefinition()
 
             convert_ret_node = generate_name_node(context.reserve_id())
@@ -150,7 +146,7 @@ class OpsConverterVisitor(BaseVisitor):
             reconvert_arg_node = generate_name_node(context.reserve_id(), name=convert_ret_node.id)
             reconvert_arg_node._metadata["type"] = FeltDefinition()
 
-            wrapped_op = wrap_operation_in_call(
+            wrapped_op = create_call_node(
                 ast, context, "felt_to_uint256", args=[reconvert_arg_node]
             )
             wrapped_op._metadata["type"] = CairoUint256Definition()
@@ -191,7 +187,7 @@ class OpsConverterVisitor(BaseVisitor):
             add_builtin_to_module(ast, "BitwiseBuiltin")
 
         # Wrap operation in a function call
-        wrapped_op = wrap_operation_in_call(ast, context, vyro_op, [node.left, node.right])
+        wrapped_op = create_call_node(ast, context, vyro_op, [node.left, node.right])
         wrapped_op._metadata["type"] = cairo_typ
 
         # Assign to new variable
@@ -229,7 +225,7 @@ class OpsConverterVisitor(BaseVisitor):
         add_builtin_to_module(ast, "BitwiseBuiltin")
 
         # Wrap operation in a function call
-        wrapped_op = wrap_operation_in_call(ast, context, vyro_op, node.values)
+        wrapped_op = create_call_node(ast, context, vyro_op, node.values)
         wrapped_op._metadata["type"] = cairo_typ
 
         # Replace `BoolOp` node with wrapped call
@@ -268,7 +264,7 @@ class OpsConverterVisitor(BaseVisitor):
         add_builtin_to_module(ast, vyro_op)
 
         # Wrap `Compare` operation in a `Call` node
-        wrapped_call = wrap_operation_in_call(ast, context, vyro_op, args=[left, right])
+        wrapped_call = create_call_node(ast, context, vyro_op, args=[left, right])
 
         temp_assign_node = vy_ast.Assign(
             node_id=context.reserve_id(),
@@ -316,7 +312,7 @@ class OpsConverterVisitor(BaseVisitor):
             add_builtin_to_module(ast, "BitwiseBuiltin")
 
         # Wrap operation in a function call
-        wrapped_op = wrap_operation_in_call(ast, context, vyro_op, [node.operand])
+        wrapped_op = create_call_node(ast, context, vyro_op, [node.operand])
         wrapped_op._metadata["type"] = cairo_typ
 
         # Replace `BinOp` node with wrapped call

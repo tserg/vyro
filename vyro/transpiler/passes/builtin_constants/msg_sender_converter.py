@@ -3,11 +3,7 @@ from vyper import ast as vy_ast
 from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import FeltDefinition
 from vyro.transpiler.context import ASTContext
-from vyro.transpiler.utils import (
-    generate_name_node,
-    insert_statement_before,
-    wrap_operation_in_call,
-)
+from vyro.transpiler.utils import create_call_node, generate_name_node, insert_statement_before
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -27,7 +23,7 @@ class MsgSenderConverterVisitor(BaseVisitor):
             temp_name_node = generate_name_node(context.reserve_id())
             temp_name_node._metadata["type"] = FeltDefinition()
 
-            syscall_node = wrap_operation_in_call(ast, context, "get_caller_address")
+            syscall_node = create_call_node(ast, context, "get_caller_address")
             syscall_node.func._metadata["type"] = FeltDefinition()
 
             wrapped_call = vy_ast.Assign(
