@@ -46,9 +46,7 @@ class ReturnValueHandler(BaseVisitor):
                 temp_name_node._metadata["type"] = return_cairo_typ
 
                 assign_return_value = create_assign_node(
-                    context,
-                    [temp_name_node],
-                    return_value_node,
+                    context, [temp_name_node], return_value_node
                 )
                 assign_return_value._metadata["type"] = return_cairo_typ
 

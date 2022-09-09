@@ -204,15 +204,10 @@ def create_call_node(
 
 
 def create_assign_node(
-    context: ASTContext,
-    targets: List[vy_ast.VyperNode],
-    value: vy_ast.VyperNode,
+    context: ASTContext, targets: List[vy_ast.VyperNode], value: vy_ast.VyperNode
 ) -> vy_ast.Assign:
     assign_node = vy_ast.Assign(
-        node_id=context.reserve_id(),
-        targets=targets,
-        value=value,
-        ast_type="Assign",
+        node_id=context.reserve_id(), targets=targets, value=value, ast_type="Assign"
     )
 
     for t in targets:

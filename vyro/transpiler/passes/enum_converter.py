@@ -70,9 +70,7 @@ class EnumConverterVisitor(BaseVisitor):
         set_parent(node.right, wrapped_bitwise_and_call)
 
         bitwise_assign = create_assign_node(
-            context,
-            [bitwise_and_name_node],
-            wrapped_bitwise_and_call,
+            context, [bitwise_and_name_node], wrapped_bitwise_and_call
         )
         bitwise_assign._metadata["type"] = out_cairo_typ
 
@@ -92,11 +90,7 @@ class EnumConverterVisitor(BaseVisitor):
         set_parent(bitwise_and_name_node_dup, wrapped_is_zero_call)
         wrapped_is_zero_call._metadata["type"] = FeltDefinition()
 
-        is_zero_assign = create_assign_node(
-            context,
-            [is_zero_name_node],
-            wrapped_is_zero_call,
-        )
+        is_zero_assign = create_assign_node(context, [is_zero_name_node], wrapped_is_zero_call)
         is_zero_assign._metadata["type"] = FeltDefinition()
 
         insert_statement_before(is_zero_assign, stmt_node, scope_node, scope_node_body)
@@ -115,11 +109,7 @@ class EnumConverterVisitor(BaseVisitor):
             set_parent(is_zero_name_node_dup, wrapped_is_zero_call)
             wrapped_is_zero_call._metadata["type"] = FeltDefinition()
 
-            is_zero_assign = create_assign_node(
-                context,
-                [is_zero_name_node],
-                wrapped_is_zero_call,
-            )
+            is_zero_assign = create_assign_node(context, [is_zero_name_node], wrapped_is_zero_call)
             is_zero_assign._metadata["type"] = FeltDefinition()
 
             insert_statement_before(is_zero_assign, stmt_node, scope_node, scope_node_body)
