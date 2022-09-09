@@ -187,8 +187,12 @@ def create_call_node(
         keywords=keywords,
         ast_type="Call",
     )
+
     for a in args:
         set_parent(a, wrapped_op)
+
+    for k in keywords:
+        set_parent(k, wrapped_op)
 
     return wrapped_op
 
