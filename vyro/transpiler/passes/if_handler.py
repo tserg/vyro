@@ -31,11 +31,7 @@ class IfHandlerVisitor(BaseVisitor):
         temp_name_node = create_name_node(context)
         temp_name_node._metadata["type"] = FeltDefinition()
 
-        assign_condition_node = create_assign_node(
-            context,
-            [temp_name_node],
-            condition,
-        )
+        assign_condition_node = create_assign_node(context, [temp_name_node], condition)
 
         scope_node, scope_node_body = get_scope(node)
         insert_statement_before(assign_condition_node, node, scope_node, scope_node_body)

@@ -115,7 +115,6 @@ class OpsConverterVisitor(BaseVisitor):
             add_builtin_to_module(ast, "uint256_to_felt")
 
             left_conversion = create_assign_node(context, [temp_left], wrapped_left)
-
             right_conversion = create_assign_node(context, [temp_right], wrapped_right)
 
             # Duplicate temp LHS and RHS nodes

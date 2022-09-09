@@ -50,7 +50,6 @@ class ReturnValueHandler(BaseVisitor):
                     [temp_name_node],
                     return_value_node,
                 )
-
                 assign_return_value._metadata["type"] = return_cairo_typ
 
                 # Add new `Assign` node to function body
