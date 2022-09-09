@@ -4,7 +4,13 @@ from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.nodes import CairoAssert
 from vyro.cairo.types import FeltDefinition
 from vyro.transpiler.context import ASTContext
-from vyro.transpiler.utils import generate_name_node, get_scope, insert_statement_before, set_parent
+from vyro.transpiler.utils import (
+    create_assign_node,
+    generate_name_node,
+    get_scope,
+    insert_statement_before,
+    set_parent,
+)
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -18,15 +24,8 @@ class AssertHandlerVisitor(BaseVisitor):
         temp_name_node = generate_name_node(context.reserve_id())
         temp_name_node._metadata["type"] = FeltDefinition()
 
-        assign_node = vy_ast.Assign(
-            node_id=context.reserve_id(),
-            targets=[temp_name_node],
-            value=condition,
-            ast_type="Assign",
-        )
+        assign_node = create_assign_node(context, [temp_name_node], condition)
         assign_node._metadata["type"] = FeltDefinition()
-        set_parent(temp_name_node, assign_node)
-        set_parent(condition, assign_node)
 
         scope_node, scope_node_body = get_scope(node)
         insert_statement_before(assign_node, node, scope_node, scope_node_body)

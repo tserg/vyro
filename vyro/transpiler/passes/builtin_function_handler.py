@@ -11,6 +11,7 @@ from vyro.exceptions import UnsupportedFeature
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     convert_node_type_definition,
+    create_assign_node,
     create_call_node,
     generate_name_node,
     get_cairo_type,
@@ -81,9 +82,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
                 temp_name_node = generate_name_node(context.reserve_id())
                 temp_name_node._metadata["type"] = out_cairo_typ
 
-                temp_assign_node = vy_ast.Assign(
-                    node_id=context.reserve_id(), targets=[temp_name_node], value=wrapped_call_node
-                )
+                temp_assign_node = create_assign_node(context, [temp_name_node], wrapped_call_node)
 
                 # Insert statement
                 stmt_node = get_stmt_node(node)

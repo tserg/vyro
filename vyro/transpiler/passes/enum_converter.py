@@ -6,6 +6,7 @@ from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     add_implicit_to_function,
+    create_assign_node,
     create_call_node,
     generate_name_node,
     get_cairo_type,
@@ -68,15 +69,12 @@ class EnumConverterVisitor(BaseVisitor):
         set_parent(node.left, wrapped_bitwise_and_call)
         set_parent(node.right, wrapped_bitwise_and_call)
 
-        bitwise_assign = vy_ast.Assign(
-            node_id=context.reserve_id(),
-            targets=[bitwise_and_name_node],
-            value=wrapped_bitwise_and_call,
-            ast_type="Assign",
+        bitwise_assign = create_assign_node(
+            context,
+            [bitwise_and_name_node],
+            wrapped_bitwise_and_call,
         )
         bitwise_assign._metadata["type"] = out_cairo_typ
-        set_parent(bitwise_and_name_node, bitwise_assign)
-        set_parent(wrapped_bitwise_and_call, bitwise_assign)
 
         stmt_node = get_stmt_node(node)
         scope_node, scope_node_body = get_scope(node)
@@ -96,15 +94,12 @@ class EnumConverterVisitor(BaseVisitor):
         set_parent(bitwise_and_name_node_dup, wrapped_is_zero_call)
         wrapped_is_zero_call._metadata["type"] = FeltDefinition()
 
-        is_zero_assign = vy_ast.Assign(
-            node_id=context.reserve_id(),
-            targets=[is_zero_name_node],
-            value=wrapped_is_zero_call,
-            ast_type="Assign",
+        is_zero_assign = create_assign_node(
+            context,
+            [is_zero_name_node],
+            wrapped_is_zero_call,
         )
         is_zero_assign._metadata["type"] = FeltDefinition()
-        set_parent(is_zero_name_node, is_zero_assign)
-        set_parent(wrapped_is_zero_call, is_zero_assign)
 
         insert_statement_before(is_zero_assign, stmt_node, scope_node, scope_node_body)
 
@@ -124,15 +119,12 @@ class EnumConverterVisitor(BaseVisitor):
             set_parent(is_zero_name_node_dup, wrapped_is_zero_call)
             wrapped_is_zero_call._metadata["type"] = FeltDefinition()
 
-            is_zero_assign = vy_ast.Assign(
-                node_id=context.reserve_id(),
-                targets=[is_zero_name_node],
-                value=wrapped_is_zero_call,
-                ast_type="Assign",
+            is_zero_assign = create_assign_node(
+                context,
+                [is_zero_name_node],
+                wrapped_is_zero_call,
             )
             is_zero_assign._metadata["type"] = FeltDefinition()
-            set_parent(is_zero_name_node, is_zero_assign)
-            set_parent(wrapped_is_zero_call, is_zero_assign)
 
             insert_statement_before(is_zero_assign, stmt_node, scope_node, scope_node_body)
 

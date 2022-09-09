@@ -2,6 +2,7 @@ from vyper import ast as vy_ast
 
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
+    create_assign_node,
     generate_name_node,
     get_cairo_type,
     get_scope,
@@ -44,16 +45,13 @@ class ReturnValueHandler(BaseVisitor):
                 temp_name_node = generate_name_node(context.reserve_id())
                 temp_name_node._metadata["type"] = return_cairo_typ
 
-                assign_return_value = vy_ast.Assign(
-                    node_id=context.reserve_id(),
-                    targets=[temp_name_node],
-                    value=return_value_node,
-                    ast_type="Assign",
+                assign_return_value = create_assign_node(
+                    context,
+                    [temp_name_node],
+                    return_value_node,
                 )
 
                 assign_return_value._metadata["type"] = return_cairo_typ
-                set_parent(temp_name_node, assign_return_value)
-                set_parent(return_value_node, assign_return_value)
 
                 # Add new `Assign` node to function body
                 scope_node, scope_node_body = get_scope(return_node)

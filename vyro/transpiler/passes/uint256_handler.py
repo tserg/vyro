@@ -5,6 +5,7 @@ from vyro.cairo.types import CairoUint256Definition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     convert_node_type_definition,
+    create_assign_node,
     create_call_node,
     generate_name_node,
     get_cairo_type,
@@ -34,14 +35,7 @@ class Uint256HandlerVisitor(BaseVisitor):
                 temp_name_node = generate_name_node(context.reserve_id())
                 temp_name_node._metadata["type"] = cairo_typ
 
-                rhs_assignment_node = vy_ast.Assign(
-                    node_id=context.reserve_id(),
-                    targets=[temp_name_node],
-                    value=value_node,
-                    ast_type="Assign",
-                )
-                set_parent(temp_name_node, rhs_assignment_node)
-                set_parent(value_node, rhs_assignment_node)
+                rhs_assignment_node = create_assign_node(context, [temp_name_node], value_node)
                 rhs_assignment_node._metadata["type"] = cairo_typ
 
                 scope_node, scope_node_body = get_scope(node)

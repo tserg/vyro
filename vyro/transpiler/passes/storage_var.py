@@ -9,6 +9,7 @@ from vyro.cairo.types import CairoMappingDefinition, CairoTypeDefinition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     convert_node_type_definition,
+    create_assign_node,
     extract_mapping_args,
     generate_name_node,
     get_scope,
@@ -221,14 +222,7 @@ class StorageVarVisitor(BaseVisitor):
             rhs_name_node = generate_name_node(context.reserve_id())
             rhs_name_node._metadata["type"] = cairo_typ
 
-            rhs_assignment_node = vy_ast.Assign(
-                node_id=context.reserve_id(),
-                targets=[rhs_name_node],
-                value=node.value,
-                ast_type="Assign",
-            )
-            set_parent(node.value, rhs_assignment_node)
-            set_parent(rhs_name_node, rhs_assignment_node)
+            rhs_assignment_node = create_assign_node(context, [rhs_name_node], node.value)
             rhs_assignment_node._metadata["type"] = cairo_typ
 
             # Add storage write node to body of function
@@ -344,14 +338,7 @@ class StorageVarVisitor(BaseVisitor):
             rhs_name_node = generate_name_node(context.reserve_id())
             rhs_name_node._metadata["type"] = cairo_typ
 
-            rhs_assignment_node = vy_ast.Assign(
-                node_id=context.reserve_id(),
-                targets=[rhs_name_node],
-                value=binop_node,
-                ast_type="Assign",
-            )
-            set_parent(rhs_name_node, rhs_assignment_node)
-            set_parent(binop_node, rhs_assignment_node)
+            rhs_assignment_node = create_assign_node(context, [rhs_name_node], binop_node)
             rhs_assignment_node._metadata["type"] = cairo_typ
 
             # Add storage write node to body of function

@@ -202,6 +202,26 @@ def create_call_node(
     return wrapped_op
 
 
+def create_assign_node(
+    context: ASTContext,
+    targets: List[vy_ast.VyperNode],
+    value: vy_ast.VyperNode,
+) -> vy_ast.Assign:
+    assign_node = vy_ast.Assign(
+        node_id=context.reserve_id(),
+        targets=targets,
+        value=value,
+        ast_type="Assign",
+    )
+
+    for t in targets:
+        set_parent(t, assign_node)
+
+    set_parent(value, assign_node)
+
+    return assign_node
+
+
 def get_hashmap_types(
     typ: BaseTypeDefinition, keys: List[BaseTypeDefinition] = None
 ) -> Tuple[Optional[List[BaseTypeDefinition]], BaseTypeDefinition]:

@@ -7,6 +7,7 @@ from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     add_implicit_to_function,
     convert_node_type_definition,
+    create_assign_node,
     create_call_node,
     generate_name_node,
     get_cairo_type,
@@ -113,13 +114,9 @@ class OpsConverterVisitor(BaseVisitor):
 
             add_builtin_to_module(ast, "uint256_to_felt")
 
-            left_conversion = vy_ast.Assign(
-                node_id=context.reserve_id(), targets=[temp_left], value=wrapped_left
-            )
+            left_conversion = create_assign_node(context, [temp_left], wrapped_left)
 
-            right_conversion = vy_ast.Assign(
-                node_id=context.reserve_id(), targets=[temp_right], value=wrapped_right
-            )
+            right_conversion = create_assign_node(context, [temp_right], wrapped_right)
 
             # Duplicate temp LHS and RHS nodes
             temp_left_dup = generate_name_node(context.reserve_id(), name=temp_left.id)
@@ -135,9 +132,7 @@ class OpsConverterVisitor(BaseVisitor):
             convert_ret_node = generate_name_node(context.reserve_id())
             convert_ret_node._metadata["type"] = FeltDefinition()
 
-            convert_assign_node = vy_ast.Assign(
-                node_id=context.reserve_id(), targets=[convert_ret_node], value=wrapped_op
-            )
+            convert_assign_node = create_assign_node(context, [convert_ret_node], wrapped_op)
 
             # Add import
             add_builtin_to_module(ast, vyro_op)
@@ -154,9 +149,7 @@ class OpsConverterVisitor(BaseVisitor):
             reconvert_target_node = generate_name_node(context.reserve_id())
             reconvert_target_node._metadata["type"] = CairoUint256Definition()
 
-            reconvert_node = vy_ast.Assign(
-                node_id=context.reserve_id(), targets=[reconvert_target_node], value=wrapped_op
-            )
+            reconvert_node = create_assign_node(context, [reconvert_target_node], wrapped_op)
 
             # Insert statements
             stmt_node = get_stmt_node(node)
@@ -192,9 +185,7 @@ class OpsConverterVisitor(BaseVisitor):
         temp_name_node = generate_name_node(context.reserve_id())
         temp_name_node._metadata["type"] = cairo_typ
 
-        temp_assign_node = vy_ast.Assign(
-            node_id=context.reserve_id(), targets=[temp_name_node], value=wrapped_op
-        )
+        temp_assign_node = create_assign_node(context, [temp_name_node], wrapped_op)
 
         stmt_node = get_stmt_node(node)
         scope_node, scope_node_body = get_scope(node)
@@ -264,14 +255,7 @@ class OpsConverterVisitor(BaseVisitor):
         # Wrap `Compare` operation in a `Call` node
         wrapped_call = create_call_node(context, vyro_op, args=[left, right])
 
-        temp_assign_node = vy_ast.Assign(
-            node_id=context.reserve_id(),
-            targets=[temp_name_node],
-            value=wrapped_call,
-            ast_type="Assign",
-        )
-        set_parent(temp_name_node, temp_assign_node)
-        set_parent(wrapped_call, temp_assign_node)
+        temp_assign_node = create_assign_node(context, [temp_name_node], wrapped_call)
 
         # Add wrapped operation before `Compare` node
         stmt_node = get_stmt_node(node)

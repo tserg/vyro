@@ -2,6 +2,7 @@ from vyper import ast as vy_ast
 
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
+    create_assign_node,
     generate_name_node,
     get_cairo_type,
     get_scope,
@@ -22,11 +23,7 @@ class InitialisationVisitor(BaseVisitor):
         rhs = node.value
         node._children.remove(node.value)
 
-        temp_assign_node = vy_ast.Assign(
-            node_id=context.reserve_id(), targets=[temp_name_node], value=rhs, ast_type="Assign"
-        )
-        set_parent(rhs, temp_assign_node)
-        set_parent(temp_name_node, temp_assign_node)
+        temp_assign_node = create_assign_node(context, [temp_name_node], rhs)
 
         # Insert `Assign` before `AnnAssign`
         scope_node, scope_body = get_scope(node)
