@@ -7,6 +7,7 @@ from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     add_implicit_to_function,
     generate_name_node,
+    get_cairo_type,
     get_scope,
     get_stmt_node,
     insert_statement_before,
@@ -28,11 +29,8 @@ class EnumConverterVisitor(BaseVisitor):
     def visit(self, node: vy_ast.VyperNode, ast: vy_ast.Module, context: ASTContext):
         vyper_typ = node._metadata.get("type")
         if isinstance(vyper_typ, EnumDefinition):
-            members_len = len(vyper_typ.members)
-            if members_len <= 251:
-                node._metadata["type"] = FeltDefinition()
-            else:
-                node._metadata["type"] = CairoUint256Definition()
+            cairo_typ = get_cairo_type(vyper_typ)
+            node._metadata["type"] = cairo_typ
 
         super().visit(node, ast, context)
 
@@ -42,61 +40,88 @@ class EnumConverterVisitor(BaseVisitor):
             return
 
         left_typ = node.left._metadata.get("type")
-        if isinstance(left_typ, EnumDefinition):
-            members_len = len(left_typ.members)
-            if members_len <= 251:
-                bitwise_and_op = "bitwise_and"
-                is_zero_op = "vyro_is_zero"
-                out_cairo_typ = FeltDefinition()
+        if not isinstance(left_typ, EnumDefinition):
+            return
 
-            else:
-                bitwise_and_op = "uint256_and"
-                is_zero_op = "vyro_uint256_is_zero"
-                out_cairo_typ = CairoUint256Definition()
+        out_cairo_typ = get_cairo_type(left_typ)
+        if isinstance(out_cairo_typ, FeltDefinition):
+            bitwise_and_op = "bitwise_and"
+            is_zero_op = "vyro_is_zero"
+        elif isinstance(out_cairo_typ, CairoUint256Definition):
+            bitwise_and_op = "uint256_and"
+            is_zero_op = "vyro_uint256_is_zero"
 
-            add_builtin_to_module(ast, bitwise_and_op)
-            add_implicit_to_function(node, "bitwise_ptr")
-            add_builtin_to_module(ast, is_zero_op)
+        add_builtin_to_module(ast, bitwise_and_op)
+        add_implicit_to_function(node, "bitwise_ptr")
+        add_builtin_to_module(ast, is_zero_op)
 
-            # perform bitwise and
-            bitwise_and_name_node = generate_name_node(context.reserve_id())
-            bitwise_and_name_node._metadata["type"] = out_cairo_typ
+        # perform bitwise and
+        bitwise_and_name_node = generate_name_node(context.reserve_id())
+        bitwise_and_name_node._metadata["type"] = out_cairo_typ
 
-            wrapped_bitwise_and_call = wrap_operation_in_call(
-                ast, context, bitwise_and_op, args=[node.left, node.right]
-            )
-            wrapped_bitwise_and_call._metadata["type"] = out_cairo_typ
-            node._children.remove(node.left)
-            node._children.remove(node.right)
-            set_parent(node.left, wrapped_bitwise_and_call)
-            set_parent(node.right, wrapped_bitwise_and_call)
+        wrapped_bitwise_and_call = wrap_operation_in_call(
+            ast, context, bitwise_and_op, args=[node.left, node.right]
+        )
+        wrapped_bitwise_and_call._metadata["type"] = out_cairo_typ
+        node._children.remove(node.left)
+        node._children.remove(node.right)
+        set_parent(node.left, wrapped_bitwise_and_call)
+        set_parent(node.right, wrapped_bitwise_and_call)
 
-            bitwise_assign = vy_ast.Assign(
-                node_id=context.reserve_id(),
-                targets=[bitwise_and_name_node],
-                value=wrapped_bitwise_and_call,
-                ast_type="Assign",
-            )
-            bitwise_assign._metadata["type"] = out_cairo_typ
-            set_parent(bitwise_and_name_node, bitwise_assign)
-            set_parent(wrapped_bitwise_and_call, bitwise_assign)
+        bitwise_assign = vy_ast.Assign(
+            node_id=context.reserve_id(),
+            targets=[bitwise_and_name_node],
+            value=wrapped_bitwise_and_call,
+            ast_type="Assign",
+        )
+        bitwise_assign._metadata["type"] = out_cairo_typ
+        set_parent(bitwise_and_name_node, bitwise_assign)
+        set_parent(wrapped_bitwise_and_call, bitwise_assign)
 
-            stmt_node = get_stmt_node(node)
-            scope_node, scope_node_body = get_scope(node)
-            insert_statement_before(bitwise_assign, stmt_node, scope_node, scope_node_body)
+        stmt_node = get_stmt_node(node)
+        scope_node, scope_node_body = get_scope(node)
+        insert_statement_before(bitwise_assign, stmt_node, scope_node, scope_node_body)
 
-            # perform is zero
-            bitwise_and_name_node_dup = generate_name_node(
-                context.reserve_id(), name=bitwise_and_name_node.id
+        # perform is zero
+        bitwise_and_name_node_dup = generate_name_node(
+            context.reserve_id(), name=bitwise_and_name_node.id
+        )
+
+        is_zero_name_node = generate_name_node(context.reserve_id())
+        is_zero_name_node._metadata["type"] = FeltDefinition()
+
+        wrapped_is_zero_call = wrap_operation_in_call(
+            ast, context, is_zero_op, args=[bitwise_and_name_node_dup]
+        )
+        set_parent(bitwise_and_name_node_dup, wrapped_is_zero_call)
+        wrapped_is_zero_call._metadata["type"] = FeltDefinition()
+
+        is_zero_assign = vy_ast.Assign(
+            node_id=context.reserve_id(),
+            targets=[is_zero_name_node],
+            value=wrapped_is_zero_call,
+            ast_type="Assign",
+        )
+        is_zero_assign._metadata["type"] = FeltDefinition()
+        set_parent(is_zero_name_node, is_zero_assign)
+        set_parent(wrapped_is_zero_call, is_zero_assign)
+
+        insert_statement_before(is_zero_assign, stmt_node, scope_node, scope_node_body)
+
+        # perform additional is zero check for `In`
+        if isinstance(op, vy_ast.In):
+            is_zero_name_node_dup = generate_name_node(
+                context.reserve_id(), name=is_zero_name_node.id
             )
 
             is_zero_name_node = generate_name_node(context.reserve_id())
             is_zero_name_node._metadata["type"] = FeltDefinition()
 
             wrapped_is_zero_call = wrap_operation_in_call(
-                ast, context, is_zero_op, args=[bitwise_and_name_node_dup]
+                ast, context, "vyro_is_zero", args=[is_zero_name_node_dup]
             )
-            set_parent(bitwise_and_name_node_dup, wrapped_is_zero_call)
+            add_builtin_to_module(ast, "vyro_is_zero")
+            set_parent(is_zero_name_node_dup, wrapped_is_zero_call)
             wrapped_is_zero_call._metadata["type"] = FeltDefinition()
 
             is_zero_assign = vy_ast.Assign(
@@ -111,44 +136,15 @@ class EnumConverterVisitor(BaseVisitor):
 
             insert_statement_before(is_zero_assign, stmt_node, scope_node, scope_node_body)
 
-            # perform additional is zero check for `In`
-            if isinstance(op, vy_ast.In):
-                is_zero_name_node_dup = generate_name_node(
-                    context.reserve_id(), name=is_zero_name_node.id
-                )
+        replacement_name_node = generate_name_node(context.reserve_id(), name=is_zero_name_node.id)
+        replacement_name_node._metadata["type"] = FeltDefinition()
 
-                is_zero_name_node = generate_name_node(context.reserve_id())
-                is_zero_name_node._metadata["type"] = FeltDefinition()
-
-                wrapped_is_zero_call = wrap_operation_in_call(
-                    ast, context, "vyro_is_zero", args=[is_zero_name_node_dup]
-                )
-                add_builtin_to_module(ast, "vyro_is_zero")
-                set_parent(is_zero_name_node_dup, wrapped_is_zero_call)
-                wrapped_is_zero_call._metadata["type"] = FeltDefinition()
-
-                is_zero_assign = vy_ast.Assign(
-                    node_id=context.reserve_id(),
-                    targets=[is_zero_name_node],
-                    value=wrapped_is_zero_call,
-                    ast_type="Assign",
-                )
-                is_zero_assign._metadata["type"] = FeltDefinition()
-                set_parent(is_zero_name_node, is_zero_assign)
-                set_parent(wrapped_is_zero_call, is_zero_assign)
-
-                insert_statement_before(is_zero_assign, stmt_node, scope_node, scope_node_body)
-
-            replacement_name_node = generate_name_node(
-                context.reserve_id(), name=is_zero_name_node.id
-            )
-            replacement_name_node._metadata["type"] = FeltDefinition()
-
-            ast.replace_in_tree(node, replacement_name_node)
+        ast.replace_in_tree(node, replacement_name_node)
 
     def visit_EnumDef(self, node: vy_ast.EnumDef, ast: vy_ast.Module, context: ASTContext):
         enum_name = node.name
         members_len = len(node.body)
+        print("visit_EnumDef type: ", node._metadata.get("type"))
         cairo_typ = FeltDefinition() if members_len <= 251 else CairoUint256Definition()
 
         is_uint256 = False if members_len <= 251 else True
