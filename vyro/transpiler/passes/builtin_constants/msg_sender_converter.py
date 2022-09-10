@@ -4,9 +4,10 @@ from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import FeltDefinition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
-    generate_name_node,
+    create_assign_node,
+    create_call_node,
+    create_name_node,
     insert_statement_before,
-    wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
 
@@ -24,18 +25,15 @@ class MsgSenderConverterVisitor(BaseVisitor):
 
         # If found, create a new `Assign` statement to `get_caller_address`
         if len(nodes_to_replace) > 0:
-            temp_name_node = generate_name_node(context.reserve_id())
+            temp_name_node = create_name_node(context)
             temp_name_node._metadata["type"] = FeltDefinition()
 
-            syscall_node = wrap_operation_in_call(ast, context, "get_caller_address")
+            syscall_node = create_call_node(context, "get_caller_address")
             syscall_node.func._metadata["type"] = FeltDefinition()
 
-            wrapped_call = vy_ast.Assign(
-                node_id=context.reserve_id(), targets=[temp_name_node], value=syscall_node
-            )
+            wrapped_call = create_assign_node(context, [temp_name_node], syscall_node)
             wrapped_call._metadata["type"] = FeltDefinition()
 
-            # Add builtin
             add_builtin_to_module(ast, "get_caller_address")
 
             # Insert the wrapped call into the head of the function node body
@@ -44,9 +42,7 @@ class MsgSenderConverterVisitor(BaseVisitor):
 
             # Replace `msg.sender` with the temp reference
             temp_name_node_ref = temp_name_node.id
-            temp_name_reference_node = generate_name_node(
-                context.reserve_id(), name=temp_name_node_ref
-            )
+            temp_name_reference_node = create_name_node(context, name=temp_name_node_ref)
 
             first_call_node = nodes_to_replace.pop()
             ast.replace_in_tree(first_call_node, temp_name_node)
@@ -54,7 +50,5 @@ class MsgSenderConverterVisitor(BaseVisitor):
             # Replace all descendants of the FunctionDef node with the replace variable
 
             for n in nodes_to_replace:
-                temp_name_reference_node = generate_name_node(
-                    context.reserve_id(), name=temp_name_node_ref
-                )
+                temp_name_reference_node = create_name_node(context, name=temp_name_node_ref)
                 ast.replace_in_tree(n, temp_name_reference_node)

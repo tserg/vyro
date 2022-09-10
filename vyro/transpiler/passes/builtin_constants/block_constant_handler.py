@@ -5,12 +5,13 @@ from vyro.cairo.types import CairoUint256Definition, FeltDefinition
 from vyro.exceptions import UnsupportedFeature
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
-    generate_name_node,
-    get_cairo_type,
+    convert_node_type_definition,
+    create_assign_node,
+    create_call_node,
+    create_name_node,
     get_scope,
     get_stmt_node,
     insert_statement_before,
-    wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
 
@@ -23,8 +24,7 @@ class BlockConstantHandlerVisitor(BaseVisitor):
         if node.value.id != "block":
             return
 
-        vy_typ = node._metadata["type"]
-        cairo_typ = get_cairo_type(vy_typ)
+        cairo_typ = convert_node_type_definition(node)
 
         attr = node.attr
         val = node.value.id
@@ -40,13 +40,11 @@ class BlockConstantHandlerVisitor(BaseVisitor):
                 raise UnsupportedFeature(f"`block.{val}` is not supported.", node)
 
         # Insert syscall statement before current statement
-        temp_name_node = generate_name_node(context.reserve_id())
+        temp_name_node = create_name_node(context)
         temp_name_node._metadata["type"] = FeltDefinition()
 
-        syscall_node = wrap_operation_in_call(ast, context, syscall_name)
-        assign_node = vy_ast.Assign(
-            node_id=context.reserve_id(), targets=[temp_name_node], value=syscall_node
-        )
+        syscall_node = create_call_node(context, syscall_name)
+        assign_node = create_assign_node(context, [temp_name_node], syscall_node)
 
         stmt_node = get_stmt_node(node)
         scope_node, scope_node_body = get_scope(stmt_node)
@@ -55,21 +53,17 @@ class BlockConstantHandlerVisitor(BaseVisitor):
 
         # Convert to Uint256
         if isinstance(cairo_typ, CairoUint256Definition):
-            convert_name_node = generate_name_node(context.reserve_id())
+            convert_name_node = create_name_node(context)
             convert_name_node._metadata["type"] = cairo_typ
 
-            convert_node = wrap_operation_in_call(
-                ast, context, "felt_to_uint256", args=[temp_name_node]
-            )
+            convert_node = create_call_node(context, "felt_to_uint256", args=[temp_name_node])
             add_builtin_to_module(ast, "felt_to_uint256")
 
-            assign_node = vy_ast.Assign(
-                node_id=context.reserve_id(), targets=[convert_name_node], value=convert_node
-            )
+            assign_node = create_assign_node(context, [convert_name_node], convert_node)
 
             insert_statement_before(assign_node, stmt_node, scope_node, scope_node_body)
             temp_name_node = convert_name_node
 
         # Replace builtin constant with `Name` node
-        temp_name_node_dup = generate_name_node(context.reserve_id(), name=temp_name_node.id)
+        temp_name_node_dup = create_name_node(context, name=temp_name_node.id)
         ast.replace_in_tree(node, temp_name_node_dup)

@@ -11,14 +11,15 @@ from vyro.exceptions import UnsupportedFeature
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
     convert_node_type_definition,
-    generate_name_node,
+    create_assign_node,
+    create_call_node,
+    create_name_node,
     get_cairo_type,
     get_scope,
     get_stmt_node,
     insert_statement_after,
     insert_statement_before,
     set_parent,
-    wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
 
@@ -31,7 +32,6 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
         call_typ = node.func._metadata["type"]
         denom = call_typ.get_denomination(node)
 
-        # Update to Cairo type
         convert_node_type_definition(node)
 
         # Replace `Call` with `mul256`
@@ -57,7 +57,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
             ),
         ]
 
-        denom_node = wrap_operation_in_call(ast, context, "Uint256", keywords=keywords)
+        denom_node = create_call_node(context, "Uint256", keywords=keywords)
 
         denom_str_node = node.args[1]
         ast.replace_in_tree(denom_str_node, denom_node)
@@ -73,30 +73,25 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
         ):
             if isinstance(out_cairo_typ, CairoUint256Definition):
                 # Wrap source value in a `felt_to_uint256` call
-                wrapped_call_node = wrap_operation_in_call(
-                    ast, context, "felt_to_uint256", args=[node.args[0]]
+                wrapped_call_node = create_call_node(
+                    context, "felt_to_uint256", args=[node.args[0]]
                 )
 
                 # Temporarily assign to a `Name` node
-                temp_name_node = generate_name_node(context.reserve_id())
+                temp_name_node = create_name_node(context)
                 temp_name_node._metadata["type"] = out_cairo_typ
 
-                temp_assign_node = vy_ast.Assign(
-                    node_id=context.reserve_id(), targets=[temp_name_node], value=wrapped_call_node
-                )
+                temp_assign_node = create_assign_node(context, [temp_name_node], wrapped_call_node)
 
                 # Insert statement
                 stmt_node = get_stmt_node(node)
                 scope_node, scope_node_body = get_scope(node)
                 insert_statement_before(temp_assign_node, stmt_node, scope_node, scope_node_body)
 
-                # Add `felt_to_uint256` to imports
                 add_builtin_to_module(ast, "felt_to_uint256")
 
                 # Replace call node with temporary name node
-                temp_name_node_dup = generate_name_node(
-                    context.reserve_id(), name=temp_name_node.id
-                )
+                temp_name_node_dup = create_name_node(context, name=temp_name_node.id)
                 ast.replace_in_tree(node, temp_name_node_dup)
 
             else:
@@ -110,16 +105,11 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
 
                     # Add clampers
                     hi_int = vy_ast.Int(node_id=context.reserve_id(), value=hi)
-                    hi_clamper = wrap_operation_in_call(
-                        ast, context, "assert_le", args=[src, hi_int]
-                    )
+                    hi_clamper = create_call_node(context, "assert_le", args=[src, hi_int])
 
                     lo_int = vy_ast.Int(node_id=context.reserve_id(), value=lo)
-                    lo_clamper = wrap_operation_in_call(
-                        ast, context, "assert_le", args=[lo_int, src]
-                    )
+                    lo_clamper = create_call_node(context, "assert_le", args=[lo_int, src])
 
-                    # Add `assert_le` builtin
                     add_builtin_to_module(ast, "assert_le")
 
                     # Insert statements after
@@ -161,10 +151,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
     def _handle_minmax(
         self, node: vy_ast.Call, ast: vy_ast.Module, context: ASTContext, fn_str: str
     ):
-        # Get Vyper type
-        vy_typ = node._metadata["type"]
-
-        # Get Cairo type
+        vy_typ = node._metadata.get("type")
         cairo_typ = get_cairo_type(vy_typ)
 
         if isinstance(vy_typ, SignedIntegerAbstractType):
@@ -177,7 +164,7 @@ class BuiltinFunctionHandlerVisitor(BaseVisitor):
 
         add_builtin_to_module(ast, wrapped_op_str)
 
-        wrapped_call_node = wrap_operation_in_call(ast, context, wrapped_op_str, args=node.args)
+        wrapped_call_node = create_call_node(context, wrapped_op_str, args=node.args)
         wrapped_call_node._metadata["type"] = cairo_typ
 
         for a in node.args:

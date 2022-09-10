@@ -4,12 +4,14 @@ from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.types import CairoUint256Definition
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
-    generate_name_node,
+    convert_node_type_definition,
+    create_assign_node,
+    create_call_node,
+    create_name_node,
     get_cairo_type,
     get_scope,
     insert_statement_before,
     set_parent,
-    wrap_operation_in_call,
 )
 from vyro.transpiler.visitor import BaseVisitor
 
@@ -30,26 +32,17 @@ class Uint256HandlerVisitor(BaseVisitor):
             ):
                 value_node = node.value
 
-                temp_name_node = generate_name_node(context.reserve_id())
+                temp_name_node = create_name_node(context)
                 temp_name_node._metadata["type"] = cairo_typ
 
-                rhs_assignment_node = vy_ast.Assign(
-                    node_id=context.reserve_id(),
-                    targets=[temp_name_node],
-                    value=value_node,
-                    ast_type="Assign",
-                )
-                set_parent(temp_name_node, rhs_assignment_node)
-                set_parent(value_node, rhs_assignment_node)
+                rhs_assignment_node = create_assign_node(context, [temp_name_node], value_node)
                 rhs_assignment_node._metadata["type"] = cairo_typ
 
                 scope_node, scope_node_body = get_scope(node)
                 insert_statement_before(rhs_assignment_node, node, scope_node, scope_node_body)
 
                 # Replace `BinOp` with temporary name node
-                temp_name_node_copy = generate_name_node(
-                    context.reserve_id(), name=temp_name_node.id
-                )
+                temp_name_node_copy = create_name_node(context, name=temp_name_node.id)
                 temp_name_node_copy._metadata["type"] = cairo_typ
                 node.value = temp_name_node_copy
 
@@ -73,8 +66,7 @@ class Uint256HandlerVisitor(BaseVisitor):
         if op_description not in UINT256_BINOP_TABLE:
             return
 
-        typ = node._metadata.get("type")
-        cairo_typ = get_cairo_type(typ)
+        cairo_typ = convert_node_type_definition(node)
 
         # Early termination if `BinOp` is not of Uint256 type
         if not isinstance(cairo_typ, CairoUint256Definition):
@@ -87,7 +79,7 @@ class Uint256HandlerVisitor(BaseVisitor):
         right = node.right
 
         # Wrap left and right in a function call
-        wrapped_uint256_op = wrap_operation_in_call(ast, context, uint256_op, args=[left, right])
+        wrapped_uint256_op = create_call_node(context, uint256_op, args=[left, right])
         set_parent(left, wrapped_uint256_op)
         set_parent(right, wrapped_uint256_op)
         wrapped_uint256_op._metadata["type"] = cairo_typ
@@ -95,7 +87,6 @@ class Uint256HandlerVisitor(BaseVisitor):
         # Replace `BinOp` node with wrapped call
         ast.replace_in_tree(node, wrapped_uint256_op)
 
-        # Add import
         add_builtin_to_module(ast, uint256_op)
 
         # Visit wrapped call node
@@ -124,16 +115,12 @@ class Uint256HandlerVisitor(BaseVisitor):
                         ast_typ="keyword",
                     ),
                 ]
-                wrapped_convert = wrap_operation_in_call(ast, context, "Uint256", keywords=keywords)
+                wrapped_convert = create_call_node(context, "Uint256", keywords=keywords)
+                wrapped_convert._metadata["type"] = cairo_typ
 
-                # Replace node with wrapped convert
-                ast.replace_in_tree(node, wrapped_convert)
-
-                # Set type
-                wrapped_convert._metadata["type"] = CairoUint256Definition()
-
-                # Add import
                 add_builtin_to_module(ast, "Uint256")
+
+                ast.replace_in_tree(node, wrapped_convert)
 
     def visit_Module(self, node: vy_ast.Module, ast: vy_ast.Module, context: ASTContext):
         # Skip contract vars

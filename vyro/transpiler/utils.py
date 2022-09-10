@@ -19,13 +19,6 @@ from vyro.exceptions import TranspilerPanic, UnsupportedType
 from vyro.transpiler.context import ASTContext
 
 
-def generate_name_node(node_id: int, name: str = None) -> vy_ast.Name:
-    if name is None:
-        name = f"VYRO_VAR_{node_id}"
-    ret = vy_ast.Name(id=name, node_id=node_id, ast_type="Name")
-    return ret
-
-
 def set_parent(child: vy_ast.VyperNode, parent: vy_ast.VyperNode):
     """
     Replica of `set_parent` in `vyper/ast/nodes.py`
@@ -99,7 +92,7 @@ def convert_node_type_definition(node: vy_ast.VyperNode) -> CairoTypeDefinition:
         Node to replace type for.
     """
     assert "type" in node._metadata
-    vy_typ = node._metadata["type"]
+    vy_typ = node._metadata.get("type")
     cairo_typ = get_cairo_type(vy_typ)
     node._metadata["type"] = cairo_typ
     return cairo_typ
@@ -173,13 +166,26 @@ def initialise_function_implicits(node: vy_ast.FunctionDef):
     node._metadata["implicits"] = set({"syscall_ptr", "pedersen_ptr", "range_check_ptr"})
 
 
-def wrap_operation_in_call(
-    ast: vy_ast.Module,
+def create_name_node(context: ASTContext, name: str = None) -> vy_ast.Name:
+    node_id = context.reserve_id()
+    if name is None:
+        name = f"VYRO_VAR_{node_id}"
+    ret = vy_ast.Name(id=name, node_id=node_id, ast_type="Name")
+    return ret
+
+
+def create_call_node(
     context: ASTContext,
     call_id: str,
-    args: List[vy_ast.VyperNode] = [],
-    keywords: List[vy_ast.keyword] = [],
+    args: List[vy_ast.VyperNode] = None,
+    keywords: List[vy_ast.keyword] = None,
 ) -> vy_ast.Call:
+    if args is None:
+        args = []
+
+    if keywords is None:
+        keywords = []
+
     wrapped_op = vy_ast.Call(
         node_id=context.reserve_id(),
         func=vy_ast.Name(node_id=context.reserve_id(), id=call_id, ast_type="Name"),
@@ -187,10 +193,29 @@ def wrap_operation_in_call(
         keywords=keywords,
         ast_type="Call",
     )
+
     for a in args:
         set_parent(a, wrapped_op)
 
+    for k in keywords:
+        set_parent(k, wrapped_op)
+
     return wrapped_op
+
+
+def create_assign_node(
+    context: ASTContext, targets: List[vy_ast.VyperNode], value: vy_ast.VyperNode
+) -> vy_ast.Assign:
+    assign_node = vy_ast.Assign(
+        node_id=context.reserve_id(), targets=targets, value=value, ast_type="Assign"
+    )
+
+    for t in targets:
+        set_parent(t, assign_node)
+
+    set_parent(value, assign_node)
+
+    return assign_node
 
 
 def get_hashmap_types(
@@ -228,7 +253,7 @@ def extract_mapping_args(
                 annotation=vy_ast.Name(node_id=context.reserve_id(), id=str(key_type)),
             )
         else:
-            arg_node = generate_name_node(context.reserve_id(), arg_name)
+            arg_node = create_name_node(context, arg_name)
 
         arg_node._metadata["type"] = key_type
         ret.append(arg_node)

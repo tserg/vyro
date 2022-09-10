@@ -2,7 +2,8 @@ from vyper import ast as vy_ast
 
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
-    generate_name_node,
+    create_assign_node,
+    create_name_node,
     get_cairo_type,
     get_scope,
     initialise_function_implicits,
@@ -17,23 +18,19 @@ class InitialisationVisitor(BaseVisitor):
         # Move RHS into a local variable.
         # Since `AnnAssign` is a `tempvar`, it cannot be assigned to a function call.
         # Therefore, we re-assign the RHS to a temporary local variable.
-        temp_name_node = generate_name_node(context.reserve_id())
+        temp_name_node = create_name_node(context)
 
         rhs = node.value
         node._children.remove(node.value)
 
-        temp_assign_node = vy_ast.Assign(
-            node_id=context.reserve_id(), targets=[temp_name_node], value=rhs, ast_type="Assign"
-        )
-        set_parent(rhs, temp_assign_node)
-        set_parent(temp_name_node, temp_assign_node)
+        temp_assign_node = create_assign_node(context, [temp_name_node], rhs)
 
         # Insert `Assign` before `AnnAssign`
         scope_node, scope_body = get_scope(node)
         insert_statement_before(temp_assign_node, node, scope_node, scope_body)
 
         # Replace RHS with temp name node
-        temp_name_node_dup = generate_name_node(context.reserve_id(), name=temp_name_node.id)
+        temp_name_node_dup = create_name_node(context, name=temp_name_node.id)
         node.value = temp_name_node_dup
         set_parent(temp_name_node_dup, node)
 

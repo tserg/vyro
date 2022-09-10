@@ -4,7 +4,13 @@ from vyro.cairo.import_directives import add_builtin_to_module
 from vyro.cairo.nodes import CairoAssert
 from vyro.cairo.types import FeltDefinition
 from vyro.transpiler.context import ASTContext
-from vyro.transpiler.utils import generate_name_node, get_scope, insert_statement_before, set_parent
+from vyro.transpiler.utils import (
+    create_assign_node,
+    create_name_node,
+    get_scope,
+    insert_statement_before,
+    set_parent,
+)
 from vyro.transpiler.visitor import BaseVisitor
 
 
@@ -15,29 +21,21 @@ class AssertHandlerVisitor(BaseVisitor):
         condition = node.test
         node._children.remove(condition)
 
-        temp_name_node = generate_name_node(context.reserve_id())
+        temp_name_node = create_name_node(context)
         temp_name_node._metadata["type"] = FeltDefinition()
 
-        assign_node = vy_ast.Assign(
-            node_id=context.reserve_id(),
-            targets=[temp_name_node],
-            value=condition,
-            ast_type="Assign",
-        )
+        assign_node = create_assign_node(context, [temp_name_node], condition)
         assign_node._metadata["type"] = FeltDefinition()
-        set_parent(temp_name_node, assign_node)
-        set_parent(condition, assign_node)
 
         scope_node, scope_node_body = get_scope(node)
         insert_statement_before(assign_node, node, scope_node, scope_node_body)
 
         # Generate a new `test` condition where we assert newly assigned name node is True
-        cairo_assert_target = generate_name_node(context.reserve_id(), name=temp_name_node.id)
+        cairo_assert_target = create_name_node(context, name=temp_name_node.id)
         temp_name_node._metadata["type"] = FeltDefinition()
 
         # Generate nodes for `CairoAssert`
-
-        cairo_assert_value = generate_name_node(context.reserve_id(), name="TRUE")
+        cairo_assert_value = create_name_node(context, name="TRUE")
         add_builtin_to_module(ast, "TRUE")
 
         assert_node = CairoAssert(

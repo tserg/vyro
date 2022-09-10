@@ -2,7 +2,8 @@ from vyper import ast as vy_ast
 
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
-    generate_name_node,
+    create_assign_node,
+    create_name_node,
     get_cairo_type,
     get_scope,
     insert_statement_before,
@@ -17,7 +18,7 @@ class ReturnValueHandler(BaseVisitor):
     """
 
     def visit_FunctionDef(self, node: vy_ast.FunctionDef, ast: vy_ast.Module, context: ASTContext):
-        fn_typ = node._metadata["type"]
+        fn_typ = node._metadata.get("type")
 
         return_type = fn_typ.return_type
         if return_type is None:
@@ -41,19 +42,13 @@ class ReturnValueHandler(BaseVisitor):
                 return_node._children.remove(return_value_node)
 
                 # Assign return value to a temporary variable
-                temp_name_node = generate_name_node(context.reserve_id())
+                temp_name_node = create_name_node(context)
                 temp_name_node._metadata["type"] = return_cairo_typ
 
-                assign_return_value = vy_ast.Assign(
-                    node_id=context.reserve_id(),
-                    targets=[temp_name_node],
-                    value=return_value_node,
-                    ast_type="Assign",
+                assign_return_value = create_assign_node(
+                    context, [temp_name_node], return_value_node
                 )
-
                 assign_return_value._metadata["type"] = return_cairo_typ
-                set_parent(temp_name_node, assign_return_value)
-                set_parent(return_value_node, assign_return_value)
 
                 # Add new `Assign` node to function body
                 scope_node, scope_node_body = get_scope(return_node)
