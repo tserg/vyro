@@ -25,8 +25,8 @@ def generate_storage_var_stub(storage_var_name: str, typ: CairoTypeDefinition):
 
     return f"""
 @storage_var
-func {modified_name}({args_str}) -> ({return_var_name} : {return_typ}):
-end
+func {modified_name}({args_str}) -> ({return_var_name} : {return_typ}){{
+}}
     """
 
 

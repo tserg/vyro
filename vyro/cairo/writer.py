@@ -9,6 +9,8 @@ from vyro.cairo.types import CairoMappingDefinition
 from vyro.cairo.utils import INDENT, add_indent, generate_storage_var_stub
 from vyro.exceptions import TranspilerPanic, UnsupportedNode
 
+EXCLUDED_SEMICOLON_NODES = (vy_ast.If, vy_ast.Assert)
+
 
 class CairoWriter:
     def __init__(self) -> None:
@@ -32,7 +34,7 @@ class CairoWriter:
 
         events = ""
         if self.events:
-            events = "\n".join(self.events)
+            events = "\n\n".join(self.events)
 
         storage_vars = ""
         if self.storage_vars:
@@ -90,7 +92,7 @@ class CairoWriter:
 
     def write_Assert(self, node):
         # Get test condition
-        target_str = self.write(node.test)
+        target_str = self.write(node.test) + ";"
 
         error_msg = f'"{target_str}"'
         if node.msg:
@@ -101,11 +103,11 @@ class CairoWriter:
             error_msg = '"' + error_msg[1:-1] + '"'
 
         # Start of `with_attr` block
-        block = [f"with_attr error_message({error_msg}):"]
+        block = [f"with_attr error_message({error_msg}) {{"]
         block.append(INDENT + target_str)
 
         # End `with_attr_block`
-        block.append("end")
+        block.append("}")
 
         # Concatenate block
         ret = "\n".join(block)
@@ -253,9 +255,9 @@ class CairoWriter:
         if len(args) > 0:
             args_str = ", ".join(args)
 
-        event_def = f"func {node.name}({args_str}):"
+        event_def = f"func {node.name}({args_str}){{"
         ret.append(event_def)
-        ret.append("end")
+        ret.append("}")
         self.events.append("\n".join(ret))
 
     def write_Expr(self, node):
@@ -298,28 +300,32 @@ class CairoWriter:
                 return_typ = return_typ.value_type
             return_decl_str = f" -> ({node.name}_ret : {return_typ})"
 
-        fn_def_str = f"func {node.name}{{{implicits_str}}}({args_str}){return_decl_str}:"
+        fn_def_str = f"func {node.name}{{{implicits_str}}}({args_str}){return_decl_str}{{"
 
         ret.append(fn_def_str)
 
         # Inject `alloc_locals`
-        ret.append(INDENT + "alloc_locals\n")
+        ret.append(INDENT + "alloc_locals;\n")
 
         # Add body
         for n in node.body:
             stmt_str = self.write(n)
             if not stmt_str:
                 raise TranspilerPanic(f"Unable to write statement for {type(n)} in function body")
+
+            if not isinstance(n, EXCLUDED_SEMICOLON_NODES):
+                stmt_str += ";"
+
             stmt_str = add_indent(stmt_str)
             ret.append(stmt_str)
 
         # Inject return if no return value
         if not node.returns:
-            return_stmt_str = "return ()"
+            return_stmt_str = "return ();"
             ret.append(INDENT + return_stmt_str)
 
         # Add closing block
-        ret.append("end")
+        ret.append("}")
 
         fn_str = "\n".join(ret)
         self.functions.append(fn_str)
@@ -338,28 +344,36 @@ class CairoWriter:
 
         test_str = self.write(node.test)
 
-        block.append(f"if {test_str}:")
+        block.append(f"if ({test_str}) {{")
 
         if_body = []
         for i in node.body:
             stmt_str = self.write(i)
+
+            if not isinstance(i, EXCLUDED_SEMICOLON_NODES):
+                stmt_str += ";"
+
             if_body.append(stmt_str)
         if_body_str = "\n".join(if_body)
         if_body_str = add_indent(if_body_str)
         block.append(if_body_str)
 
         if len(node.orelse) > 0:
-            block.append("else:")
+            block.append("} else {")
 
             else_body = []
             for i in node.orelse:
                 stmt_str = self.write(i)
+
+                if not isinstance(i, EXCLUDED_SEMICOLON_NODES):
+                    stmt_str += ";"
+
                 else_body.append(stmt_str)
             else_body_str = "\n".join(else_body)
             else_body_str = add_indent(else_body_str)
             block.append(else_body_str)
 
-        block.append("end")
+        block.append("}")
 
         return "\n".join(block)
 
@@ -455,7 +469,13 @@ class CairoWriter:
         return "assert 1 = 0"
 
     def write_Return(self, node):
+        is_multiple = isinstance(node.value, vy_ast.Tuple)
         value_str = self.write(node.value)
+
+        # Cast to tuple for single return values
+        if is_multiple is False:
+            value_str += ","
+
         return f"return ({value_str})"
 
     def write_Str(self, node):
@@ -490,7 +510,7 @@ class CairoWriter:
         name = node.target.id
         if node.is_constant:
             value_str = self.write(node.value)
-            constant_decl_str = f"const {name} = {value_str}"
+            constant_decl_str = f"const {name} = {value_str};"
             self.constants.append(constant_decl_str)
 
         storage_var_stub = generate_storage_var_stub(name, typ)
