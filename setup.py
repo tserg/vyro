@@ -31,7 +31,7 @@ setup(
     keywords=["ethereum", "starknet", "vyper", "cairo", "transpiler"],
     python_requires=">=3.9,<3.10",
     packages=find_packages(where=".", include=["vyro*"]),
-    install_requires=["vyper==0.3.6", "cairo-lang==0.10.0"],
+    install_requires=["vyper==0.3.7", "cairo-lang==0.10.0"],
     extras_require=extras_require,
     entry_points={"console_scripts": ["vyro=vyro._cli.__main__:main"]},
 )
