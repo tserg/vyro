@@ -22,6 +22,20 @@ class CairoWriter:
         self.storage_vars_getters: List[str] = []
         self.functions: List[str] = []
 
+    def _process_stmt(self, n: vy_ast.VyperNode, body: vy_ast.VyperNode) -> str:
+        """
+        Returns the string representation of a statement, and adds a trailing semicolon if required.
+        """
+        stmt_str = self.write(n)
+
+        if not stmt_str:
+            raise TranspilerPanic(f"Unable to write statement for {type(n)} in {type(body)}")
+
+        if not isinstance(n, EXCLUDED_SEMICOLON_NODES):
+            stmt_str += ";"
+
+        return stmt_str
+
     def cairo(self) -> str:
 
         imports = ""
@@ -309,13 +323,7 @@ class CairoWriter:
 
         # Add body
         for n in node.body:
-            stmt_str = self.write(n)
-            if not stmt_str:
-                raise TranspilerPanic(f"Unable to write statement for {type(n)} in function body")
-
-            if not isinstance(n, EXCLUDED_SEMICOLON_NODES):
-                stmt_str += ";"
-
+            stmt_str = self._process_stmt(n, node)
             stmt_str = add_indent(stmt_str)
             ret.append(stmt_str)
 
@@ -348,11 +356,7 @@ class CairoWriter:
 
         if_body = []
         for i in node.body:
-            stmt_str = self.write(i)
-
-            if not isinstance(i, EXCLUDED_SEMICOLON_NODES):
-                stmt_str += ";"
-
+            stmt_str = self._process_stmt(i, node)
             if_body.append(stmt_str)
         if_body_str = "\n".join(if_body)
         if_body_str = add_indent(if_body_str)
@@ -363,11 +367,7 @@ class CairoWriter:
 
             else_body = []
             for i in node.orelse:
-                stmt_str = self.write(i)
-
-                if not isinstance(i, EXCLUDED_SEMICOLON_NODES):
-                    stmt_str += ";"
-
+                stmt_str = self._process_stmt(i, node)
                 else_body.append(stmt_str)
             else_body_str = "\n".join(else_body)
             else_body_str = add_indent(else_body_str)
