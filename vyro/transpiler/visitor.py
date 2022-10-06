@@ -245,8 +245,7 @@ class BaseVisitor:
         pass
 
     def visit_StructDef(self, node, ast, context):
-        for i in node.body:
-            self.visit(i, ast, context)
+        pass
 
     def visit_Sub(self, node, ast, context):
         pass

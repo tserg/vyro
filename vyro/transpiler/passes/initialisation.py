@@ -71,6 +71,4 @@ class InitialisationVisitor(BaseVisitor):
             ast.remove_from_body(i)
 
         for i in node.body:
-            # Skip struct definitions
-            if not isinstance(i, vy_ast.StructDef):
-                self.visit(i, ast, context)
+            self.visit(i, ast, context)
