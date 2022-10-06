@@ -13,5 +13,6 @@ from vyro.transpiler.passes.internal_fns_handler import InternalFunctionsHandler
 from vyro.transpiler.passes.ops_converter import OpsConverterVisitor
 from vyro.transpiler.passes.return_value_handler import ReturnValueHandler
 from vyro.transpiler.passes.storage_var import StorageVarVisitor
+from vyro.transpiler.passes.struct_converter import StructConverterVisitor
 from vyro.transpiler.passes.uint256_handler import Uint256HandlerVisitor
 from vyro.transpiler.passes.unsupported import UnsupportedVisitor
