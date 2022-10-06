@@ -6,7 +6,7 @@ from vyper.semantics.types.function import StateMutability
 
 from vyro.cairo.implicits import IMPLICITS
 from vyro.cairo.types import CairoMappingDefinition
-from vyro.cairo.utils import INDENT, add_indent, generate_storage_var_stub
+from vyro.cairo.utils import add_indent, generate_storage_var_stub
 from vyro.exceptions import TranspilerPanic, UnsupportedNode
 
 EXCLUDED_SEMICOLON_NODES = (vy_ast.If, vy_ast.Assert)
@@ -16,6 +16,7 @@ class CairoWriter:
     def __init__(self) -> None:
         self.header: str = "%lang starknet\n"
         self.imports: List[str] = []
+        self.structs: List[str] = []
         self.constants: List[str] = []
         self.events: List[str] = []
         self.storage_vars: List[str] = []
@@ -42,6 +43,10 @@ class CairoWriter:
         if self.imports:
             imports = "\n".join(self.imports)
 
+        structs = ""
+        if self.structs:
+            structs = "\n\n".join(self.structs)
+
         constants = ""
         if self.constants:
             constants = "\n".join(self.constants)
@@ -63,7 +68,16 @@ class CairoWriter:
             functions = "\n\n".join(self.functions)
 
         cairo = "\n".join(
-            [self.header, imports, constants, events, storage_vars, storage_vars_getters, functions]
+            [
+                self.header,
+                imports,
+                structs,
+                constants,
+                events,
+                storage_vars,
+                storage_vars_getters,
+                functions,
+            ]
         )
         return cairo
 
@@ -118,7 +132,7 @@ class CairoWriter:
 
         # Start of `with_attr` block
         block = [f"with_attr error_message({error_msg}) {{"]
-        block.append(INDENT + target_str)
+        block.append(add_indent(target_str))
 
         # End `with_attr_block`
         block.append("}")
@@ -219,6 +233,7 @@ class CairoWriter:
             kwarg_str = self.write(k)
             kwargs.append(kwarg_str)
 
+        print("args: ", args)
         args_str = ", ".join(args)
         kwargs_str = ", ".join(kwargs)
 
@@ -319,7 +334,7 @@ class CairoWriter:
         ret.append(fn_def_str)
 
         # Inject `alloc_locals`
-        ret.append(INDENT + "alloc_locals;\n")
+        ret.append(add_indent("alloc_locals;\n"))
 
         # Add body
         for n in node.body:
@@ -330,7 +345,7 @@ class CairoWriter:
         # Inject return if no return value
         if not node.returns:
             return_stmt_str = "return ();"
-            ret.append(INDENT + return_stmt_str)
+            ret.append(add_indent(return_stmt_str))
 
         # Add closing block
         ret.append("}")
@@ -483,8 +498,16 @@ class CairoWriter:
         return value_str
 
     def write_StructDef(self, node):
-        self.write(node.name)
-        self.write(node.body)
+        struct_name = node.name
+
+        members = []
+        for member in node.body:
+            member_type = member._metadata.get("type")
+            member_str = add_indent(f"{member.target.id}: {member_type},")
+            members.append(member_str)
+        members_str = "\n".join(members)
+
+        self.structs.append(f"struct {struct_name} {{\n{members_str} \n}}")
 
     def write_Sub(self, node):
         pass
