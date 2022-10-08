@@ -22,10 +22,7 @@ class StructConverterVisitor(BaseVisitor):
 
             for name_node, v in zip(args_dict_node.keys, args_dict_node.values):
                 kw_node = vy_ast.keyword(
-                    node_id=context.reserve_id(),
-                    arg=name_node.id,
-                    value=v,
-                    ast_type="keyword",
+                    node_id=context.reserve_id(), arg=name_node.id, value=v, ast_type="keyword"
                 )
                 value_node.keywords.append(kw_node)
                 set_parent(v, kw_node)
