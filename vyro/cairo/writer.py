@@ -233,7 +233,6 @@ class CairoWriter:
             kwarg_str = self.write(k)
             kwargs.append(kwarg_str)
 
-        print("args: ", args)
         args_str = ", ".join(args)
         kwargs_str = ", ".join(kwargs)
 

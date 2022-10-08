@@ -12,6 +12,7 @@ from vyro.transpiler.utils import (
     create_assign_node,
     create_name_node,
     extract_mapping_args,
+    get_cairo_type,
     get_scope,
     initialise_function_implicits,
     insert_statement_before,
@@ -107,11 +108,17 @@ class StorageVarVisitor(BaseVisitor):
         rhs_contract_vars = rhs.get_descendants(
             vy_ast.Attribute, {"value.id": "self"}, include_self=True
         )
+
         if rhs_contract_vars:
             contract_var = rhs_contract_vars.pop()
             contract_var_name = contract_var.attr
             # Check for nested mappings
             contract_var = self._get_highest_subscript_parent_node(contract_var)
+
+            # Check if RHS is of a different type than the value (e.g. struct member)
+            contract_var_vy_typ = contract_var._metadata.get("type", None)
+            if contract_var_vy_typ is not None:
+                cairo_typ = get_cairo_type(contract_var_vy_typ)
 
             self._handle_rhs(contract_var_name, contract_var, ast, context, node, cairo_typ)
 
@@ -189,6 +196,11 @@ class StorageVarVisitor(BaseVisitor):
 
             # Check for nested mappings
             contract_var = self._get_highest_subscript_parent_node(contract_var)
+
+            # Check if RHS is of a different type than the value (e.g. struct member)
+            contract_var_vy_typ = contract_var._metadata.get("type", None)
+            if contract_var_vy_typ is not None:
+                cairo_typ = get_cairo_type(contract_var_vy_typ)
 
             self._handle_rhs(contract_var_name, contract_var, ast, context, node, cairo_typ)
 
@@ -310,6 +322,11 @@ class StorageVarVisitor(BaseVisitor):
 
             # Check for nested mappings
             contract_var = self._get_highest_subscript_parent_node(contract_var)
+
+            # Check if RHS is of a different type than the value (e.g. struct member)
+            contract_var_vy_typ = contract_var._metadata.get("type", None)
+            if contract_var_vy_typ is not None:
+                cairo_typ = get_cairo_type(contract_var_vy_typ)
 
             self._handle_rhs(contract_var_name, contract_var, ast, context, node, cairo_typ)
 
