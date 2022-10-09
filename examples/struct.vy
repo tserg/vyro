@@ -40,6 +40,30 @@ def get_memory_struct() -> Foo:
 
 @external
 @view
-def get_struct_number(x: uint256) -> uint256:
+def get_struct_a() -> uint256:
+    return self.foo.a
+
+
+@external
+@view
+def get_struct_b() -> int8:
+    return self.foo.b
+
+
+@external
+@view
+def get_struct_c() -> bool:
+    return self.foo.c
+
+
+@external
+@view
+def get_struct_d() -> address:
+    return self.foo.d
+
+
+@external
+@view
+def add_to_a(x: uint256) -> uint256:
     res: uint256 = x + self.foo.a
     return res
