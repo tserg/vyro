@@ -4,7 +4,7 @@ A [Vyper](https://github.com/vyperlang/vyper) to Cairo transpiler, inspired by [
 
 :exclamation: **This repository has not been audited or formally verified. Please use with caution.**
 
-As this is a work in progress, there are numerous Vyper types (e.g. structs, static arrays, dynamic arrays) and features that are not supported yet. Some features are also not capable of being supported on StarkNet. In these cases, the transpiler will throw an error.
+As this is a work in progress, there are numerous Vyper types (e.g. static arrays, dynamic arrays) and features that are not supported yet. Some features are also not capable of being supported on StarkNet. In these cases, the transpiler will throw an error.
 
 ## Installation
 

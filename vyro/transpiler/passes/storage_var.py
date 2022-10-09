@@ -12,6 +12,7 @@ from vyro.transpiler.utils import (
     create_assign_node,
     create_name_node,
     extract_mapping_args,
+    get_cairo_type,
     get_scope,
     initialise_function_implicits,
     insert_statement_before,
@@ -100,99 +101,6 @@ class StorageVarVisitor(BaseVisitor):
         temp_name_node_copy = create_name_node(context, name=temp_name_node.id)
         ast.replace_in_tree(contract_var_node, temp_name_node_copy)
 
-    def visit_VariableDecl(
-        self, node: vy_ast.VariableDecl, ast: vy_ast.Module, context: ASTContext
-    ):
-        if node.is_constant or node.is_immutable:
-            return
-
-        # Store original variable name
-        var_name = node.target.id
-
-        # Update type
-        cairo_typ = convert_node_type_definition(node)
-        node._metadata["type"] = cairo_typ
-
-        if node.is_public is True:
-            # Create temporary variable for assignment of storage read value
-            temp_name_node = create_name_node(context)
-            temp_name_node._metadata["type"] = cairo_typ
-
-            value_node = vy_ast.Name(
-                node_id=context.reserve_id(), id=f"{var_name}_STORAGE", ast_type="Name"
-            )
-
-            # Handle args
-            read_args = []
-            if isinstance(cairo_typ, CairoMappingDefinition):
-                read_args = extract_mapping_args(cairo_typ, context)
-
-            # Create storage read node
-            storage_read_node = CairoStorageRead(
-                node_id=context.reserve_id(),
-                parent=ast,
-                targets=[temp_name_node],  # type: ignore
-                value=value_node,
-                args=read_args,
-            )
-            set_parent(value_node, storage_read_node)
-            set_parent(temp_name_node, storage_read_node)
-
-            return_value_node = vy_ast.Name(
-                node_id=context.reserve_id(), id=temp_name_node.id, ast_type="Name"
-            )
-            return_value_node._metadata["type"] = cairo_typ
-
-            # Derive arguments
-            fn_args = []
-            if isinstance(cairo_typ, CairoMappingDefinition):
-                fn_args = extract_mapping_args(cairo_typ, context, include_type=True)
-
-            fn_node_args = vy_ast.arguments(
-                node_id=context.reserve_id(), args=fn_args, defaults=[], ast_type="arguments"
-            )
-
-            # Create return node
-            return_node = vy_ast.Return(
-                node_id=context.reserve_id(), value=return_value_node, ast_type="Return"
-            )
-            set_parent(return_value_node, return_node)
-
-            # Create return type node
-            return_type_node = vy_ast.Name(
-                node_id=context.reserve_id(), id=f"{cairo_typ}", ast_type="Name"
-            )
-
-            fn_node = vy_ast.FunctionDef(
-                node_id=context.reserve_id(),
-                name=var_name,
-                body=[storage_read_node, return_node],
-                args=fn_node_args,
-                returns=return_type_node,
-                decorator_list=None,
-                doc_string=None,
-                ast_type="FunctionDef",
-            )
-            initialise_function_implicits(fn_node)
-
-            set_parent(storage_read_node, fn_node)
-            set_parent(fn_node_args, fn_node)
-            set_parent(return_node, fn_node)
-
-            fn_node_typ = ContractFunction(
-                name=var_name,
-                arguments={},
-                min_arg_count=0,
-                max_arg_count=0,
-                return_type=cairo_typ,
-                function_visibility=FunctionVisibility.EXTERNAL,
-                state_mutability=StateMutability.VIEW,
-            )
-
-            fn_node._metadata["type"] = fn_node_typ
-
-            ast.add_to_body(fn_node)
-
     def visit_AnnAssign(self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext):
         cairo_typ = convert_node_type_definition(node.target)
         # Handle storage variables on RHS of assignment
@@ -200,11 +108,17 @@ class StorageVarVisitor(BaseVisitor):
         rhs_contract_vars = rhs.get_descendants(
             vy_ast.Attribute, {"value.id": "self"}, include_self=True
         )
+
         if rhs_contract_vars:
             contract_var = rhs_contract_vars.pop()
             contract_var_name = contract_var.attr
             # Check for nested mappings
             contract_var = self._get_highest_subscript_parent_node(contract_var)
+
+            # Check if RHS is of a different type than the value (e.g. struct member)
+            contract_var_vy_typ = contract_var._metadata.get("type", None)
+            if contract_var_vy_typ is not None:
+                cairo_typ = get_cairo_type(contract_var_vy_typ)
 
             self._handle_rhs(contract_var_name, contract_var, ast, context, node, cairo_typ)
 
@@ -282,6 +196,11 @@ class StorageVarVisitor(BaseVisitor):
 
             # Check for nested mappings
             contract_var = self._get_highest_subscript_parent_node(contract_var)
+
+            # Check if RHS is of a different type than the value (e.g. struct member)
+            contract_var_vy_typ = contract_var._metadata.get("type", None)
+            if contract_var_vy_typ is not None:
+                cairo_typ = get_cairo_type(contract_var_vy_typ)
 
             self._handle_rhs(contract_var_name, contract_var, ast, context, node, cairo_typ)
 
@@ -404,4 +323,102 @@ class StorageVarVisitor(BaseVisitor):
             # Check for nested mappings
             contract_var = self._get_highest_subscript_parent_node(contract_var)
 
+            # Check if RHS is of a different type than the value (e.g. struct member)
+            contract_var_vy_typ = contract_var._metadata.get("type", None)
+            if contract_var_vy_typ is not None:
+                cairo_typ = get_cairo_type(contract_var_vy_typ)
+
             self._handle_rhs(contract_var_name, contract_var, ast, context, node, cairo_typ)
+
+    def visit_VariableDecl(
+        self, node: vy_ast.VariableDecl, ast: vy_ast.Module, context: ASTContext
+    ):
+        if node.is_constant or node.is_immutable:
+            return
+
+        # Store original variable name
+        var_name = node.target.id
+
+        # Update type
+        cairo_typ = convert_node_type_definition(node)
+        node._metadata["type"] = cairo_typ
+
+        if node.is_public is True:
+            # Create temporary variable for assignment of storage read value
+            temp_name_node = create_name_node(context)
+            temp_name_node._metadata["type"] = cairo_typ
+
+            value_node = vy_ast.Name(
+                node_id=context.reserve_id(), id=f"{var_name}_STORAGE", ast_type="Name"
+            )
+
+            # Handle args
+            read_args = []
+            if isinstance(cairo_typ, CairoMappingDefinition):
+                read_args = extract_mapping_args(cairo_typ, context)
+
+            # Create storage read node
+            storage_read_node = CairoStorageRead(
+                node_id=context.reserve_id(),
+                parent=ast,
+                targets=[temp_name_node],  # type: ignore
+                value=value_node,
+                args=read_args,
+            )
+            set_parent(value_node, storage_read_node)
+            set_parent(temp_name_node, storage_read_node)
+
+            return_value_node = vy_ast.Name(
+                node_id=context.reserve_id(), id=temp_name_node.id, ast_type="Name"
+            )
+            return_value_node._metadata["type"] = cairo_typ
+
+            # Derive arguments
+            fn_args = []
+            if isinstance(cairo_typ, CairoMappingDefinition):
+                fn_args = extract_mapping_args(cairo_typ, context, include_type=True)
+
+            fn_node_args = vy_ast.arguments(
+                node_id=context.reserve_id(), args=fn_args, defaults=[], ast_type="arguments"
+            )
+
+            # Create return node
+            return_node = vy_ast.Return(
+                node_id=context.reserve_id(), value=return_value_node, ast_type="Return"
+            )
+            set_parent(return_value_node, return_node)
+
+            # Create return type node
+            return_type_node = vy_ast.Name(
+                node_id=context.reserve_id(), id=f"{cairo_typ}", ast_type="Name"
+            )
+
+            fn_node = vy_ast.FunctionDef(
+                node_id=context.reserve_id(),
+                name=var_name,
+                body=[storage_read_node, return_node],
+                args=fn_node_args,
+                returns=return_type_node,
+                decorator_list=None,
+                doc_string=None,
+                ast_type="FunctionDef",
+            )
+            initialise_function_implicits(fn_node)
+
+            set_parent(storage_read_node, fn_node)
+            set_parent(fn_node_args, fn_node)
+            set_parent(return_node, fn_node)
+
+            fn_node_typ = ContractFunction(
+                name=var_name,
+                arguments={},
+                min_arg_count=0,
+                max_arg_count=0,
+                return_type=cairo_typ,
+                function_visibility=FunctionVisibility.EXTERNAL,
+                state_mutability=StateMutability.VIEW,
+            )
+
+            fn_node._metadata["type"] = fn_node_typ
+
+            ast.add_to_body(fn_node)

@@ -1,4 +1,6 @@
 from vyper import ast as vy_ast
+from vyper.semantics.types.bases import DataLocation
+from vyper.semantics.types.utils import get_type_from_annotation
 
 from vyro.transpiler.context import ASTContext
 from vyro.transpiler.utils import (
@@ -72,3 +74,9 @@ class InitialisationVisitor(BaseVisitor):
 
         for i in node.body:
             self.visit(i, ast, context)
+
+    def visit_StructDef(self, node: vy_ast.StructDef, ast: vy_ast.Module, context: ASTContext):
+        for member in node.body:
+            vy_typ = get_type_from_annotation(member.annotation, DataLocation.UNSET)
+            cairo_typ = get_cairo_type(vy_typ)
+            member._metadata["type"] = cairo_typ

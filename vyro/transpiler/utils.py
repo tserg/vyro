@@ -8,6 +8,7 @@ from vyper.semantics.types.bases import BaseTypeDefinition
 from vyper.semantics.types.indexable.mapping import MappingDefinition
 from vyper.semantics.types.indexable.sequence import ArrayDefinition, DynamicArrayDefinition
 from vyper.semantics.types.user.enum import EnumDefinition
+from vyper.semantics.types.user.struct import StructDefinition
 
 from vyro.cairo.types import (
     CairoMappingDefinition,
@@ -106,7 +107,7 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
     if typ is None:
         raise TranspilerPanic("No type provided for conversion")
 
-    if isinstance(typ, CairoTypeDefinition):
+    if isinstance(typ, (CairoTypeDefinition, StructDefinition)):
         return typ
 
     if isinstance(typ, IntegerAbstractType):

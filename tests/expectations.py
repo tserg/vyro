@@ -506,6 +506,46 @@ EXPECTATIONS = [
         ),
     ),
     (
+        "struct",
+        (
+            (
+                "get_storage_struct",
+                [[], (777, -8, True, "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5")],
+                [
+                    [],
+                    {
+                        "a": 777,
+                        "b": signed_int_to_felt(-8),
+                        "c": TRUE,
+                        "d": 1250238713705615060704406741895064647274915793861,
+                    },
+                ],
+            ),
+            (
+                "get_memory_struct",
+                [[], (777, -8, True, "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5")],
+                [
+                    [],
+                    {
+                        "a": 777,
+                        "b": signed_int_to_felt(-8),
+                        "c": TRUE,
+                        "d": 1250238713705615060704406741895064647274915793861,
+                    },
+                ],
+            ),
+            ("get_struct_a", [[], 777], [[], 777]),
+            ("get_struct_b", [[], -8], [[], signed_int_to_felt(-8)]),
+            ("get_struct_c", [[], True], [[], TRUE]),
+            (
+                "get_struct_d",
+                [[], "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5"],
+                [[], 1250238713705615060704406741895064647274915793861],
+            ),
+            ("add_to_a", [[10], 787], [[10], 787]),
+        ),
+    ),
+    (
         "unary",
         (
             ("usub_constant", [[], -1], [[], signed_int_to_felt(-1)]),
