@@ -9,24 +9,31 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
-
+    strategy: 
+        matrix:
+          poetry-version: ["1.2", "1.2.1", "1.2.2"]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Python setup
-        uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: "3,9"
+
+      - name: Poetry setup
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
 
       - name: Install Dependencies
-        run: pip install .[lint]
+        run: poetry install
 
       - name: Run Black
-        run: black --check -C ./tests ./vyro ./setup.py
+        run: poetry run black --check -C ./tests ./vyro ./setup.py
 
       - name: Run flake8
-        run: flake8 ./tests ./vyro ./setup.py
+        run: poetry run flake8 ./tests ./vyro ./setup.py
 
       - name: Run isort
-        run: isort --check-only --diff ./tests ./vyro ./setup.py
+        run: poetry run isort --check-only --diff ./tests ./vyro ./setup.py
