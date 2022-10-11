@@ -6,24 +6,38 @@ A [Vyper](https://github.com/vyperlang/vyper) to Cairo transpiler, inspired by [
 
 As this is a work in progress, there are numerous Vyper types (e.g. static arrays, dynamic arrays) and features that are not supported yet. Some features are also not capable of being supported on StarkNet. In these cases, the transpiler will throw an error.
 
-## Installation
-
-### Prequisites
-
-#### Python
-
-Vyro requires Python 3.9. Follow the instructions to install the latest version of python for your platform in the [python docs](https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python)
-
-#### Virtual Environment
-
-We recommend working within a virtual environment whenever using Python for projects. Instructions for setting up a virual enviornment for your platform can be found in the [python docs](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
+## Getting started
 
 ### Dependencies
 
-Once you have your virtual environment set up and running, install Vyro with the following command:
+Vyro currently only supports Python 3.9 due to the Python version constraint of the libraries we rely on. Follow the instructions to install the latest version of python for your platform in the [python docs](https://docs.python.org/3/using/unix.html#getting-and-installing-the-latest-version-of-python)
+
+### Building from source
+
+If you are building from source, either because you want to contribute or just that you want to explore the codebase, we reccomend you work within a virtual environment. Since we utilize [poetry](https://python-poetry.org/docs/#installation) as our dependency management system, you can easily setup your virtual environment by doing this at the root of the project.
+
+```bash
+poetry install
 ```
-pip install .[dev]
+
+If you use pyenv to do python version management, you may encounter some issues with getting the correct python version for your environment, if that's the case, you can try doing so:
+
+```bash
+pyenv shell 3.9.7 # Use a specific python version >=3.9 <3.10
+poetry use python3 # Select this python version for your virtual env
+# At this point a virtual environment should be created
+poetry shell # activate your virtual environment
 ```
+
+
+### Installation
+
+As of now the distribution are not available via pip, so you will have to clone the repository and install Vyro locally with the following command:
+
+```
+pip install .
+```
+
 
 ## Usage
 
