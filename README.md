@@ -32,7 +32,7 @@ poetry shell # activate your virtual environment
 
 ### Installation
 
-As of now the distribution are not available via pip, so you will have to clone the repository and install Vyro locally with the following command:
+Since the distribution is currently not available via pip, you will have to clone this repository and install Vyro locally with the following command:
 
 ```
 pip install .
