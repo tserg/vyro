@@ -14,7 +14,7 @@ Vyro currently only supports Python 3.9 due to the Python version constraint of 
 
 ### Building from source
 
-If you are building from source, either because you want to contribute or just that you want to explore the codebase, we reccomend you work within a virtual environment. Since we utilize [poetry](https://python-poetry.org/docs/#installation) as our dependency management system, you can easily setup your virtual environment by doing this at the root of the project.
+If you are building from source, either because you want to contribute or explore the codebase, we recommend you work within a virtual environment. Since we utilize [poetry](https://python-poetry.org/docs/#installation) as our dependency management system, you can easily setup your virtual environment by doing this at the root of the project:
 
 ```bash
 poetry install
