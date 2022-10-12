@@ -26,7 +26,7 @@ If you use pyenv for python version management, you may encounter some issues wi
 pyenv shell 3.9.7 # Use a specific python version >=3.9 <3.10
 poetry use python3 # Select this python version for your virtual env
 # At this point a virtual environment should be created
-poetry shell # activate your virtual environment
+poetry shell # Activate your virtual environment
 ```
 
 
