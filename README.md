@@ -20,7 +20,7 @@ If you are building from source, either because you want to contribute or just t
 poetry install
 ```
 
-If you use pyenv to do python version management, you may encounter some issues with getting the correct python version for your environment, if that's the case, you can try doing so:
+If you use pyenv for python version management, you may encounter some issues with getting the correct python version for your environment. If so, try the following:
 
 ```bash
 pyenv shell 3.9.7 # Use a specific python version >=3.9 <3.10
