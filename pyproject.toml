@@ -7,6 +7,9 @@ license = "MIT"
 readme = "README.md"
 keywords = ["ethereum", "starknet", "vyper", "cairo", "transpiler"]
 
+[tool.poetry.scripts]
+vyro = "vyro._cli.__main__:main"
+
 [tool.poetry.dependencies]
 python = ">=3.9,<3.10"
 vyper = "^0.3.7"
