@@ -18,6 +18,7 @@ If you are building from source, either because you want to contribute or explor
 
 ```bash
 poetry install
+poetry run vyro
 ```
 
 If you use pyenv for python version management, you may encounter some issues with getting the correct python version for your environment. If so, try the following:
