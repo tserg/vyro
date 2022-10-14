@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "vyro"
 version = "0.1.0"
-description = ""
+description = "Vyper to Cairo transpiler for the Ethereum and StarkNet ecosystems"
 authors = ["tserg <8017125+tserg@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+keywords = ["ethereum", "starknet", "vyper", "cairo", "transpiler"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.10"
