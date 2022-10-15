@@ -1,5 +1,7 @@
 # Vyro
 
+![tests](https://github.com/tserg/vyro/actions/workflows/test.yml/badge.svg)
+
 A [Vyper](https://github.com/vyperlang/vyper) to Cairo transpiler, inspired by [Warp](https://github.com/NethermindEth/warp) from Nethermind, and with a dash of [Brownie](https://github.com/eth-brownie/brownie).
 
 :exclamation: **This repository has not been audited or formally verified. Please use with caution.**
