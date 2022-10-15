@@ -1,5 +1,7 @@
 # Vyro
 
+![tests](https://github.com/tserg/vyro/actions/workflows/test.yml/badge.svg)
+
 A [Vyper](https://github.com/vyperlang/vyper) to Cairo transpiler, inspired by [Warp](https://github.com/NethermindEth/warp) from Nethermind, and with a dash of [Brownie](https://github.com/eth-brownie/brownie).
 
 :exclamation: **This repository has not been audited or formally verified. Please use with caution.**
@@ -18,6 +20,7 @@ If you are building from source, either because you want to contribute or explor
 
 ```bash
 poetry install
+poetry run vyro
 ```
 
 If you use pyenv for python version management, you may encounter some issues with getting the correct python version for your environment. If so, try the following:
