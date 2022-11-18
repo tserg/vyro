@@ -4,7 +4,7 @@ import ape
 import pytest
 from ape.api.transactions import ReceiptAPI
 from ape.exceptions import ContractLogicError
-from ape_starknet.transactions import InvocationReceipt
+from ape_starknet.transactions import InvokeFunctionReceipt
 from vyper.utils import hex_to_int
 
 from tests.expectations import EXPECTATIONS
@@ -169,7 +169,7 @@ def test_cairo_code(request, project, starknet_owner, starknet_user, starknet_gu
 
         else:
             ret = fn_call(*call_args)
-            assert not isinstance(ret, InvocationReceipt)
+            assert not isinstance(ret, InvokeFunctionReceipt)
             assert ret == expected
 
 
