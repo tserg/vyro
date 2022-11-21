@@ -16,11 +16,12 @@ class CairoUint256Definition(CairoTypeDefinition):
 
 
 class CairoMappingDefinition(CairoTypeDefinition):
-    def __init__(self, is_constant, is_public, is_immutable, key_types, value_type):
+    def __init__(self, is_constant, is_public, is_immutable, key_types, value_type, is_array=False):
         super().__init__(is_constant=is_constant, is_public=is_public, is_immutable=is_immutable)
 
         self.key_types = key_types
         self.value_type = value_type
+        self.is_array = is_array
 
     def __repr__(self):
         return str(self.value_type)
