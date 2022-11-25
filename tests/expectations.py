@@ -506,6 +506,20 @@ EXPECTATIONS = [
         ),
     ),
     (
+        "static_array",
+        (
+            ("set_a", [[0, 25], None], [[0, 25], None]),
+            ("get_a", [[0], 25], [[0], 25]),
+        ),
+    ),
+    (
+        "static_nested_array",
+        (
+            ("set_a", [[0, 1, 25], None], [[0, 1, 25], None]),
+            ("get_a", [[0, 1], 25], [[0, 1], 25]),
+        ),
+    ),
+    (
         "struct",
         (
             (

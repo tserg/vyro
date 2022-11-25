@@ -12,7 +12,6 @@ UNSUPPORTED = [
     ("constants/bytesarray32_constant", FeltOverflowException),
     ("constants/string_constant", FeltOverflowException),
     ("constants/uint256_constant", FeltOverflowException),
-    ("array", UnsupportedType),
     ("compare_membership", UnsupportedOperation),
     ("convert", UnsupportedFeature),
     ("decimal", UnsupportedType),
