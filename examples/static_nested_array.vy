@@ -10,3 +10,13 @@ def set_a(i: uint8, j: uint8, x: uint8):
 @view
 def get_a(i: uint8, j: uint8) -> uint8:
     return self.a[i][j]
+
+@external
+@view
+def get_memory_a(i: uint8, j: uint8) -> uint8:
+    a: uint8[3][3] = [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+    ]
+    return a[i][j]
