@@ -140,7 +140,6 @@ class StorageVarVisitor(BaseVisitor):
             vy_ast.Attribute, {"value.id": "self"}, include_self=True
         )
         cairo_typ = convert_node_type_definition(node.target)
-        print("contract vars found: ", contract_vars)
         lhs_replaced = False
         if contract_vars:
             # Create new variable and assign RHS

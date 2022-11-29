@@ -67,7 +67,6 @@ class StaticArrayConverterVisitor(BaseVisitor):
         else:
             # Index are reversed: a[i][j] is arranged as j as outer and i as nested subscript
             # We loop through the list construct the nodes from most nested to top level
-            print("idx list: ", idx_list)
             nested_value_node = None
             while len(idx_list) > 0:
 
