@@ -1,5 +1,6 @@
 from vyper import ast as vy_ast
 from vyper.semantics.types.bases import DataLocation
+from vyper.semantics.types.indexable.sequence import ArrayDefinition
 from vyper.semantics.types.utils import get_type_from_annotation
 
 from vyro.transpiler.context import ASTContext
@@ -18,6 +19,11 @@ from vyro.transpiler.visitor import BaseVisitor
 class InitialisationVisitor(BaseVisitor):
     def visit_AnnAssign(self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext):
         # Move RHS into a local variable.
+        typ = node.target._metadata.get("type") or node._metadata.get("type")
+        # Skip for static arrays - handled by static array converter
+        if isinstance(typ, ArrayDefinition):
+            return
+
         # Since `AnnAssign` is a `tempvar`, it cannot be assigned to a function call.
         # Therefore, we re-assign the RHS to a temporary local variable.
         temp_name_node = create_name_node(context)
@@ -36,7 +42,6 @@ class InitialisationVisitor(BaseVisitor):
         node.value = temp_name_node_dup
         set_parent(temp_name_node_dup, node)
 
-        typ = node.target._metadata.get("type") or node._metadata.get("type")
         if typ:
             cairo_typ = get_cairo_type(typ)
             node._metadata["type"] = cairo_typ

@@ -44,11 +44,21 @@ class StorageVarVisitor(BaseVisitor):
         if not isinstance(node, vy_ast.Subscript):
             return keys_
 
-        # Add current key to start of list
-        key_name = node.slice.value.id
+        if isinstance(node.slice.value, vy_ast.Name):
+            # Add current key to start of list
+            key_name = node.slice.value.id
 
-        name_node = create_name_node(context, name=key_name)
-        keys_.insert(0, name_node)
+            name_node = create_name_node(context, name=key_name)
+            keys_.insert(0, name_node)
+
+        elif isinstance(node.slice.value, vy_ast.Int):
+            # Add integer key to start of list
+            int_node = vy_ast.Int(
+                node_id=context.reserve_id(),
+                value=node.slice.value.value,
+                ast_type="Int",
+            )
+            keys_.insert(0, int_node)
 
         # Nested mapping
         if isinstance(node.value, vy_ast.Subscript):
@@ -130,7 +140,7 @@ class StorageVarVisitor(BaseVisitor):
             vy_ast.Attribute, {"value.id": "self"}, include_self=True
         )
         cairo_typ = convert_node_type_definition(node.target)
-
+        print("contract vars found: ", contract_vars)
         lhs_replaced = False
         if contract_vars:
             # Create new variable and assign RHS

@@ -28,6 +28,7 @@ from vyro.transpiler.passes import (
 PASSES = {
     "Fc": UnsupportedVisitor,
     "I": InitialisationVisitor,
+    "SA": StaticArrayConverterVisitor,
     "SC": StructConverterVisitor,
     "IfH": IfHandlerVisitor,
     "EC": EnumConverterVisitor,
@@ -38,7 +39,6 @@ PASSES = {
     "Ah": AssertHandlerVisitor,
     "If": InternalFunctionsHandler,
     "Rv": ReturnValueHandler,
-    "SA": StaticArrayConverterVisitor,
     "Sv": StorageVarVisitor,
     "Oc": OpsConverterVisitor,
     "Co": ConstantHandlerVisitor,
