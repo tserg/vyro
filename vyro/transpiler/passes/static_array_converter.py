@@ -1,3 +1,6 @@
+import copy
+from typing import List
+
 from vyper import ast as vy_ast
 from vyper.exceptions import UnknownType
 from vyper.semantics.types.bases import DataLocation
@@ -26,6 +29,107 @@ class StaticArrayConverterVisitor(BaseVisitor):
     For example, reading `array[i][j]` is equivalent to `array_storage.read(i, j)`,
     and writing `array[i][j] = k` is equivalent to `array_storage.write(i, j, k)`.
     """
+
+    def _write_memory_array_to_storage(
+        self,
+        storage_var_name: str,
+        context: ASTContext,
+        stmt_node: vy_ast.VyperNode,
+        scope_node: vy_ast.VyperNode,
+        scope_node_body: List[vy_ast.VyperNode],
+        value_node: vy_ast.VyperNode,
+        vy_typ: ArrayDefinition,
+        idx_list: List[int],
+    ):
+        """
+        Helper function to append statements to write a declared memory array to storage
+        to the body of the given scope node.
+
+        This function recursively visits a List node in a depth-first manner, since
+        the AST tree for a nested array is declared in the reverse manner.
+        """
+        if isinstance(value_node, vy_ast.List):
+            # Visit nested list first
+            for idx, element in enumerate(value_node.elements):
+                new_idx_list = copy.deepcopy(idx_list)
+                new_idx_list.append(idx)
+                self._write_memory_array_to_storage(
+                    storage_var_name,
+                    context,
+                    stmt_node,
+                    scope_node,
+                    scope_node_body,
+                    element,
+                    vy_typ,
+                    new_idx_list,
+                )
+
+        else:
+            # Index are reversed: a[i][j] is arranged as j as outer and i as nested subscript
+            # We loop through the list construct the nodes from most nested to top level
+            print("idx list: ", idx_list)
+            nested_value_node = None
+            while len(idx_list) > 0:
+
+                next_idx = idx_list.pop(0)
+
+                # Create the index node and assign the value
+                value_node_dup = type(value_node).from_node(value_node, value=value_node.value)
+                value_node_dup.node_id = context.reserve_id()
+
+                if nested_value_node is None:
+                    # Create final subscript
+                    self_address_node = create_name_node(context, name="self")
+                    self_address_node._metadata["type"] = AddressDefinition()
+
+                    var_decl_ref_node = vy_ast.Attribute(
+                        node_id=context.reserve_id(),
+                        attr=storage_var_name,
+                        value=self_address_node,
+                        ast_type="Attribute",
+                    )
+                    var_decl_ref_node._metadata["type"] = vy_typ
+                    set_parent(self_address_node, var_decl_ref_node)
+
+                    nested_value_node = var_decl_ref_node
+
+                idx_node = vy_ast.Int(
+                    node_id=context.reserve_id(),
+                    value=next_idx,
+                    ast_type="Int",
+                )
+
+                index_node = vy_ast.Index(
+                    node_id=context.reserve_id(),
+                    value=idx_node,
+                    ast_type="Index",
+                )
+                set_parent(idx_node, index_node)
+
+                subscript_node = vy_ast.Subscript(
+                    node_id=context.reserve_id(),
+                    slice=index_node,
+                    value=nested_value_node,
+                    ast_type="Subscript",
+                )
+                set_parent(index_node, subscript_node)
+                set_parent(nested_value_node, subscript_node)
+
+                # Update nested value node to the latest created Subscript node
+                nested_value_node = subscript_node
+
+                if len(idx_list) == 0:
+                    # Add statement to AST when index list is exhausted
+                    vy_storage_write_node = create_assign_node(
+                        context,
+                        targets=[subscript_node],
+                        value=value_node_dup,
+                    )
+                    vy_storage_write_node.target._metadata["type"] = vy_typ
+                    insert_statement_after(
+                        vy_storage_write_node, stmt_node, scope_node, scope_node_body
+                    )
+                    break
 
     def visit_AnnAssign(self, node: vy_ast.AnnAssign, ast: vy_ast.Module, context: ASTContext):
         """
@@ -74,58 +178,11 @@ class StaticArrayConverterVisitor(BaseVisitor):
         ast.add_to_body(var_decl_node)
 
         # Write the values to storage
-        array_values = [n.value for n in node.value.elements]
-
         stmt_node = get_stmt_node(node)
         scope_node, scope_node_body = get_scope(node)
-
-        for idx, v in enumerate(array_values):
-            self_address_node = create_name_node(context, name="self")
-            self_address_node._metadata["type"] = AddressDefinition()
-
-            var_decl_ref_node = vy_ast.Attribute(
-                node_id=context.reserve_id(),
-                attr=var_decl_name,
-                value=self_address_node,
-                ast_type="Attribute",
-            )
-            var_decl_ref_node._metadata["type"] = vy_typ
-            set_parent(self_address_node, var_decl_ref_node)
-
-            idx_node = vy_ast.Int(
-                node_id=context.reserve_id(),
-                value=idx,
-                ast_type="Int",
-            )
-
-            index_node = vy_ast.Index(
-                node_id=context.reserve_id(),
-                value=idx_node,
-                ast_type="Index",
-            )
-            set_parent(idx_node, index_node)
-
-            subscript_node = vy_ast.Subscript(
-                node_id=context.reserve_id(),
-                slice=index_node,
-                value=var_decl_ref_node,
-                ast_type="Subscript",
-            )
-            set_parent(index_node, subscript_node)
-            set_parent(var_decl_ref_node, subscript_node)
-
-            vy_storage_write_node = create_assign_node(
-                context,
-                targets=[subscript_node],
-                value=vy_ast.Int(
-                    node_id=context.reserve_id(),
-                    value=v,
-                    ast_type="Int",
-                ),
-            )
-
-            vy_storage_write_node.target._metadata["type"] = vy_typ
-            insert_statement_after(vy_storage_write_node, stmt_node, scope_node, scope_node_body)
+        self._write_memory_array_to_storage(
+            var_decl_name, context, stmt_node, scope_node, scope_node_body, node.value, vy_typ, []
+        )
 
         # Find references to the memory array and replace with storage mapping read
         array_references = scope_node.get_descendants(vy_ast.Subscript, {"value.id": var_name})
