@@ -18,6 +18,7 @@ from vyro.transpiler.passes import (
     InternalFunctionsHandler,
     OpsConverterVisitor,
     ReturnValueHandler,
+    StaticArrayConverterVisitor,
     StorageVarVisitor,
     StructConverterVisitor,
     Uint256HandlerVisitor,
@@ -27,6 +28,7 @@ from vyro.transpiler.passes import (
 PASSES = {
     "Fc": UnsupportedVisitor,
     "I": InitialisationVisitor,
+    "SA": StaticArrayConverterVisitor,
     "SC": StructConverterVisitor,
     "IfH": IfHandlerVisitor,
     "EC": EnumConverterVisitor,

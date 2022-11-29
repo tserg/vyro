@@ -122,7 +122,7 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
                 is_constant=typ.is_constant, is_public=typ.is_public, is_immutable=typ.is_immutable
             )
 
-    elif isinstance(typ, (FixedAbstractType, ArrayDefinition, DynamicArrayDefinition)):
+    elif isinstance(typ, (FixedAbstractType, DynamicArrayDefinition)):
         raise UnsupportedType(f"`{type(typ)}` type is not supported.")
 
     elif isinstance(typ, AddressDefinition):
@@ -134,6 +134,14 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
         key_types, value_type = get_hashmap_types(typ)
         # Ensure key types and value type are converted
         key_types = list(map(get_cairo_type, key_types))
+        value_type = get_cairo_type(value_type)
+        return CairoMappingDefinition(
+            typ.is_constant, typ.is_public, typ.is_immutable, key_types, value_type
+        )
+
+    elif isinstance(typ, ArrayDefinition):
+        # Convert static arrays to mappings
+        key_types, value_type = get_array_types(typ)
         value_type = get_cairo_type(value_type)
         return CairoMappingDefinition(
             typ.is_constant, typ.is_public, typ.is_immutable, key_types, value_type
@@ -217,6 +225,22 @@ def create_assign_node(
     set_parent(value, assign_node)
 
     return assign_node
+
+
+def get_array_types(
+    typ: BaseTypeDefinition, keys: List[BaseTypeDefinition] = None
+) -> Tuple[Optional[List[BaseTypeDefinition]], BaseTypeDefinition]:
+    if not isinstance(typ, ArrayDefinition):
+        return keys, typ
+
+    if keys is None:
+        keys = []
+    keys.append(FeltDefinition())
+
+    if isinstance(typ.value_type, ArrayDefinition):
+        return get_array_types(typ.value_type, keys)
+
+    return keys, typ.value_type
 
 
 def get_hashmap_types(
