@@ -10,3 +10,9 @@ def set_a(i: uint8, x: uint8):
 @view
 def get_a(i: uint8) -> uint8:
     return self.a[i]
+
+@external
+@view
+def get_memory_a(i: uint8) -> uint8:
+    a: uint8[3] = [32, 64, 128]
+    return a[i]
