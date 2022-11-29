@@ -21,7 +21,6 @@ class CairoMappingDefinition(CairoTypeDefinition):
 
         self.key_types = key_types
         self.value_type = value_type
-        self.is_array = is_array
 
     def __repr__(self):
         return str(self.value_type)

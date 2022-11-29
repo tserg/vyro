@@ -144,7 +144,7 @@ def get_cairo_type(typ: BaseTypeDefinition) -> CairoTypeDefinition:
         key_types, value_type = get_array_types(typ)
         value_type = get_cairo_type(value_type)
         return CairoMappingDefinition(
-            typ.is_constant, typ.is_public, typ.is_immutable, key_types, value_type, is_array=True
+            typ.is_constant, typ.is_public, typ.is_immutable, key_types, value_type
         )
 
     elif isinstance(typ, EnumDefinition):
