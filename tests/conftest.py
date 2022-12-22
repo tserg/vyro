@@ -41,7 +41,7 @@ def starknet_guest(starknet_devnet_accounts):
 
 @pytest.fixture(scope="session")
 def starknet_devnet(networks):
-    with networks.starknet.local.use_provider("starknet"):
+    with networks.parse_network_choice("starknet:local"):
         yield
 
 
