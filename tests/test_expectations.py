@@ -105,6 +105,9 @@ def test_cairo_code(request, project, starknet_owner, starknet_user, starknet_gu
 
     contract_object = project.get_contract(filename)
 
+    # Starknet requires contract to be declared before deploy
+    starknet_owner.declare(contract_object)
+
     # Obtain the `ContractInstance`
     if len(code) >= 3:
         constructor_args = code[2][1]
@@ -116,9 +119,9 @@ def test_cairo_code(request, project, starknet_owner, starknet_user, starknet_gu
                 ("STARKNET_GUEST", starknet_guest.address),
             ],
         )
-        contract = contract_object.deploy(*constructor_args)
+        contract = contract_object.deploy(*constructor_args, sender=starknet_owner)
     else:
-        contract = contract_object.deploy()
+        contract = contract_object.deploy(sender=starknet_owner)
 
     print(f"Testing Cairo contract: {filename}.cairo")
 
