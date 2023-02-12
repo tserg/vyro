@@ -13,7 +13,7 @@ vyro = "vyro._cli.__main__:main"
 [tool.poetry.dependencies]
 python = ">=3.9,<3.10"
 vyper = "0.3.7"
-cairo-lang = "^0.10.3"
+cairo-lang = "0.10.3"
 
 [tool.poetry.dev-dependencies]
 black = "^22.10.0"
